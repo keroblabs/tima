@@ -38,6 +38,13 @@
 //#define DEV_TTY_COMMAND			DEV_SOCKET_CLIENT
 //#define DEV_TTY_COMMAND			DEV_SOCKET_SERVER
 
+////////////////////////////////////////////////////////
+
+#define COMMAND_SECTION_ID                  0x01
+#define FONT_SECTION_ID                     0x02
+
+////////////////////////////////////////////////////////
+
 #define DONT_USE_MULTITHREAD
 
 #define DONT_WANT_FTP_SERVER

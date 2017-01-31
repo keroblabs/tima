@@ -5,6 +5,8 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+#define DRAW_FONT_MAX 64
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static font_data_t * p_selected_font = NULL;
@@ -22,6 +24,26 @@ static void gr_draw_character(	uint8_t character,
 	graphics_bitmap_1bb(posx, posy, p_selected_font->width, p_selected_font->height, ( uint8_t * )&p_selected_font->data[index], back_colour, fore_colour);
 }
 
+void draw_select_font( uint8_t font )
+{
+    uint8_t i = 0;
+    font_data_t * p_font;
+    
+    while( ( p_font = GET_FONT_SECTION( i ) ) != NULL )
+    {
+        if( p_font->type == font )
+        {
+            p_selected_font = p_font;
+            return;
+        }
+        
+        i++;
+    }
+    
+    p_selected_font = NULL;
+}
+
+#if 0
 void draw_font_init( uint8_t index )
 {
 	switch( index )
@@ -38,6 +60,7 @@ void draw_font_init( uint8_t index )
 			p_selected_font = NULL;
 	}
 }
+#endif
 
 void draw_circle_arc( uint16_t posx, uint16_t posy, int ratio, int start, int end, uint16_t colour )
 {
@@ -434,6 +457,8 @@ int draw_text_printk( uint16_t posx, uint16_t posy, const char *fmt, ... )
 {
     va_list args;
     int printed_len;
+    
+    if( p_selected_font == NULL ) return 0;
 
     /* Emit the output into the temporary buffer */
     va_start(args, fmt);

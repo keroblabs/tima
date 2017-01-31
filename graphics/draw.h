@@ -4,6 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 #include "types.h"
+#include "system.h"
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +14,7 @@ typedef struct _font_data_t
 	uint16_t height;
 	uint16_t offset;
 	uint16_t size;
+    uint8_t type;
 
 	const uint8_t * data;
 
@@ -32,12 +34,15 @@ enum
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-extern const font_data_t font_12x16;
-extern const font_data_t font_8x8;
+#define DECLARE_FONT_SECTION(a)                     SYSTEM_SECTION_LIST(a, FONT_SECTION_ID)
+#define GET_FONT_SECTION(i)                         ( font_data_t * )system_List_Get_Item(FONT_SECTION_ID,i)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void draw_font_init( uint8_t index );
+//////////////////////////////////////////////////////////////////////////////////////
+
+// void draw_font_init( uint8_t index );
+void draw_select_font( uint8_t font );
 
 void draw_line( uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour );
 void draw_text( uint16_t posx, uint16_t posy, char * text, uint16_t fore_colour, uint16_t back_colour );

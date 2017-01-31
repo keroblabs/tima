@@ -3,18 +3,21 @@
 
 #include "draw.h"
 
-extern const uint8_t char_map_8x8[];
+static const uint8_t char_map_8x8[];
 
-const font_data_t font_8x8 = 
+static const font_data_t font_8x8 =
 {
 	8,
 	8,
 	0x20,
 	8,
+    FONT_8x8,
 	char_map_8x8
 };
 
-const uint8_t char_map_8x8[] = {
+DECLARE_FONT_SECTION( font_8x8 );
+
+static const uint8_t char_map_8x8[] = {
 
 /* Character value	 (0x20)
    width=8, height=8

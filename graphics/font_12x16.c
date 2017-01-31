@@ -11,8 +11,11 @@ const font_data_t font_12x16 =
 	16,
 	0x20,
 	24,
+    FONT_12x16,
 	char_map_12x16
 };
+
+DECLARE_FONT_SECTION( font_12x16 );
 
 const uint8_t char_map_12x16[] = {
 

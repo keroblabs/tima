@@ -15,8 +15,6 @@
 #define CONSOLE_COMMAND_TYPE        0x01
 #define FTM_COMMAND_TYPE            0x02
 
-#define COMMAND_SECTION_ID			0x01
-
 ///////////////////////////////////////////////////////////////
 
 #define DECLARE_COMMAND_SECTION(a)					SYSTEM_SECTION_LIST(a, COMMAND_SECTION_ID)
