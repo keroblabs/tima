@@ -1,0 +1,4 @@
+loadaddr=0x40000000
+loadzimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} /boot/1st_bootloader.bin
+loadfdt=echo No FDT...
+mmcboot=echo Booting Tima from mmc ...; run mmcargs; go ${loadaddr}

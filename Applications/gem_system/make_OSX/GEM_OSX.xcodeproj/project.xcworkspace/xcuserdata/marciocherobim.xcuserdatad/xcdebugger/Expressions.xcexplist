@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "_internal_free:heap.c">
+      </ContextState>
+      <ContextState
+         contextName = "_lcd_get_api2:4DLCD_Driver.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "&amp;lcd_api">
+            </PersistentString>
+            <PersistentString
+               value = "*p_api">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "wifi_click_receive_process:wifi_click.c">
+      </ContextState>
+      <ContextState
+         contextName = "instruments_init:instruments.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(heap_header_t*)0x000000010003f1b0">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "heap_free:heap.c">
+      </ContextState>
+      <ContextState
+         contextName = "pio_check_init:pio_check.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "oil_input_pio">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "device_is_rx_pending:device.c">
+      </ContextState>
+      <ContextState
+         contextName = "skin_motocycle_update_data:skin_motocycle.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "rpm_angle">
+            </PersistentString>
+            <PersistentString
+               value = "rpm_value">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "syscomm_init:syscomm.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "syscomm_dev">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "app_main:app_main.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "*((uint32_t*)0x100014e08)">
+            </PersistentString>
+            <PersistentString
+               value = "(heap_header_t*)0x000000010003f1b0">
+            </PersistentString>
+            <PersistentString
+               value = "syscomm_pipe_request">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "lcd_layer_get_driver:lcd.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+            <PersistentString
+               value = "&amp;lcd_driver">
+            </PersistentString>
+            <PersistentString
+               value = "api_addr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "device_open:device.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(heap_header_t*)0x000000010003f1b0">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "syscomm_get_pipe_request:syscomm.c">
+      </ContextState>
+      <ContextState
+         contextName = "odometer_control_init:odometer_control.c">
+      </ContextState>
+      <ContextState
+         contextName = "pio_check_process:pio_check.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "syscomm_pipe_request">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "lcd_send_command:4DLCD_Driver.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "lcd_comm_buffer">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "pio_check_event_read_port:pio_check.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "&amp;syscomm_pipe_request">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "pipe_send_buffer:pipe.c">
+      </ContextState>
+      <ContextState
+         contextName = "fuel_check_init:fuel_check.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(heap_header_t*)0x000000010003f1b0">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "app_receive_obd_process:app_main.c">
+      </ContextState>
+      <ContextState
+         contextName = "syscomm_process:syscomm.c">
+      </ContextState>
+      <ContextState
+         contextName = "skin_standard_update_data:skin_standard.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "temperature_angle">
+            </PersistentString>
+            <PersistentString
+               value = "temperature_value">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "obd_engine_update_data:obd_engine.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "*((uint32_t*)0x100014e08)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "hw_adc_check:adc.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "debug_fuel_adc">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "device_open_ex:device.c">
+      </ContextState>
+      <ContextState
+         contextName = "GLOBAL">
+         <PersistentStrings>
+            <PersistentString
+               value = "obd_message">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "console_input:gem_driver.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "*buffer">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "pipe_write:pipe.c">
+      </ContextState>
+      <ContextState
+         contextName = "pipe_read:pipe.c">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

@@ -1,0 +1,34 @@
+##############################################################################################
+#
+# Rules to build console
+#
+##############################################################################################
+
+##############################################################################################
+# Start of main variables
+#
+
+DEFAULT_DRV_PATH = $(DEFAULT_PATH)/Boards/Common
+APP_PATH = $(DEFAULT_PATH)/Applications/$(PROJECT)
+
+GCCPATH = /Users/marciocherobim/Tools/gcc-4_7-2013q3/arm-none-eabi
+TRGT    = /Users/marciocherobim/Tools/gcc-4_7-2013q3/bin/arm-none-eabi-
+LD		= $(TRGT)gcc
+CC      = $(TRGT)gcc
+CP      = $(TRGT)objcopy
+AS      = $(TRGT)gcc -x assembler-with-cpp
+SIZE    = $(TRGT)size
+OBJCOPY = $(TRGT)objcopy
+OBJDUMP = $(TRGT)objdump
+BIN     = $(CP) -O ihex
+MAKE    = make
+CP      = cp
+
+
+#
+# End of main variables
+##############################################################################################
+
+# *** EOF ***
+
+

@@ -1,0 +1,101 @@
+##############################################################################################
+#
+# Rules to build simple S3C2440
+#
+##############################################################################################
+
+##############################################################################################
+# Start of main variables
+#
+
+BOARD_PATH = $(DEFAULT_PATH)/Boards/imx233
+
+GCCPATH = /Users/marciocherobim/Tools/gcc-4_7-2013q3/arm-none-eabi
+TRGT    = /Users/marciocherobim/Tools/gcc-4_7-2013q3/bin/arm-none-eabi-
+LIBDIR  = $(GCCPATH)/lib
+
+LD		= $(TRGT)gcc
+CC      = $(TRGT)gcc
+CP      = $(TRGT)objcopy
+AS      = $(TRGT)gcc -x assembler-with-cpp
+SIZE    = $(TRGT)size
+OBJCOPY = $(TRGT)objcopy
+OBJDUMP = $(TRGT)objdump
+BIN     = $(CP) -O ihex
+MAKE    = make
+CP      = cp
+
+MCU     = arm926ej-s
+THUMB   = 
+# -fPIC
+
+ARCH    = ARM
+MODEL   = IMX233
+
+DEFS += -D$(ARCH)_$(MODEL) -D$(ARCH)
+
+LDDEF   = imx233_script.ld
+
+# additional link commands
+CPU_LD +=
+
+#
+# End of main variables
+##############################################################################################
+
+##############################################################################################
+# Start of define section
+#
+
+# List all default C defines here, like -D_DEBUG=1
+DEFS += -DUSE_SECTIONS
+DEFS += -DARM4_ASM
+DEFS += -DARM5_ASM
+
+# List all default ASM defines here, like -D_DEBUG=1
+ADEFS +=
+
+#
+# End of define section
+##############################################################################################
+
+##############################################################################################
+# Start of include section
+#
+
+# List all default directories to look for include files here
+CINCDIR += $(BOARD_PATH)
+CINCDIR += $(BOARD_PATH)/include
+CINCDIR += $(BOARD_PATH)/library
+
+# End of include section
+##############################################################################################
+
+##############################################################################################
+# Start of source section
+#
+
+SRC += $(BOARD_PATH)/library/hardware_init.c
+SRC += $(BOARD_PATH)/library/pinctrl-imx233.c
+SRC += $(BOARD_PATH)/library/serialdbg_imx233.c
+SRC += $(BOARD_PATH)/library/serialapp_imx233.c
+SRC += $(BOARD_PATH)/library/timer_imx233.c
+SRC += $(BOARD_PATH)/library/system_imx233.c
+SRC += $(BOARD_PATH)/library/lcdif-imx233.c
+SRC += $(BOARD_PATH)/library/adc.c
+SRC += $(BOARD_PATH)/library/rtc_driver.c
+
+SRC += $(BOARD_PATH)/library/gpio_driver.c
+
+# List ASM source files here
+ASRC += $(BOARD_PATH)/library/entry.s
+ASRC += $(BOARD_PATH)/library/sd.s
+
+#
+# End of source section
+##############################################################################################
+
+
+# *** EOF ***
+
+

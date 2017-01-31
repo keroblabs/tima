@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "wifi_click_receive_process:wifi_click.c">
+      </ContextState>
+      <ContextState
+         contextName = "obd_engine_update_data:obd_engine.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "*((uint32_t*)0x100014e08)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "heap_malloc:heap.c">
+      </ContextState>
+      <ContextState
+         contextName = "lcd_layer_get_driver:lcd.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+            <PersistentString
+               value = "&amp;lcd_driver">
+            </PersistentString>
+            <PersistentString
+               value = "api_addr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "_internal_free:heap.c">
+      </ContextState>
+      <ContextState
+         contextName = "lcd_send_command:4DLCD_Driver.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "lcd_comm_buffer">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "heap_free:heap.c">
+      </ContextState>
+      <ContextState
+         contextName = "_lcd_get_api2:4DLCD_Driver.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "&amp;lcd_api">
+            </PersistentString>
+            <PersistentString
+               value = "*p_api">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "app_main:app_main.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "*((uint32_t*)0x100014e08)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
