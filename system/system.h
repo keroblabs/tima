@@ -8,7 +8,6 @@
 #include "heap.h"
 #include "mass_mal.h"
 #include "device.h"
-#include "list_section.h"
 #ifdef USE_MULTITHREAD
 #include "t_threads.h"
 #endif

@@ -56,72 +56,12 @@ SECTIONS
 		. = ALIGN(4);
 	} >FLASH
 
-	.critical_modules_section :
+	.list_section :
 	{
-		PROVIDE( __critical_modules_start = . );
-		KEEP(*(SORT(.critical_modules_section.*)))
-		KEEP(*(.critical_modules_section))
-		PROVIDE( __critical_modules_end = . );
-	} >FLASH
-
-	.init_modules_section :
-	{
-		PROVIDE( __init_modules_start = . );
-		KEEP(*(SORT(.init_modules_section.*)))
-		KEEP(*(.init_modules_section))
-		PROVIDE( __init_modules_end = . );
-	} >FLASH
-
-	.process_section :
-	{
-		PROVIDE( __process_start = . );
-		KEEP(*(SORT(.process_section.*)))
-		KEEP(*(.process_section))
-		PROVIDE( __process_end = . );
-	} >FLASH
-
-	.power_down_section :
-	{
-		PROVIDE( __pdown_start = . );
-		KEEP(*(SORT(.power_down_section.*)))
-		KEEP(*(.power_down_section))
-		PROVIDE( __pdown_end = . );
-		PROVIDE( __pdown_entry = . - 4 );
-	} >FLASH
-
-	.device_section :
-	{
-		PROVIDE( __device_start = . );
-		KEEP(*(SORT(.device_section.*)))
-		KEEP(*(.device_section))
-		PROVIDE( __device_end = . );
-	} >FLASH
-	
-	.disc_section :
-	{
-		PROVIDE( __disc_start = . );
-		KEEP(*(SORT(.disc_section.*)))
-		KEEP(*(.disc_section))
-		PROVIDE( __disc_end = . );
-		PROVIDE( __disc_entry = . - 4 );
-	} >FLASH
-	
-	.app_section :
-	{
-		PROVIDE( __app_start = . );
-		KEEP(*(SORT(.app_section.*)))
-		KEEP(*(.app_section))
-		PROVIDE( __app_end = . );
-		PROVIDE( __app_entry = . - 4 );
-	} >FLASH
-
-	.cmd_section :
-	{
-		PROVIDE( __cmd_start = . );
-		KEEP(*(SORT(.cmd_section.*)))
-		KEEP(*(.cmd_section))
-		PROVIDE( __cmd_end = . );
-		PROVIDE( __cmd_entry = . - 4 );
+		PROVIDE( __list_start = . );
+		KEEP(*(SORT(.list_section.*)))
+		KEEP(*(.list_section))
+		PROVIDE( __list_end = . );
 	} >FLASH
 
 	.eeprom_section :

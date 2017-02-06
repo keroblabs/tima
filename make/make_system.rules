@@ -45,7 +45,6 @@ CINCDIR += $(SYSTEM_PATH)
 SRC += $(SYSTEM_PATH)/device.c
 SRC += $(SYSTEM_PATH)/heap.c
 SRC += $(SYSTEM_PATH)/lcd.c
-SRC += $(SYSTEM_PATH)/list_section.c
 SRC += $(SYSTEM_PATH)/mass_mal.c
 SRC += $(SYSTEM_PATH)/system.c
 SRC += $(SYSTEM_PATH)/t_threads.c

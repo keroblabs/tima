@@ -14,6 +14,8 @@
 #define CS_MODE_ENABLE				2
 #define CS_MODE_DISABLE 			3
 
+#define SPI_HW_INDEX				1
+
 //////////////////////////////////////////////////////////////////////////////
 
 typedef struct pio_config_t_
@@ -25,13 +27,37 @@ typedef struct pio_config_t_
 
 } pio_config_t;
 
+
+typedef struct
+{
+    // uart index
+    SPI_TypeDef* SPIx;
+	uint8_t SPI_AF;
+	uint8_t dummy_byte;
+
+    // RCC configuration
+    uint32_t RCC_APB1Periph;
+    uint32_t RCC_APB2Periph;
+    uint32_t RCC_AHB1Periph;
+    uint32_t RCC_AHB2Periph;
+
+	// gpio used by spi
+    GPIO_TypeDef* GPIO_SCLK;
+    uint16_t GPIO_Pin_SCLK;
+	uint32_t GPIO_PinSource_SCLK;
+
+    GPIO_TypeDef* GPIO_MISO;
+    uint16_t GPIO_Pin_MISO;
+	uint32_t GPIO_PinSource_MISO;
+
+    GPIO_TypeDef* GPIO_MOSI;
+    uint16_t GPIO_Pin_MOSI;
+	uint32_t GPIO_PinSource_MOSI;
+
+} spi_data_t;
+
 //////////////////////////////////////////////////////////////////////////////
 // board dependent configuration
-
-#define SPI_HW_PORT 			SPI3
-#define SPI_HW_AF_PORT			GPIO_AF_SPI3
-#define SPI_HW_RCC_PORT			RCC_APB1Periph_SPI3
-#define SPI_HW_RCC_ClockCmd		RCC_APB1PeriphClockCmd
 
 static const pio_config_t chip_select_list[] =
 {
@@ -40,12 +66,53 @@ static const pio_config_t chip_select_list[] =
 	{ 0, NULL, 0 }
 };
 
-static const pio_config_t spi_line_config[] =
+static const spi_data_t spi_config_list[] =
 {
-	{ RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_3, GPIO_PinSource3 },
-	{ RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_4, GPIO_PinSource4 },
-	{ RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_5, GPIO_PinSource5 },
-	{ 0, NULL, 0 }
+	{
+		// SPI 1 (to be used on Cerb40 boards)
+		SPI1, GPIO_AF_SPI1, 0x00,
+
+		// RCC clocks
+		0,
+		RCC_APB2Periph_SPI1,
+		RCC_AHB1Periph_GPIOA,
+		0,
+
+		// gpio
+		GPIOA, GPIO_Pin_5, GPIO_PinSource5,
+		GPIOA, GPIO_Pin_6, GPIO_PinSource6,
+		GPIOA, GPIO_Pin_7, GPIO_PinSource7,
+	},
+	{
+		// SPI 3 (to be used on Mikro boards)
+		SPI3, GPIO_AF_SPI3, 0x00,
+
+		// RCC clocks
+		RCC_APB1Periph_SPI3,
+		0,
+		RCC_AHB1Periph_GPIOB,
+		0,
+
+		// gpio
+		GPIOB, GPIO_Pin_3, GPIO_PinSource3,
+		GPIOB, GPIO_Pin_4, GPIO_PinSource4,
+		GPIOB, GPIO_Pin_5, GPIO_PinSource5,
+	},
+	{
+		// SPI 3 (to be used on Mikro boards)
+		SPI3, GPIO_AF_SPI3, 0x00,
+
+		// RCC clocks
+		RCC_APB1Periph_SPI3,
+		0,
+		RCC_AHB1Periph_GPIOC,
+		0,
+
+		// gpio
+		GPIOC, GPIO_Pin_10, GPIO_PinSource10,
+		GPIOC, GPIO_Pin_11, GPIO_PinSource11,
+		GPIOC, GPIO_Pin_12, GPIO_PinSource12,
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,8 +133,6 @@ void hw_spi_init_cs_pio( void )
 		entry = ( pio_config_t * )&chip_select_list[cnt];
 		if( entry->GPIO == NULL ) break;
 
-		RCC_AHB1PeriphClockCmd(entry->rcc_field, ENABLE);
-
 		GPIO_InitStructure.GPIO_Pin = entry->pio;
 		GPIO_Init(entry->GPIO, &GPIO_InitStructure);
 
@@ -78,30 +143,68 @@ void hw_spi_init_cs_pio( void )
 
 void hw_spi_init_spi_pio( void )
 {
-	pio_config_t * entry = NULL;
-	uint32_t cnt = 0;
 	GPIO_InitTypeDef GPIO_InitStructure;
+    I2S_InitTypeDef  I2S_InitStructure;
+	SPI_InitTypeDef  SPI_InitStructure;
 
+	spi_data_t * spi_config;
+
+	spi_config = ( spi_data_t * )&spi_config_list[SPI_HW_INDEX];
+
+	// enable clocks
+	if( spi_config->RCC_APB1Periph != 0 )
+	{
+		RCC_APB1PeriphClockCmd( spi_config->RCC_APB1Periph , ENABLE);
+	}
+
+	if( spi_config->RCC_APB2Periph != 0 )
+	{
+		RCC_APB2PeriphClockCmd( spi_config->RCC_APB2Periph , ENABLE);
+	}
+
+	if( spi_config->RCC_AHB1Periph != 0 )
+	{
+		RCC_AHB1PeriphClockCmd( spi_config->RCC_AHB1Periph , ENABLE);
+	}
+
+	if( spi_config->RCC_AHB2Periph != 0 )
+	{
+		RCC_AHB2PeriphClockCmd( spi_config->RCC_AHB2Periph , ENABLE);
+	}
+
+	hw_spi_init_cs_pio();
+
+	// connect pins to AF
+	GPIO_PinAFConfig( spi_config->GPIO_SCLK, spi_config->GPIO_PinSource_SCLK, spi_config->SPI_AF );
+	GPIO_PinAFConfig( spi_config->GPIO_MOSI, spi_config->GPIO_PinSource_MOSI, spi_config->SPI_AF );
+	GPIO_PinAFConfig( spi_config->GPIO_MISO, spi_config->GPIO_PinSource_MISO, spi_config->SPI_AF );
+
+	// setup gpio
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Speed = GPIO_High_Speed;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_DOWN;
 
-	while(1)
-	{
-		entry = ( pio_config_t * )&spi_line_config[cnt];
-		if( entry->GPIO == NULL ) break;
+	// SPI pin configuration
+	GPIO_InitStructure.GPIO_Pin = spi_config->GPIO_Pin_SCLK | spi_config->GPIO_Pin_MOSI | spi_config->GPIO_Pin_MISO;
+	GPIO_Init(spi_config->GPIO_SCLK, &GPIO_InitStructure);
 
-		SPI_HW_RCC_ClockCmd(entry->rcc_field, ENABLE);
+	// SPI configuration
+	SPI_StructInit( &SPI_InitStructure );
+	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft | SPI_NSSInternalSoft_Set;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
 
-		GPIO_PinAFConfig(entry->GPIO, entry->pio_source, SPI_HW_AF_PORT);
+	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+	SPI_InitStructure.SPI_CRCPolynomial = 7;
 
-		GPIO_InitStructure.GPIO_Pin = entry->pio;
-		GPIO_Init(entry->GPIO, &GPIO_InitStructure);
-
-		GPIO_SetBits( entry->GPIO, entry->pio );
-		cnt++;
-	}
+	// Enable the sFLASH_SPI
+	SPI_Init(spi_config->SPIx, &SPI_InitStructure);
+	SPI_Cmd(spi_config->SPIx, ENABLE);
 }
 
 bool_t hw_spi_check_cs_pio( uint32_t index, uint8_t mode )
@@ -141,32 +244,16 @@ void hw_spi_init( void )
 
 	DEBUG_PRINTK( "hw_spi_init\r\n" );
 
-	RCC_APB1PeriphClockCmd(SPI_HW_RCC_PORT, ENABLE);
-
 	// configure GPIO
-	hw_spi_init_cs_pio();
 	hw_spi_init_spi_pio();
-
-	/*!< SPI configuration */
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
-
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI_HW_PORT, &SPI_InitStructure);
-
-	/*!< Enable the SPI2  */
-	SPI_Cmd(SPI_HW_PORT, ENABLE);
 }
 
 static uint8_t hw_spi_send_byte(uint8_t byte)
 {
 	uint32_t cnt = 8192;
+	SPI_TypeDef* SPI_HW_PORT;
+
+	SPI_HW_PORT = spi_config_list[SPI_HW_INDEX].SPIx;
 
 	/*!< Loop while DR register in not emplty */
 	while (SPI_I2S_GetFlagStatus(SPI_HW_PORT, SPI_I2S_FLAG_TXE) == RESET)
