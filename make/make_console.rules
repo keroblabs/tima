@@ -42,18 +42,20 @@ CINCDIR += $(CONSOLE_PATH)
 # Start of source section
 #
 
-SRC += $(CONSOLE_PATH)/commands.c
+SRC += $(CONSOLE_PATH)/cmd_cat.c
+SRC += $(CONSOLE_PATH)/cmd_cd.c
+SRC += $(CONSOLE_PATH)/cmd_dump.c
 SRC += $(CONSOLE_PATH)/cmd_heap.c
+SRC += $(CONSOLE_PATH)/cmd_ls.c
+SRC += $(CONSOLE_PATH)/cmd_mkdir.c
+SRC += $(CONSOLE_PATH)/cmd_obd2.c
+SRC += $(CONSOLE_PATH)/cmd_part.c
+SRC += $(CONSOLE_PATH)/cmd_rm.c
 SRC += $(CONSOLE_PATH)/cmd_rtc.c
-#SRC += $(CONSOLE_PATH)/ymodem.c
-#SRC += $(CONSOLE_PATH)/cmd_cat.c
-#SRC += $(CONSOLE_PATH)/cmd_cd.c
-#SRC += $(CONSOLE_PATH)/cmd_ls.c
-#SRC += $(CONSOLE_PATH)/cmd_mkdir.c
-#SRC += $(CONSOLE_PATH)/cmd_part.c
-#SRC += $(CONSOLE_PATH)/cmd_rm.c
 #SRC += $(CONSOLE_PATH)/cmd_speex.c
-#SRC += $(CONSOLE_PATH)/cmd_ymodem.c
+SRC += $(CONSOLE_PATH)/cmd_ymodem.c
+SRC += $(CONSOLE_PATH)/commands.c
+SRC += $(CONSOLE_PATH)/ymodem.c
 
 # List ASM source files here
 ASRC  +=

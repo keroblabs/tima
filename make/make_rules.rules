@@ -68,8 +68,8 @@ LDFLAGS += -Wl,-static
 #LDFLAGS += -Wl,-nostartfiles
 LDFLAGS += -nostartfiles
 #LDFLAGS += -nodefaultlibs
-#LDFLAGS += -lc
-#LDFLAGS += -lm
+LDFLAGS += -lc
+LDFLAGS += -lm
 LDFLAGS += -lgcc
 #LDFLAGS += -lrdimon
 #LDFLAGS += -lstdc++
@@ -93,6 +93,7 @@ LDFLAGS += $(OBJS)
 all: DO_FLASH
 clean: DO_CLEAN
 rebuild: DO_REBUILD
+flash: DO_DOWNLOAD
 
 #
 # internal makefile rules
@@ -101,6 +102,7 @@ rebuild: DO_REBUILD
 DO_FLASH: show_start $(OBJS) $(PROJECT).elf $(PROJECT).hex $(PROJECT).bin $(PROJECT).dis show_finished
 DO_REBUILD: DO_CLEAN DO_FLASH
 DO_CLEAN: exec_clean
+DO_DOWNLOAD: $(PROJECT).fdn
 
 #
 # internal rules
@@ -149,6 +151,11 @@ DO_CLEAN: exec_clean
 	@$(OBJDUMP) -D -t $(PROJECT).elf > $(PROJECT).dis
 	@$(OBJDUMP) -g $(PROJECT).elf > $(PROJECT).bug
 
+%fdn: %bin
+	@echo ""
+	@echo "Flashing to target"
+	@$(FLASHER) $(FLASHER_PARAM) $(PROJECT).bin $(FLASHER_ADDR) > $(PROJECT).fdn
+        
 #
 # scripts
 #
@@ -170,3 +177,5 @@ exec_clean:
 	@rm -f $(PROJECT).dis
 	@rm -f $(PROJECT).bug
 	@rm -f $(PROJECT).bin
+	@rm -f $(PROJECT).fdn
+	

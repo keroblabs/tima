@@ -105,7 +105,7 @@ SRC += $(BOARD_PATH)/library/system_stm32f446.c
 SRC += $(BOARD_PATH)/library/gpio_simple_driver.c
 SRC += $(BOARD_PATH)/library/spi_driver.c
 #SRC += $(BOARD_PATH)/library/counter_driver.c
-#SRC += $(BOARD_PATH)/library/socket_library.c
+SRC += $(BOARD_PATH)/library/socket_library.c
 #SRC += $(BOARD_PATH)/library/i2c_driver.c
 
 #SRC += $(BOARD_PATH)/portaudio/WM8731_Driver.c

@@ -1,133 +1,203 @@
 #include "lists.h"
 
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////
+#define LIST_INIT_NODE(node, nextnode)            node->next = nextnode;
+#define LIST_DELETE_NODE(node, delete_cb)         if ((*delete_cb) != NULL) { (*delete_cb)(node); } { {MFREE(node); } }
 
-list_t * list_create( void )
+//////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+static list_node_t *find_prev_node(list_t *list, list_node_t *node)
 {
-	list_t * ret = ( list_t * )MMALLOC( sizeof( list_t ) );
-	return ret;
+    list_node_t *curr = list->head;
+
+    while (curr != NULL)
+    {
+        if (curr->next == node)
+        {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return curr;
 }
 
-void list_destroy( list_t * list )
+void list_init(list_t *list, delete_cb_t delete_cb)
 {
-	MFREE( list );
+    list->count     = 0;
+    list->head      = NULL;
+    list->tail      = NULL;
+    list->delete_cb = delete_cb;
 }
 
-void list_add( list_t * list, void * p_item )
+void list_clear(list_t *list)
 {
-	list_add_with_id( list, p_item, 0 );
+    while (list->head != NULL)
+    {
+        list_node_t *node = list->head;
+        list->head = list->head->next;
+        LIST_DELETE_NODE(node, list->delete_cb);
+    }
+
+    /* clear only removes nodes, maintain the callback function */
+    list_init(list, list->delete_cb);
 }
 
-void list_add_with_id( list_t * list, void * p_item, uint32_t id )
+void list_insert_head(list_t *list, list_node_t *node)
 {
-	element_t * p_element = ( element_t * )p_item;
-	p_element->id = id;
+    LIST_INIT_NODE(node, list->head);
 
-	if( list->p_first == NULL )
-	{
-		list->p_first = p_element;
-	}
-	else
-	{
-		list->p_last->p_next = p_element;
-	}
-
-	list->p_last = p_element;
+    if (list->head == NULL)
+    {
+        list->tail = node;
+    }
+    list->head = node;
+    list->count++;
 }
 
-void * list_locate( list_t * list, uint32_t id )
+void list_insert_tail(list_t *list, list_node_t *node)
 {
-	element_t * p_search = list->p_first;
+    LIST_INIT_NODE(node, NULL);
 
-	while( p_search != NULL )
-	{
-		if( p_search->id == id ) return p_search;
-		p_search = (element_t *)p_search->p_next;
-	}
+    if (list->head == NULL)
+    {
+        list->head = node;
+    }
+    else
+    {
+        list->tail->next = node;
+    }
 
-	return NULL;
+    list->tail = node;
+    list->count++;
 }
 
-void * list_locate_by_index( list_t * list, uint32_t index )
+void list_insert_after(list_t *list, list_node_t *existingnode, list_node_t *node)
 {
-	element_t * p_search = list->p_first;
-	uint32_t cnt = 0;
+    LIST_INIT_NODE(node, existingnode->next);
 
-	if( index == 0 ) return list->p_first;
+    existingnode->next = node;
 
-	while( p_search != NULL )
-	{
-		if( cnt == index ) return p_search;
-		p_search = (element_t *)p_search->p_next;
-		cnt++;
-	}
-
-	return NULL;
+    if (list->tail == existingnode)
+    {
+        list->tail = node;
+    }
+    list->count++;
 }
 
-void list_remove_by_pointer( list_t * list, void * p_item )
+bool_t list_unlink(list_t *list, list_node_t *node)
 {
-	element_t * p_search = list->p_first;
-	element_t * p_prev = NULL;
-
-	while( p_search != NULL )
-	{
-		if( p_search == p_item )
-		{
-			if( p_prev != NULL )
-			{
-				p_prev->p_next = p_search->p_next;
-				if( p_prev->p_next == NULL ) list->p_last = p_prev;
-			}
-			else
-			{
-				list->p_first = (element_t *)p_search->p_next;
-			}
-
-			if( list->p_first == NULL ) list->p_last = NULL;
-
-			break;
-		}
-
-		p_prev = p_search;
-		p_search = (element_t *)p_search->p_next;
-	}
+    if (list->head == node)
+    {
+        list->head = node->next;
+        if (list->head == NULL)
+        {
+            list->tail = NULL;
+        }
+    }
+    else
+    {
+        list_node_t *prevnode = find_prev_node(list, node);
+        if (prevnode == NULL)
+        {
+            return FALSE;
+        }
+        prevnode->next = node->next;
+        if (prevnode->next == NULL)
+        {
+            list->tail = prevnode;
+        }
+    }
+    list->count--;
+    return TRUE;
 }
 
-void list_remove_by_id( list_t * list, uint32_t id )
+bool_t list_remove(list_t *list, list_node_t *node)
 {
-	element_t * p_search = list->p_first;
-	element_t * p_prev = NULL;
-
-	while( p_search != NULL )
-	{
-		if( p_search->id == id )
-		{
-			if( p_prev != NULL )
-			{
-				p_prev->p_next = p_search->p_next;
-				if( p_prev->p_next == NULL ) list->p_last = p_prev;
-			}
-			else
-			{
-				list->p_first = (element_t *)p_search->p_next;
-			}
-
-			if( list->p_first == NULL ) list->p_last = NULL;
-
-			break;
-		}
-
-		p_prev = p_search;
-		p_search = (element_t *)p_search->p_next;
-	}
+    bool_t result = list_unlink(list, node);
+    LIST_DELETE_NODE(node, list->delete_cb);
+    return result;
 }
 
-bool_t list_is_empty( list_t * list )
+void list_remove_tail(list_t *list)
 {
-	if( list->p_first == NULL ) return TRUE;
-	return FALSE;
+    list_node_t *curr = list->head;
+    list_node_t *prev = NULL;
+
+    if (list->head != NULL)
+    {
+        while (curr->next != NULL)
+        {
+            prev = curr;
+            curr = curr->next;
+        }
+
+        /* delete the node */
+        LIST_DELETE_NODE(curr, list->delete_cb);
+
+        /* and update the previous node to be tail */
+        if (prev)
+        {
+            prev->next = NULL;
+        }
+
+        /* update the list tail */
+        list->tail = prev;
+        list->count--;
+    }
 }
 
+list_node_t *list_find(list_t *list, size_t offset, uint16_t size, const void *value)
+{
+    list_node_t *node = list_get_head(list);
+    while (node != NULL)
+    {
+        if (memcmp(value, ((uint8_t *) node) + offset, size) == 0)
+        {
+            return node;
+        }
+        node = list_get_next(list, node);
+    }
+
+    return NULL;
+}
+
+bool_t list_is_empty(const list_t * const list)
+{
+    return (list->head == NULL);
+}
+
+void * list_get_prev(const list_t * const list, list_node_t * curr)
+{
+    list_node_t *node = list_get_head(list);
+    while (node != NULL)
+    {
+        if( curr == node->next ) return node;
+        node = list_get_next(list, node);
+    }
+
+    return NULL;
+}
+
+void * list_get_head(const list_t * const list)
+{
+    return list->head;
+}
+
+void * list_get_tail(const list_t * const list)
+{
+    return list->tail;
+}
+
+void * list_get_next(const list_t * const list, list_node_t * node)
+{
+    if( node == NULL ) return list->head;
+    else return node->next;
+}
+
+uint16_t list_size(const list_t * const list)
+{
+    return list->count;
+}

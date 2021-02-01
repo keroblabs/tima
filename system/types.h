@@ -99,7 +99,7 @@ typedef void * HANDLE;
 
 typedef void ( *ptr_module_t )( void );
 typedef void ( *ptr_event_t )( void * sender, void * data );
-typedef void ( *ptr_print_t )( const char *fmt, ... );
+typedef int ( *ptr_print_t )( const char *fmt, ... );
 
 #if defined __GNUC__
 #define NAKED         	__attribute__ (( naked ))

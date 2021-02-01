@@ -131,6 +131,8 @@ static void adc_process( void )
 	uint16_t adc_result = 0;
 	int i;
 
+	if( adc_init == FALSE ) return;
+
 	if( adc_busy != ADC_NOT_IN_USE )
 	{
 		if( hw_adc_check( &adc_result ) )
@@ -235,6 +237,11 @@ static bool_t adc_validate( uint32_t index )
     return FALSE;
 }
 
+static void adc_global_init( void )
+{
+	adc_init = FALSE;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 static bool_t _in_use;
@@ -259,5 +266,6 @@ const static device_data_t adc_device =
 
 };
 
+DECLARE_INIT_POWERUP_SECTION( adc_global_init );
 DECLARE_DEVICE_SECTION( adc_device );
 DECLARE_PROCESS_SECTION( adc_process );

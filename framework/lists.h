@@ -1,45 +1,79 @@
-#ifndef __lists_h__
-#define __lists_h__
+#ifndef _LISTS_LIB_C_
+#define _LISTS_LIB_C_
 
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
 #include "types.h"
 
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-#define LIST_HEADER			void * p_next;	uint32_t id; uint32_t cnt
-
-///////////////////////////////////////////////////////////////
-
-typedef struct _element_t_
+// MUST be the first element of a data structure
+typedef struct _list_node_t
 {
-	LIST_HEADER;
+    struct _list_node_t *next;
 
-} element_t;
+} list_node_t;
 
-typedef struct _list_t_
+typedef void (*delete_cb_t)(list_node_t *node);
+
+typedef struct _list_t
 {
-	element_t * p_first;
-	element_t * p_last;
+    uint16_t       count;
+    list_node_t   *head;
+    list_node_t   *tail;
+    delete_cb_t    delete_cb;
 
 } list_t;
 
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-list_t * list_create( void );
-void list_destroy( list_t * list );
+#define list_find_value(list, type, typemember, size, value) (type *)list_find(list, offsetof(type, typemember), (uint16_t) size, value)
 
-void list_add( list_t * list, void * p_item );
-void list_add_with_id( list_t * list, void * p_item, uint32_t id );
+// example of search
+// #define find_entry(list, value) list_find_value(list, <entry_struct_type>, <struct_member>, sizeof(<member_type>), (value))
 
-void * list_locate( list_t * list, uint32_t id );
-void * list_locate_by_index( list_t * list, uint32_t index );
+/*
+ static <entry_struct_type> *create_entry(list_t *list, <entry parameters to find and build>)
+ {
+ <entry_struct_type> *ret = find_entry(list, <searching parameter>);
+ if (ret == NULL)
+ {
+ ret = (<entry_struct_type> *)mmalloc(sizeof(<entry_struct_type>));
+ }
 
-void list_remove_by_pointer( list_t * list, void * p_item );
-void list_remove_by_id( list_t * list, uint32_t id );
+ if (ret != NULL)
+ {
+ list_insert_tail(list, &ret->node);
+ <initialise entry>
+ }
 
-bool_t list_is_empty( list_t * list );
 
-///////////////////////////////////////////////////////////////
+ return ret;
+ }
+ */
 
-#endif // __lists_h__
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void list_init(list_t *list, delete_cb_t delete_cb);
+void list_clear(list_t *list);
+void list_insert_head(list_t *list, list_node_t *node);
+void list_insert_tail(list_t *list, list_node_t *node);
+void list_insert_after(list_t *list, list_node_t *existingnode, list_node_t *node);
+void list_remove_tail(list_t *list);
+
+bool_t list_unlink(list_t *list, list_node_t *node);
+bool_t list_remove(list_t *list, list_node_t *node);
+bool_t list_is_empty(const list_t * const list);
+
+list_node_t *list_find(list_t *list, size_t offset, uint16_t size, const void *value);
+
+void * list_get_head(const list_t * const list);
+void * list_get_tail(const list_t * const list);
+void * list_get_next(const list_t * const list, list_node_t * node);
+void * list_get_prev(const list_t * const list, list_node_t * curr);
+
+uint16_t list_size(const list_t * const list);
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+#endif // _LIST_LIB_C_

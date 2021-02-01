@@ -25,6 +25,7 @@ STDPERIPH_PATH = $(BOARD_PATH)/STM32F4xx_StdPeriph_Driver
 GCCPATH = /Users/marciocherobim/Tools/gcc-4_7-2013q3/arm-none-eabi
 TRGT    = /Users/marciocherobim/Tools/gcc-4_7-2013q3/bin/arm-none-eabi-
 LIBDIR  = /Users/marciocherobim/Tools/gcc-4_7-2013q3/arm-none-eabi/lib/thumb
+STLINKP = /Users/marciocherobim/Tools/stlink/bin/
 
 LD		= $(TRGT)gcc
 CC      = $(TRGT)gcc
@@ -36,8 +37,10 @@ OBJDUMP = $(TRGT)objdump
 BIN     = $(CP) -O ihex
 MAKE    = make
 CP      = cp
+FLASHER = $(STLINKP)st-flash
 
 # Select the cpu
+BOARD_CFLAGS += -std=gnu99 
 MCU     = cortex-m4
 THUMB   = -mthumb -mthumb-interwork
 
@@ -45,8 +48,10 @@ THUMB   = -mthumb -mthumb-interwork
 LDDEF = $(BOARD_PATH)/library/STM32F446RETx_FLASH.ld
 
 # additional link commands
-CPU_LD +=
+CPU_LD += 
 
+FLASHER_PARAM = --reset write
+FLASHER_ADDR  = 0x8000000
 #
 # End of main variables
 ##############################################################################################
@@ -103,6 +108,7 @@ SRC += $(BOARD_PATH)/library/system_stm32f446.c
 SRC += $(BOARD_PATH)/library/gpio_driver.c
 SRC += $(BOARD_PATH)/library/spi_driver.c
 SRC += $(BOARD_PATH)/library/counter_driver.c
+SRC += $(BOARD_PATH)/library/socket_library.c
 
 # List ASM source files here
 ASRC += $(BOARD_PATH)/library/startup_stm32f446xx.s

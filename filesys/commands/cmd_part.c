@@ -361,6 +361,10 @@ int cmd_part_handler( console_instance_t * p_instance, char * input )
 
 void cmd_part_init( void )
 {
+}
+
+void cmd_part_init_powerup( void )
+{
 	memset( mnt.part.partitions, 0x00, sizeof( mnt.part.partitions ) );
 	memset( to_format, 0x00, sizeof( to_format ) );
 
@@ -388,4 +392,5 @@ const command_data_t command_part =
 	cmd_part_handler
 };
 
+DECLARE_INIT_POWERUP_SECTION( cmd_part_init_powerup );
 DECLARE_COMMAND_SECTION( command_part );

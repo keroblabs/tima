@@ -119,6 +119,13 @@ void   thread_set_callback( thread_data_t * p_thread, void * cb );
 
 ////////////////////////////////////////////////////////
 
+#else
+
+void * tthread_mutex_init( void );
+
+void tthread_mutex_lock( void * p_mutex );
+void tthread_mutex_unlock( void * p_mutex );
+
 #endif
 
 #endif // _THREADS_H_

@@ -1,6 +1,6 @@
 #include "system.h"
 #include "device.h"
-#include "debug.h"
+//#include "debug.h"
 
 #include "tima_libc.h"
 #include "pipe.h"
@@ -500,7 +500,7 @@ static int esp8266_write_data( uint32_t socket, uint8_t *buffer, uint32_t size )
     if( ( WIFI_DATA(socket)->state == WIFI_SOCKET_CLIENT ) ||
     	( WIFI_DATA(socket)->state == WIFI_SOCKET_OPEN ) )
     {
-        DEBUG_PRINTK( "Sending data\r\n" );
+        //DEBUG_PRINTK( "Sending data\r\n" );
 
         pipe_send_buffer( &esp8266_send_pipe, buffer, size );
 

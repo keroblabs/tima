@@ -1,5 +1,7 @@
 #include "system.h"
 #include "device.h"
+#include "file.h"
+#include "efs.h"
 
 #ifdef USE_MULTITHREAD
 #include "t_threads.h"
@@ -7,20 +9,11 @@
 
 #include "tima_libc.h"
 #include "commands.h"
-#include "debug.h"
-
-#include "crc.h"
+#include "ymodem.h"
 
 ////////////////////////////////////////////////////////////////////
 
 #define CONSOLE_STACK_SIZE    1024
-
-enum
-{
-    CONSOLE_MODE_PRINTK,
-    CONSOLE_MODE_COMMAND,
-    CONSOLE_MODE_FTM
-};
 
 ////////////////////////////////////////////////////////////////////
 
@@ -30,16 +23,81 @@ static thread_data_t co_console;
 #endif
 
 static console_instance_t * p_first;
-static crc_data_t ftm_crc8;
 
 ////////////////////////////////////////////////////////////////////
 
-static console_instance_t * console_create_instance( void );
-static console_instance_t * console_accept_telnet( console_instance_t * p_instance );
+void console_show_mounted_devices( device_t * dev )
+{
+	uint8_t index;
+	const char * name;
+	uint8_t c;
 
-static void console_add_instance( console_instance_t * p_instance );
+	static mount_data_t local_mnt;
+	static char local_vol_name[40];
 
-////////////////////////////////////////////////////////////////////
+	index = 0;
+
+	while( ( name = disc_DevName( index ) ) != NULL )
+	{
+		memcpy( &local_mnt, efs_get_partition( index ), sizeof( local_mnt ) );
+
+		for( c = 0; c < TOTAL_PARTITIONS; c++ )
+		{
+			strcpy( local_vol_name, "" );
+			if( part_isFatPart( local_mnt.part.partitions[c].type ) )
+			{
+				dir_getVolumeName( ( FileSystem * )local_mnt.part.partitions[c].fs, local_vol_name );
+			}
+            else if( part_isExtPart( local_mnt.part.partitions[c].type ) )
+            {
+                sprintk( local_vol_name, "%s%d", name, c+1 );
+            }
+
+			if( strlen( local_vol_name ) )
+			{
+				console_command_printk( dev, "%s:\r\n", local_vol_name );
+			}
+		}
+
+		index++;
+	}
+}
+
+char * console_concatenate_path( char * input, bool_t * is_found, console_instance_t * p_instance )
+{
+	static char temp_curr_dir[MAX_LONG_FILENAME_LENGHT]; 
+
+	if( is_found != NULL ) *is_found = FALSE;
+
+	if( !strcmp( input, "/" ) )
+	{
+		*is_found = TRUE;
+		return input;
+	}
+
+	if( input[0] == '/' )
+	{
+		strcpy( temp_curr_dir, input );
+	}
+	else
+	{
+		strcpy( temp_curr_dir, p_instance->cmd_curr_dir );
+		if( temp_curr_dir[strlen(temp_curr_dir)-1] != '/' ) strcat( temp_curr_dir, "/" ); 
+		strcat( temp_curr_dir, input ); 
+	}
+
+	if( ( strlen( temp_curr_dir ) > 1 ) && ( temp_curr_dir[strlen(temp_curr_dir)-1] == '/' ) )
+	{
+		temp_curr_dir[strlen(temp_curr_dir)-1] = 0;
+	}
+
+	if( ( is_found != NULL ) && ( file_locatePath( temp_curr_dir ) > 0 ) )
+	{
+		*is_found = TRUE;
+	}
+
+	return temp_curr_dir;
+}
 
 int console_tokenizer( char * input, char ** output, char * delim, int max )
 {
@@ -68,25 +126,25 @@ int console_tokenizer( char * input, char ** output, char * delim, int max )
 	return i;
 }
 
-static void console_set_command_mode ( console_instance_t * p_instance )
+void console_set_command_mode ( console_instance_t * p_instance )
 {
-	p_instance->command_mode = CONSOLE_MODE_COMMAND;
+	p_instance->command_mode = TRUE;
 	console_command_printk( p_instance->dev_console_tty, "\r\n\r\n%s> ", p_instance->cmd_curr_dir );
 }
 
-static void console_execute_command( console_instance_t * p_instance )
+void console_execute_command( console_instance_t * p_instance )
 {
 	static char cmd_caption[128];
 	char * cmd_param;
 	uint32_t i;
 	command_data_t * p_command;
 
-    if( p_instance->buffer && ( p_instance->buffer[0] != 0 ) )
+	if( p_instance->command_buffer[0] != 0 )
 	{
 		cmd_param = NULL;
 		i = 0;
 
-		strcpy( cmd_caption, ( char * )p_instance->buffer );
+		strcpy( cmd_caption, p_instance->command_buffer );
 		cmd_param = strchr( cmd_caption, ' ' );
 		if( cmd_param != NULL ) 
 		{
@@ -95,28 +153,28 @@ static void console_execute_command( console_instance_t * p_instance )
 		}
 
 		//CONSOLE_PRINTK( "\r\n" );
+        // #define GET_FONT_SECTION(i)                         ( font_data_t * )system_List_Get_Item(FONT_SECTION_ID,i)
 
 		while( ( p_command = GET_COMMAND_SECTION( i ) ) != NULL )
 		{
-			if( ( p_command->type == CONSOLE_COMMAND_TYPE ) && !strcmp( p_command->name, cmd_caption ) )
+			if( !strcmp( p_command->name, cmd_caption ) )
 			{
 				p_command->handler( p_instance, cmd_param );
 			}
 			i++;
 		}
 
-        MFREE( p_instance->buffer );
-        p_instance->buffer = NULL;
-        p_instance->rx_count = 0;
+		p_instance->command_pointer = 0;
+		p_instance->command_buffer[0] = 0;
 	}
 
-	if( p_instance->command_mode == CONSOLE_MODE_COMMAND )
+	if( p_instance->command_mode == TRUE )
 	{
 		console_command_printk( p_instance->dev_console_tty, "\r\n%s> ", p_instance->cmd_curr_dir );
 	}
 }
 
-static int console_echo_handler( console_instance_t * p_instance, char * input )
+int console_echo_handler( console_instance_t * p_instance, char * input )
 {
 	device_t * dev = p_instance->dev_console_tty;
 
@@ -137,7 +195,7 @@ static int console_echo_handler( console_instance_t * p_instance, char * input )
 	return 0;
 }
 
-static int console_list_command( console_instance_t * p_instance, char * input )
+int console_list_command( console_instance_t * p_instance, char * input )
 {
 	//char * cmd_param;
 	uint32_t i;
@@ -145,7 +203,7 @@ static int console_list_command( console_instance_t * p_instance, char * input )
 
 	i = 0;
 
-	while( ( p_command = ( command_data_t * )GET_COMMAND_SECTION( i ) ) != NULL )
+	while( ( p_command = GET_COMMAND_SECTION( i ) ) != NULL )
 	{
 		console_command_printk( p_instance->dev_console_tty, "%s\r\n", p_command->name );
 		i++;
@@ -154,125 +212,9 @@ static int console_list_command( console_instance_t * p_instance, char * input )
 	return 0;
 }
 
-void console_send_ftm_packet( console_instance_t * p_instance, uint8_t command, uint8_t * buffer, uint16_t size )
+void console_local_process( console_instance_t * p_instance )
 {
-    /*
-     +-------------+-------------+-------------+-------------+-------------+--- - - - - - - ---+-------------+
-     | PROTO_START |   command   |  size upper |  size lower |  DATA_START |        data       |    CRC 8    |
-     +-------------+-------------+-------------+-------------+-------------+--- - - - - - - ---+-------------+
-     */
-    
-    uint8_t * send_buffer;
-    
-    if( p_instance->command_mode != CONSOLE_MODE_FTM ) return;
-    
-    send_buffer = ( uint8_t * )MMALLOC( size+6 );
-    if( send_buffer == NULL ) return;
-    
-    send_buffer[0] = FTM_PACK_PROTO_START;
-    send_buffer[1] = command;
-    send_buffer[2] = size >> 8;
-    send_buffer[3] = size & 0xFF;
-    send_buffer[4] = FTM_PACK_DATA_START;
-    memcpy( &send_buffer[5], buffer, size );
-    send_buffer[5+size] = crc_calculate( &ftm_crc8, buffer, size );
-    
-    device_write_buffer( p_instance->dev_console_tty, send_buffer, size+6 );
-    MFREE( send_buffer );
-}
-
-static void console_process_ftm( console_instance_t * p_instance, uint8_t rx_byte )
-{
-    uint32_t i;
-    ftm_command_t * p_command;
-    
-    /*
-     +-------------+-------------+-------------+-------------+-------------+--- - - - - - - ---+-------------+
-     | PROTO_START |   command   |  size upper |  size lower |  DATA_START |        data       |    CRC 8    |
-     +-------------+-------------+-------------+-------------+-------------+--- - - - - - - ---+-------------+
-     */
-    
-    switch( p_instance->ftm_state )
-    {
-        case FTM_STATE_NONE:
-            if( rx_byte == FTM_PACK_PROTO_START )
-            {
-                p_instance->ftm_state = FTM_STATE_COMMAND;
-            }
-            break;
-            
-        case FTM_STATE_COMMAND:
-            p_instance->ftm_state++;
-            p_instance->curr_cmd = rx_byte;
-            break;
-            
-        case FTM_STATE_UPPER_SIZE:
-            p_instance->ftm_state++;
-            p_instance->rx_size = rx_byte;
-            p_instance->rx_size <<= 8;
-            break;
-            
-        case FTM_STATE_LOWER_SIZE:
-            p_instance->ftm_state++;
-            p_instance->rx_size |= rx_byte;
-            break;
-            
-        case FTM_STATE_DATA_START:
-            if( rx_byte == FTM_PACK_DATA_START )
-            {
-                p_instance->buffer = ( uint8_t * )MMALLOC( p_instance->rx_size );
-                if( p_instance->buffer == NULL )
-                {
-                    p_instance->ftm_state = FTM_STATE_NONE;
-                }
-                else
-                {
-                    p_instance->rx_count = 0;
-                    p_instance->ftm_state++;
-                }
-            }
-            else
-            {
-                p_instance->ftm_state = FTM_STATE_NONE;
-            }
-            break;
-            
-        case FTM_STATE_RX_DATA:
-            if( p_instance->rx_count < p_instance->rx_size )
-            {
-                p_instance->buffer[p_instance->rx_count] = rx_byte;
-                p_instance->rx_count++;
-                if( p_instance->rx_count == p_instance->rx_size )
-                {
-                    p_instance->ftm_state++;
-                }
-            }
-            break;
-            
-        case FTM_STATE_DATA_END:
-            if( crc_calculate( &ftm_crc8, p_instance->buffer, p_instance->rx_size ) == rx_byte )
-            {
-                while( ( p_command = GET_FTM_DATA_SECTION(i) ) != NULL )
-                {
-                    if( ( p_command->type == FTM_COMMAND_TYPE ) && ( p_command->ftm_cmd == rx_byte ) )
-                    {
-                        p_command->handler( p_instance );
-                    }
-                    i++;
-                }
-            }
-            else
-            {
-                p_instance->ftm_state = FTM_STATE_NONE;
-            }
-            MFREE( p_instance->buffer );
-            break;
-    }
-}
-
-static void console_local_process( console_instance_t * p_instance )
-{
-    uint8_t rx_byte;
+	uint8_t rx_byte;
 
 #ifdef USE_MULTITHREAD
     while( 1 )
@@ -286,48 +228,25 @@ static void console_local_process( console_instance_t * p_instance )
         
 		while( device_read_buffer( p_instance->dev_console_tty, (uint8_t *)&rx_byte, 1 ) > 0 )
 		{
-			if( p_instance->command_mode == CONSOLE_MODE_PRINTK )
+			if( p_instance->command_mode == FALSE )
 			{
 				if( rx_byte == 0x1B )
 				{
 					//p_instance->command_mode = TRUE;
 					//console_command_printk( p_instance->dev_console_tty, "\r\n\r\n%s> ", p_instance->cmd_curr_dir );
-                    if( p_instance->buffer != NULL )
-                    {
-                        MFREE( p_instance->buffer );
-                        p_instance->buffer = NULL;
-                    }
-                    console_set_command_mode( p_instance );
+					console_set_command_mode( p_instance );
 				}
-                else if( rx_byte == 0x1A )
-                {
-                    // set to FTM mode
-                    p_instance->command_mode = CONSOLE_MODE_FTM;
-                }
                 
-                if( p_instance->command_mode != CONSOLE_MODE_FTM )
-                {
-                    p_instance->carriage_returned = FALSE;
-                }
+				p_instance->carriage_returned = FALSE;
             }
-            else if( p_instance->command_mode == CONSOLE_MODE_FTM )
+            else
             {
-                console_process_ftm( p_instance, rx_byte );
-            }
-            else if( p_instance->command_mode == CONSOLE_MODE_COMMAND )
-            {
-                if( p_instance->buffer == NULL )
-                {
-                    p_instance->buffer = ( uint8_t * )MMALLOC( MAX_LONG_FILENAME_LENGHT );
-                    if( p_instance->buffer == NULL ) return;
-                }
-
                 if( ( rx_byte == 13 ) || ( rx_byte == 10 ) )
                 {
 					if( p_instance->carriage_returned == FALSE )
 					{
 						console_command_printk( p_instance->dev_console_tty, "\r\n" );
-						p_instance->buffer[p_instance->rx_count] = 0;
+						p_instance->command_buffer[p_instance->command_pointer] = 0;
 						console_execute_command( p_instance );
 						p_instance->carriage_returned = TRUE;
 					}
@@ -342,19 +261,19 @@ static void console_local_process( console_instance_t * p_instance )
 
                     if( ( rx_byte == 127 ) || ( rx_byte == 8 ) )
                     {
-                        if( p_instance->rx_count )
+                        if( p_instance->command_pointer )
                         {
-                            p_instance->buffer[p_instance->rx_count] = 0;
-                            p_instance->rx_count--;
+                            p_instance->command_buffer[p_instance->command_pointer] = 0;
+                            p_instance->command_pointer--;
                             rx_byte = 8;
                         }
                     }
                     else
                     {
-                        p_instance->buffer[p_instance->rx_count++] = rx_byte;
+                        p_instance->command_buffer[p_instance->command_pointer++] = rx_byte;
                     }
                     
-					if( ( p_instance->command_mode == CONSOLE_MODE_COMMAND ) && ( p_instance->echo_mode == TRUE ) )
+					if( ( p_instance->command_mode == TRUE ) && ( p_instance->echo_mode == TRUE ) )
 					{
 						console_command_printk( p_instance->dev_console_tty, "%c", rx_byte );
 					}
@@ -392,11 +311,7 @@ int console_printk( const char *fmt, ... )
 
 	while( p_instance != NULL )
 	{
-        if( ( p_instance->command_mode != CONSOLE_MODE_FTM ) &&
-           ( p_instance->is_ready == TRUE ) )
-        {
-			device_write_buffer( p_instance->dev_console_tty, ( uint8_t * )vsf_printk_buf, printed_len );
-		}
+		device_write_buffer( p_instance->dev_console_tty, ( uint8_t * )vsf_printk_buf, printed_len );
 		p_instance = p_instance->p_next;
 	}
 
@@ -418,8 +333,7 @@ int console_flaged_printk( const char *fmt, ... )
 
 	while( p_instance != NULL )
 	{
-		if( ( p_instance->command_mode == CONSOLE_MODE_PRINTK ) &&
-            ( p_instance->is_ready == TRUE ) )
+		if( p_instance->command_mode == FALSE )
 		{
 			device_write_buffer( p_instance->dev_console_tty, ( uint8_t * )vsf_printk_buf, printed_len );
 		}
@@ -449,7 +363,7 @@ void console_process( void )
 	}
 }
 
-static console_instance_t * console_create_instance( void )
+console_instance_t * console_create_instance( void )
 {
 	console_instance_t * p_instance;
 
@@ -457,20 +371,18 @@ static console_instance_t * console_create_instance( void )
 	if( p_instance == NULL ) return NULL;
 	memset( p_instance, 0x00, sizeof( console_instance_t ) );
 
-	p_instance->command_mode = CONSOLE_MODE_PRINTK;
+	p_instance->command_mode = FALSE;
 	p_instance->carriage_returned = FALSE;
-    p_instance->is_ready = TRUE;
 
 	strcpy( p_instance->cmd_curr_dir, "/" );
 
-	p_instance->buffer = NULL;
-    p_instance->rx_count = 0;
-    p_instance->rx_size = 0;
+	p_instance->command_pointer = 0;
+    p_instance->command_buffer[0] = 0;
 
 	return p_instance;
 }
 
-static console_instance_t * console_accept_telnet( console_instance_t * p_instance )
+console_instance_t * console_accept_telnet( console_instance_t * p_instance )
 {
 	device_t * dev_accept;
 	console_instance_t * new_instance;
@@ -485,8 +397,7 @@ static console_instance_t * console_accept_telnet( console_instance_t * p_instan
 		}
 
 		new_instance->dev_console_tty = dev_accept;
-        new_instance->is_ready = TRUE;
-        
+
 		// by default telnet is echo OFF
 		new_instance->echo_mode = FALSE;
 
@@ -507,7 +418,6 @@ console_instance_t * console_listen_telnet( uint16_t telnet_port )
 
 	if( ( dev_listen = device_socket_listen( telnet_port ) ) != NULL )
 	{
-		DEBUG_PRINTK( "Started to listen\r\n" );
 		p_instance = console_create_instance();
 		if( p_instance == NULL )
 		{
@@ -517,13 +427,11 @@ console_instance_t * console_listen_telnet( uint16_t telnet_port )
 
 		p_instance->dev_console_tty = dev_listen;
 		p_instance->telnet_port = telnet_port;
-        p_instance->is_ready = FALSE;
 
 		console_add_instance( p_instance );
 		return p_instance;
 	}
 
-	DEBUG_PRINTK( "Failed to listen\r\n" );
 	return NULL;
 }
 
@@ -552,7 +460,7 @@ console_instance_t * console_connect_uart( const char * dev_name )
 	return p_instance;
 }
 
-static void console_add_instance( console_instance_t * p_instance )
+void console_add_instance( console_instance_t * p_instance )
 {
 	p_instance->p_next = p_first;
 	p_first = p_instance;
@@ -567,7 +475,7 @@ void console_init( void )
 
 	i = 0;
 
-	while( ( p_command = GET_COMMAND_SECTION(i) ) != NULL )
+	while( ( p_command = GET_COMMAND_SECTION( i ) ) != NULL )
 	{
 		if( p_command->init != NULL )
 		{
@@ -575,9 +483,7 @@ void console_init( void )
 		}
 		i++;
 	}
-    
-    crc_init( &ftm_crc8, 0x18, 0xFF );
-    
+
     #ifdef USE_MULTITHREAD
 	thread_task_create( &co_console, console_process, NULL, console_stack, CONSOLE_STACK_SIZE );
     #endif
@@ -585,7 +491,7 @@ void console_init( void )
 
 int cmd_exit_handler( console_instance_t * p_instance, char * input )
 {
-	p_instance->command_mode = CONSOLE_MODE_PRINTK;
+	p_instance->command_mode = FALSE;
 	return 0;
 }
 
@@ -593,43 +499,25 @@ int cmd_exit_handler( console_instance_t * p_instance, char * input )
 
 const command_data_t command_exit = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "exit",
+	"exit",
 	NULL,
 	cmd_exit_handler
 };
 
 const command_data_t command_help = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "help",
+	"help",
 	NULL,
 	console_list_command
 };
 
 const command_data_t command_echo = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "echo",
+	"echo",
 	NULL,
 	console_echo_handler
 };
 
-////////////////////////////////////////////////////////////////////
-    
-void cmd_chrdir_handler( console_instance_t * p_instance )
-{
-    strncpy( p_instance->cmd_curr_dir, ( char * )p_instance->buffer, p_instance->rx_size );
-}
-    
-const ftm_command_t command_ftm_chdir =
-{
-    FTM_COMMAND_TYPE,
-    0xA2,
-    NULL,
-    cmd_chrdir_handler
-};
-    
 ///////////////////////////////////////////////////////////////////////////
 
 void console_debug_drv_init( uint32_t index )

@@ -65,7 +65,7 @@ static uint32_t socket_accept_port( uint32_t socket )
         
         if((errno != 10035)&&(errno != 35))
         {
-            printf("accept error %d ", errno );
+            printf("accept error %d \r\n", errno );
             return SOCKET_FAIL_LISTEN;
         }
         
@@ -102,7 +102,7 @@ static uint32_t socket_connect_url( char * url_addr, uint16_t port )
     sa = socket(AF_INET, SOCK_STREAM, 0);
     if( sa < 0 )
     {
-        printf("socket error %d", errno );
+        printf("socket error %d\r\n", errno );
         return 0;
     }
     
@@ -111,7 +111,7 @@ static uint32_t socket_connect_url( char * url_addr, uint16_t port )
     b = connect( sa, (struct sockaddr *) &channel, sizeof(channel));
     if (b < 0)
     {
-        printf("connect error %d", errno );
+        printf("connect error %d\r\n", errno );
         close( sa );
         return 0;
     }
@@ -134,7 +134,7 @@ static uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
     sa = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if( sa < 0 )
     {
-        printf("socket error %d", errno );
+        printf("socket error %d\r\n", errno );
         return 0;
     }
     
@@ -149,7 +149,7 @@ static uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
     b = connect( sa, (struct sockaddr *) &channel, sizeof(channel));
 	if (b < 0)
 	{
-		printf("connect error %d", errno );
+		printf("connect error %d\r\n", errno );
         close( sa );
 		return 0;
 	}
@@ -173,7 +173,7 @@ static uint32_t socket_listen_port( uint16_t port )
 	_l_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_l_socket < 0)
 	{
-		printf("socket error %d", errno );
+		printf("socket error %d\r\n", errno );
 		return ( uint32_t )SOCKET_FAIL_LISTEN;
 	}
     
@@ -186,7 +186,7 @@ static uint32_t socket_listen_port( uint16_t port )
 	b = bind(_l_socket, (struct sockaddr *) &channel, sizeof(channel));
 	if (b < 0)
 	{
-		printf("bind error %d", errno );
+		printf("bind error %d\r\n", errno );
 		return ( uint32_t )SOCKET_FAIL_LISTEN;
 	}
 	//----------------------------------------------------------
@@ -195,7 +195,7 @@ static uint32_t socket_listen_port( uint16_t port )
 	l = listen(_l_socket, QUEUE_SIZE);                 // specify queue size
 	if (l < 0)
 	{
-		printf("listen error %d", errno );
+		printf("listen error %d\r\n", errno );
         return ( uint32_t )SOCKET_FAIL_LISTEN;
 	}
     

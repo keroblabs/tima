@@ -157,6 +157,8 @@ typedef struct _data_section_t
 #define DECLARE_STORAGE_DEVICE_SECTION(a)       	SYSTEM_SECTION_PTR( a, SYSTEM_STORAGE_DEVICE  )
 #define DECLARE_CUSTOM_DEVICE_SECTION(a)       		SYSTEM_SECTION_PTR( a, SYSTEM_CUSTOM_DEVICE  )
 
+#define DECLARE_POWERDOWN_SECTION(a)                SYSTEM_SECTION_CALL( a, SYSTEM_RUN_POWERDOWN_APPLICATION )
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void system_Events( void );

@@ -1,4 +1,5 @@
 #include "system.h"
+#include "file.h"
 #include "timer.h"
 #include "commands.h"
 #include "tima_libc.h"
@@ -98,16 +99,14 @@ void cmd_rtc_init( void )
 
 const command_data_t command_date = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "date",
+	"date",
 	cmd_rtc_init,
 	cmd_date_handler
 };
 
 const command_data_t command_time = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "time",
+	"time",
 	NULL,
 	cmd_time_handler
 };

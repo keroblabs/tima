@@ -583,6 +583,6 @@ PaError Pa_AbortStream( PaStream *stream )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DECLARE_CRITICAL_SECTION( audio_driver_global_init );
+DECLARE_INIT_POWERUP_SECTION( audio_driver_global_init );
 DECLARE_PROCESS_SECTION( audio_driver_process );
 

@@ -1,4 +1,5 @@
 #include "system.h"
+#include "file.h"
 #include "commands.h"
 #include "tima_libc.h"
 
@@ -8,7 +9,7 @@ static device_t * curr_dev;
 
 ///////////////////////////////////////////////////////////////
 
-void cmd_heap_print_handler( const char *fmt, ... )
+int cmd_heap_print_handler( const char *fmt, ... )
 {
 	va_list args;	
 	int printed_len;
@@ -19,6 +20,8 @@ void cmd_heap_print_handler( const char *fmt, ... )
 	va_end(args);	
 
     device_write_buffer( curr_dev, ( uint8_t * )vsf_printk_buf, printed_len );
+
+    return 0;
 }
 
 int cmd_heap_handler( console_instance_t * p_instance, char * input )
@@ -43,8 +46,7 @@ void cmd_heap_init( void )
 
 const command_data_t command_heap = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "heap",
+	"heap",
 	cmd_heap_init,
 	cmd_heap_handler
 };

@@ -19,7 +19,7 @@ FILESYS_PATH = $(DEFAULT_PATH)/filesys
 #
 
 # List all default C defines here, like -D_DEBUG=1
-DEFS +=
+DEFS += -DUSE_FILESYS
 
 # List all default ASM defines here, like -D_DEBUG=1
 ADEFS +=
@@ -34,8 +34,8 @@ ADEFS +=
 
 # List all default directories to look for include files here
 CINCDIR += $(FILESYS_PATH)
-CINCDIR += $(FILESYS_PATH)/commands
-CINCDIR += $(FILESYS_PATH)/file_xfer
+#CINCDIR += $(FILESYS_PATH)/commands
+#CINCDIR += $(FILESYS_PATH)/file_xfer
 
 # End of include section
 ##############################################################################################
@@ -44,26 +44,26 @@ CINCDIR += $(FILESYS_PATH)/file_xfer
 # Start of source section
 #
 
-SRC += $(FILESYS_PATH)/dir.c
 SRC += $(FILESYS_PATH)/efs.c
+SRC += $(FILESYS_PATH)/partition.c
 SRC += $(FILESYS_PATH)/extract.c
+SRC += $(FILESYS_PATH)/dir.c
 SRC += $(FILESYS_PATH)/fat.c
 SRC += $(FILESYS_PATH)/file.c
 SRC += $(FILESYS_PATH)/fs_time.c
 SRC += $(FILESYS_PATH)/fs.c
-SRC += $(FILESYS_PATH)/partition.c
 
-SRC += $(FILESYS_PATH)/commands/cmd_cat.c
-SRC += $(FILESYS_PATH)/commands/cmd_cd.c
-SRC += $(FILESYS_PATH)/commands/cmd_common.c
-SRC += $(FILESYS_PATH)/commands/cmd_dump.c
-SRC += $(FILESYS_PATH)/commands/cmd_ls.c
-SRC += $(FILESYS_PATH)/commands/cmd_mkdir.c
-SRC += $(FILESYS_PATH)/commands/cmd_part.c
-SRC += $(FILESYS_PATH)/commands/cmd_rm.c
+#SRC += $(FILESYS_PATH)/commands/cmd_cat.c
+#SRC += $(FILESYS_PATH)/commands/cmd_cd.c
+#SRC += $(FILESYS_PATH)/commands/cmd_common.c
+#SRC += $(FILESYS_PATH)/commands/cmd_dump.c
+#SRC += $(FILESYS_PATH)/commands/cmd_ls.c
+#SRC += $(FILESYS_PATH)/commands/cmd_mkdir.c
+#SRC += $(FILESYS_PATH)/commands/cmd_part.c
+#SRC += $(FILESYS_PATH)/commands/cmd_rm.c
 
-SRC += $(FILESYS_PATH)/file_xfer/cmd_ymodem.c
-SRC += $(FILESYS_PATH)/file_xfer/ymodem.c
+#SRC += $(FILESYS_PATH)/file_xfer/cmd_ymodem.c
+#SRC += $(FILESYS_PATH)/file_xfer/ymodem.c
 
 # List ASM source files here
 ASRC  +=

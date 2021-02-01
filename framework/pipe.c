@@ -1,5 +1,6 @@
 #include "pipe.h"
 #include "tima_libc.h"
+#include "debug.h"
 
 #ifdef USE_MULTITHREAD
 #include "t_threads.h"
@@ -32,7 +33,6 @@ void pipe_global_init( void )
 uint8_t * pipe_alloc_buffer( uint16_t size )
 {
     uint8_t * ptr;
-
     ptr = ( uint8_t * )PIPE_MALLOC( size );
     return( ptr );
 }
@@ -191,6 +191,21 @@ uint16_t pipe_read_buffer( pipe_data_t * pipe, uint8_t * buffer, uint16_t max_si
     EI();
     
 	return( copy_index );
+}
+
+void pipe_clear( pipe_data_t * pipe )
+{
+    while( pipe->pointer_in != pipe->pointer_out )
+    {
+        pipe_release_buffer( pipe->pipe_list[ pipe->pointer_out ] );
+
+        pipe->total_data -= pipe->pipe_size[ pipe->pointer_out ];
+        pipe->data_index = 0;
+
+        // move out-pointer
+        pipe->pointer_out++;
+        if( pipe->pointer_out == pipe->max_size ) pipe->pointer_out = 0;
+    }
 }
 
 uint8_t * pipe_read( pipe_data_t * pipe, uint16_t * size )

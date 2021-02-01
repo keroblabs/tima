@@ -62,8 +62,7 @@ int cmd_obd2_handler( console_instance_t * p_instance, char * input )
 
 const command_data_t command_obd2 = 
 {
-    CONSOLE_COMMAND_TYPE,
-    "obd2_cmd",
+	"obd2_cmd",
 	NULL,
 	cmd_obd2_handler
 };

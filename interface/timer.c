@@ -14,7 +14,7 @@ static device_t * rtc_device_hdl;
 
 time_t timer_Now( void )
 {
-	time_t ret;
+	time_t ret = 0;
     if( rtc_device_hdl != NULL )
 	{
 		device_read_buffer( rtc_device_hdl, ( uint8_t * )&ret, sizeof( ret ) );

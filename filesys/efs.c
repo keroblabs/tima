@@ -21,12 +21,12 @@ static FileSystem * last_fs;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int _efs_mount_unit( uint8_t lun, mount_data_t * mnt )
+static int _efs_mount_unit( uint8_t lun, mount_data_t * mnt )
 {
 	uint8_t c;
 	FileSystem * fs;
 
-	DEBUG_PRINTK( "_efs_mount_unit\r\n" );
+	//DEBUG_PRINTK( "_efs_mount_unit\r\n" );
 
 	// low level initialization
 	if( disc_InitLun( lun ) )
@@ -48,19 +48,12 @@ int _efs_mount_unit( uint8_t lun, mount_data_t * mnt )
 	{
 		if( mnt->part.partitions[c].type != 0 )
 		{
-			// allocate memory for fs
-			fs = ( FileSystem * )MMALLOC( sizeof( FileSystem ) );
-			if( fs == NULL ) return -5;
-			memset( fs, 0x00, sizeof( FileSystem ) );
+            fs = &mnt->fs;
 			fs->partition = &mnt->part.partitions[c];
 			mnt->part.partitions[c].fs = fs;
 
 			// init fs
-			if(fs_initFs(fs))
-			{
-				MFREE( fs );
-				continue;
-			}
+            if(fs_initFs(fs)) continue;
 
 			// link fs list
 			if( first_fs == NULL ) first_fs = fs;
@@ -118,6 +111,8 @@ void efs_init( void )
 {
 	int i;
 
+	DEBUG_PRINTK( "efs_init\r\n" );
+
 	if( is_init == TRUE ) return;
 	first_fs = last_fs = NULL;
 
@@ -130,5 +125,4 @@ void efs_init( void )
 	is_init = TRUE;
 }
 
-DECLARE_INIT_MODULE_SECTION(efs_init);
-
+//DECLARE_INIT_MODULE_SECTION(efs_init);

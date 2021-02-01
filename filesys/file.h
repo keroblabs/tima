@@ -11,29 +11,29 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FS_MODE_READ    0x72
-#define FS_MODE_WRITE   0x77
-#define FS_MODE_APPEND  0x61
-#define FS_MODE_RANDOM  0x62
-#define FS_MODE_DEVICE  0x30
+#define FS_MODE_READ                0x72
+#define FS_MODE_WRITE               0x77
+#define FS_MODE_APPEND              0x61
+#define FS_MODE_RANDOM              0x62
+#define FS_MODE_DEVICE              0x30
 
-#define FS_SEEK_SET		0
-#define FS_SEEK_CUR		1
-#define FS_SEEK_END		2
+#define FS_SEEK_SET		            0
+#define FS_SEEK_CUR		            1
+#define FS_SEEK_END		            2
 
-#define FILE_STATUS_OPEN    0
-#define FILE_STATUS_WRITE   1
-#define FILE_STATUS_HEAP    2
+#define FILE_STATUS_OPEN            0
+#define FILE_STATUS_WRITE           1
+#define FILE_STATUS_HEAP            2
 
-#define SEEK_CUR    1
-#define SEEK_END    2
-#define SEEK_SET    0
+#define SEEK_CUR                    1
+#define SEEK_END                    2
+#define SEEK_SET                    0
 
-#define PARTITION_NAME_LENGTH			15
-#define VOLUME_MAX_SIZE					128
+#define PARTITION_NAME_LENGTH	    15
+#define VOLUME_MAX_SIZE				128
 
-#define IO_CONTROL_FILE_SIZE			1
-#define IO_CONTROL_FILE_POSITION		2
+#define IO_CONTROL_FILE_SIZE		1
+#define IO_CONTROL_FILE_POSITION	2
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +51,6 @@
 #define FILE_DIR_NOT_EMPTY			-11
 #define FILE_OUT_OF_RANGE			-12
 #define FILE_INVALID_SYSTEM_FS      -13
-
 
 #define DIR_MODE_ROOT               0
 #define DIR_MODE_DIR                1
@@ -123,6 +122,4 @@ bool_t		file_IsTXBusy( File * file );
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #endif
-

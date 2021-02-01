@@ -1,9 +1,12 @@
 #include "system.h"
+#include "commands.h"
+#include "debug.h"
 
 ////////////////////////////////////////////////////////////////////
 
 #define GO_IDLE_STATE				0x00
 #define SEND_OP_CONDITION			0x01
+#define SEND_CMD8					0x08
 #define SEND_CSD					0x09
 #define SEND_CID					0x0A
 #define SET_BLOCK_LEN_512			0x10
@@ -17,7 +20,8 @@
 
 #define SEND_COMMAND_MASK			0x40
 
-#define SD_SEND_COMMAND_TRY			256
+#define SD_SEND_COMMAND_TRY			1000
+#define SD_INIT_COMMAND_TRY			10
 
 #define R1_IN_IDLE_STATE    		(1<<0)
 #define R1_ERASE_RESET      		(1<<1)
@@ -36,6 +40,11 @@
 
 #define SD_SELECT()					sdcard_enable( TRUE )
 #define SD_CLEAR()					sdcard_enable( FALSE )
+
+#define GET_R1_RESP()				NULL, 0
+#define GET_R2_RESP(b)				b,1
+#define GET_R3_RESP(b)				b,4
+#define GET_R7_RESP(b)				(uint8_t *)b,4
 
 ////////////////////////////////////////////////////////////////////
 
@@ -99,15 +108,12 @@ static bool_t sd_card_response( uint8_t resp )
 	return FALSE; /* Normal, loop was exited before timeout */	
 }
 
-static uint8_t spi_send_sd_command( uint8_t sd_command, uint32_t address )
+static uint8_t spi_send_sd_command( uint8_t sd_command, uint32_t address, uint8_t * p_resp, uint8_t len )
 {
 	uint8_t counter;
 	uint16_t response;
 	uint8_t local_spi_command[ 6 ];
 
-	// spi_exchange_byte( 0xFF );	
-    SD_SELECT();
-	
 	local_spi_command[ 0 ] = SEND_COMMAND_MASK | sd_command;
 	local_spi_command[ 1 ] = ( uint8_t )( ( address >> 24 ) & 0x0FF );
 	local_spi_command[ 2 ] = ( uint8_t )( ( address >> 16 ) & 0x0FF );
@@ -118,6 +124,8 @@ static uint8_t spi_send_sd_command( uint8_t sd_command, uint32_t address )
     else if( sd_command == 8 ) local_spi_command[ 5 ] = 0x87;
 	else local_spi_command[ 5 ] = sd_calculate_crc( local_spi_command, 5 );
     
+    SD_SELECT();
+
     device_write_buffer( spi_device, local_spi_command, 6 );
 
 	counter = 0;
@@ -126,121 +134,128 @@ static uint8_t spi_send_sd_command( uint8_t sd_command, uint32_t address )
 		response = device_read( spi_device );
 	}
 	while( ( ++counter < SD_SEND_COMMAND_TRY ) && ( response == 0xFF ) );
-	
+
+	if( ( len != 0 ) && ( p_resp != NULL ) && ( response != 0xFF ) )
+	{
+		for( counter = 0; counter < len; counter++ )
+		{
+			p_resp[counter] = device_read( spi_device );
+		}
+	}
+
     SD_CLEAR();
     
 	return( response );    
 }
 
-static uint8_t spi_send_sd_CMD8( void )
-{
-	uint8_t counter;
-	uint16_t response;
-    uint8_t resp_r1;
-	uint8_t local_spi_command[ 6 ];
-    uint8_t sd_command = 8;
-    uint32_t address = 0x1AA;
-    
-	// spi_exchange_byte( 0xFF );	
-    SD_SELECT();
-	
-	local_spi_command[ 0 ] = SEND_COMMAND_MASK | sd_command;
-	local_spi_command[ 1 ] = ( uint8_t )( ( address >> 24 ) & 0x0FF );
-	local_spi_command[ 2 ] = ( uint8_t )( ( address >> 16 ) & 0x0FF );
-	local_spi_command[ 3 ] = ( uint8_t )( ( address >> 8 ) & 0x0FF );
-	local_spi_command[ 4 ] = ( uint8_t )( address & 0x0FF );
- 	local_spi_command[ 5 ] = 0x87;
-    
-    device_write_buffer( spi_device, local_spi_command, 6 );
-
-	counter = 0;
-	do
-	{
-		resp_r1 = device_read( spi_device );
-	}
-	while( ( ++counter < SD_SEND_COMMAND_TRY ) && ( resp_r1 == 0xFF ) );
-	
-    response = device_read( spi_device );
-    response = device_read( spi_device );
-    response = device_read( spi_device );
-    response = device_read( spi_device );
-    
-    SD_CLEAR();
-    
-	return( resp_r1 );    
-}
-
-
 static int sd_card_init( void )
 {
     uint16_t loop_cnt;
-	uint16_t counter;
+	__IO uint16_t counter;
     uint8_t cmd_retcode;
+    uint8_t cmd0_retcode;
+    uint8_t cmd1_retcode;
+    uint8_t cmd8_retcode;
+    uint8_t cmd41_retcode;
+    uint8_t cmd37_retcode;
+    uint8_t init_code;
+    uint32_t resp_r7;
 
 	high_cap_sd = FALSE;
-    loop_cnt = 100;
+    loop_cnt = SD_INIT_COMMAND_TRY;
+    init_code = 0;
+    cmd0_retcode = 0xFF;
+    cmd1_retcode = 0xFF;
+    cmd8_retcode = 0xFF;
+    cmd41_retcode = 0xFF;
+    cmd37_retcode = 0xFF;
 
-    spi_device = device_open( "/dev/spi1" );
+    spi_device = device_open( "/dev/spi3" );
     if( spi_device == NULL ) return -1;
 
     while( loop_cnt )
     {
         loop_cnt--;
-        
+
         // send 80 clks
         for( counter = 0; counter < 32; counter++ )
         {
             device_write( spi_device, 0xFF );
         }
 
+        //for( counter = 0; counter < 10000; counter++ ) {}
+        
         // send CMD0
         counter = 0;
-        while( ( spi_send_sd_command( GO_IDLE_STATE, 0 ) != 0x01 ) && ( counter < SD_SEND_COMMAND_TRY ) ) counter++;
-        if( counter == SD_SEND_COMMAND_TRY ) continue;
+        while( counter < SD_INIT_COMMAND_TRY )
+        {
+        	cmd0_retcode = spi_send_sd_command( GO_IDLE_STATE, 0, GET_R1_RESP() );
+        	counter++;
+
+        	if( cmd0_retcode == 0x01 ) break;
+
+            for( counter = 0; counter < 10000; counter++ ) {}
+        }
+
+        if( counter >= SD_INIT_COMMAND_TRY ) continue;
+        init_code = 1;
         
-        cmd_retcode = spi_send_sd_CMD8();      
-		// wait for initialization
-        /*
-		counter = 0;
-		do
-		{
-		    cmd_retcode = spi_send_sd_command( SEND_OP_CONDITION, 0 );
-		    counter++;
-		}
-		while( ( ( cmd_retcode & R1_IN_IDLE_STATE  ) != 0 ) && ( counter < SD_SEND_COMMAND_TRY ) );
-		if( counter == SD_SEND_COMMAND_TRY ) continue;    
-        */
-            
+        cmd1_retcode = spi_send_sd_command( GO_IDLE_STATE, 0, GET_R1_RESP() );
+
+        // send CMD1
+#if 0
+        counter = 0;
+        while( counter < SD_INIT_COMMAND_TRY )
+        {
+        	cmd1_retcode = spi_send_sd_command( SEND_OP_CONDITION, 0, GET_R1_RESP() );
+        	counter++;
+
+        	if( cmd1_retcode == 0x01 ) break;
+
+            for( counter = 0; counter < 1000; counter++ ) {}
+        }
+
+        if( counter >= SD_INIT_COMMAND_TRY ) continue;
+        init_code = 3;
+#endif
+
+        // send CMD8
+        cmd8_retcode = spi_send_sd_command( SEND_CMD8, 0x1AA, GET_R7_RESP(&resp_r7) );
+
         // send app command
-        cmd_retcode = spi_send_sd_command( SEND_APPLICATION_COMMAND, 0 );
+		cmd37_retcode = spi_send_sd_command( SEND_APPLICATION_COMMAND, 0, GET_R1_RESP() );
+		//if( cmd37_retcode ) continue;
 
 		// init SD mode
-		counter = 0;
-		do
+		cmd41_retcode = spi_send_sd_command( ACMD_SEND_OP_CONDITION, 0, GET_R1_RESP() );
+		if( cmd41_retcode == 0 )
 		{
-		    cmd_retcode = spi_send_sd_command( ACMD_SEND_OP_CONDITION, 0 );
-		    counter++;
+			init_code = 4;
+			break;
 		}
-		while( ( cmd_retcode  != 0 ) && ( counter < SD_SEND_COMMAND_TRY ) );
-		if( counter < SD_SEND_COMMAND_TRY ) break;        
     }
     
-    if( loop_cnt == 0 ) return 1;
+    if( loop_cnt == 0 )
+    {
+    	DEBUG_PRINTK( "Failed to init SDCARD %d %d %d %d %d %d\r\n", init_code, cmd0_retcode, cmd1_retcode, cmd8_retcode, cmd37_retcode, cmd41_retcode );
+    	return 1;
+    }
 
 	return 0;
 }
 
-static int sd_read_block( uint32_t addr, uint8_t *buff, uint16_t BlockSize )
+static int sd_read_block( uint64_t addr_64, uint8_t *buff, uint32_t BlockSize )
 {
 	uint32_t index;
     uint8_t ret_code;
+	uint32_t addr = ( uint32_t )addr_64;
 
 	if( high_cap_sd == FALSE )
 	{
 		index = addr * 512;
 	}
 
-    ret_code = spi_send_sd_command( READ_SINGLE_BLOCK, index );
+    ret_code = spi_send_sd_command( READ_SINGLE_BLOCK, index, GET_R1_RESP() );
 	if( ret_code != 0x00 )
 	{
 	    return( 1 );
@@ -262,9 +277,10 @@ static int sd_read_block( uint32_t addr, uint8_t *buff, uint16_t BlockSize )
 	return( 0 );
 }
 
-static int sd_write_block( uint32_t addr, uint8_t *buff, uint16_t BlockSize )
+static int sd_write_block( uint64_t addr_64, uint8_t *buff, uint32_t BlockSize )
 {
 	uint32_t index;
+	uint32_t addr = ( uint32_t )addr_64;
 
 	if( high_cap_sd == FALSE )
 	{
@@ -310,6 +326,60 @@ static uint32_t sd_card_block_size( void )
 	return( 512 );
 }
 
+static void cmd_sdcard_init( void )
+{
+}
+
+static int cmd_sdcard_handler( console_instance_t * p_instance, char * input )
+{
+	uint32_t value;
+	uint32_t long_resp;
+	uint8_t short_resp;
+	device_t * dev = p_instance->dev_console_tty;
+
+	// show help
+	if( input != NULL )
+	{
+		long_resp = 0;
+
+		value = ( uint8_t )tima_atoi( input );
+		switch(value)
+		{
+			case 0:
+				short_resp = spi_send_sd_command( GO_IDLE_STATE, 0, GET_R1_RESP() );
+				break;
+
+			case 1:
+				short_resp = spi_send_sd_command( SEND_OP_CONDITION, 0, GET_R1_RESP() );
+				break;
+
+			case 2:
+				short_resp = spi_send_sd_command( SEND_CMD8, 0, GET_R7_RESP(long_resp) );
+				break;
+
+			case 3:
+				short_resp = spi_send_sd_command( SEND_APPLICATION_COMMAND, 0, GET_R1_RESP() );
+				break;
+
+			case 4:
+				short_resp = spi_send_sd_command( ACMD_SEND_OP_CONDITION, 0, GET_R1_RESP() );
+				break;
+
+			default:
+				console_command_printk( dev, "sdcard [0,1,2,3]\r\n" );
+				return 0;
+
+		}
+
+		console_command_printk( dev, "sdcard 0x%02x - 0x%08x\r\n", short_resp, long_resp );
+	}
+	else
+	{
+		console_command_printk( dev, "sdcard [0 (CMD0),1 (CMD1),2 (CMD8),3 (CMD55),4 (ACMD41)]\r\n" );
+	}
+	return 0;
+}
+
 //////////////////////////////////////////////////////////////////
 
 static const char sd_mass_name[ 8 ] = "/sdcard";
@@ -333,4 +403,14 @@ static const msd_driver_t sd_disc_mount =
 
 DECLARE_STORAGE_DEVICE_SECTION( sd_disc_mount );
 
-	
+///////////////////////////////////////////////////////////////////////////
+
+const command_data_t command_sdcard =
+{
+    CONSOLE_COMMAND_TYPE,
+    "sdcard",
+	cmd_sdcard_init,
+	cmd_sdcard_handler
+};
+
+DECLARE_COMMAND_SECTION( command_sdcard );

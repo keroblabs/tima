@@ -55,7 +55,6 @@ static const msd_driver_t eeprom_disc_mount =
     _unit_get_image_size,
     NULL,
 	NULL,
-	NULL,
 	0,
 	0,
 	FALSE

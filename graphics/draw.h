@@ -34,6 +34,7 @@ enum
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+#define FONT_SECTION_ID                             SYSTEM_LIST_SECTION+1
 #define DECLARE_FONT_SECTION(a)                     SYSTEM_SECTION_LIST(a, FONT_SECTION_ID)
 #define GET_FONT_SECTION(i)                         ( font_data_t * )system_List_Get_Item(FONT_SECTION_ID,i)
 
@@ -48,6 +49,8 @@ void draw_line( uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t col
 void draw_text( uint16_t posx, uint16_t posy, char * text, uint16_t fore_colour, uint16_t back_colour );
 
 void draw_text_vertical( uint16_t posx, uint16_t posy, char * text, uint16_t fore_colour, uint16_t back_colour );
+
+void draw_rectangle( uint16_t posx, uint16_t posy, uint16_t width, uint16_t height, uint16_t colour );
 
 uint32_t draw_get_text_height( char * text );
 uint32_t draw_get_text_width( char * text );

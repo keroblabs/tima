@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "graphics.h"
 #include "draw.h"
+#include "efs.h"
 //#include "webserver.h"
 
 //#include "regsclkctrl.h"
@@ -137,6 +138,10 @@ void app_main( void )
 	timer_Start( &timer_ms, 1000 );
 	dev_telnet = NULL;
 	counter = 0;
+    
+    graphics_init();
+    
+    efs_init();
 
 	console_init();
 	console_connect_uart( DEV_TTY_COMMAND );

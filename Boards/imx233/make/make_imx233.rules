@@ -84,6 +84,7 @@ SRC += $(BOARD_PATH)/library/system_imx233.c
 SRC += $(BOARD_PATH)/library/lcdif-imx233.c
 SRC += $(BOARD_PATH)/library/adc.c
 SRC += $(BOARD_PATH)/library/rtc_driver.c
+SRC += $(BOARD_PATH)/library/sdcard_driver.c
 
 SRC += $(BOARD_PATH)/library/gpio_driver.c
 

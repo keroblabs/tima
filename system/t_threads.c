@@ -325,4 +325,19 @@ void thread_kill( thread_data_t * p_thread )
 #endif
 }
 
+#else
+
+void * tthread_mutex_init( void )
+{
+    return NULL;
+}
+
+void tthread_mutex_lock( void * p_mutex )
+{
+}
+
+void tthread_mutex_unlock( void * p_mutex )
+{
+}
+
 #endif

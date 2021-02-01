@@ -63,6 +63,7 @@ static const pio_config_t chip_select_list[] =
 {
 	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_15, GPIO_PinSource15 },
 	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_13, GPIO_PinSource13 },
+	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_8,  GPIO_PinSource8 },
 	{ 0, NULL, 0 }
 };
 
@@ -183,7 +184,7 @@ void hw_spi_init_spi_pio( void )
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_DOWN;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
 
 	// SPI pin configuration
 	GPIO_InitStructure.GPIO_Pin = spi_config->GPIO_Pin_SCLK | spi_config->GPIO_Pin_MOSI | spi_config->GPIO_Pin_MISO;
@@ -197,7 +198,7 @@ void hw_spi_init_spi_pio( void )
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
 	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft | SPI_NSSInternalSoft_Set;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
 
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 	SPI_InitStructure.SPI_CRCPolynomial = 7;
@@ -242,7 +243,7 @@ void hw_spi_init( void )
 {
 	SPI_InitTypeDef  SPI_InitStructure;
 
-	DEBUG_PRINTK( "hw_spi_init\r\n" );
+	//DEBUG_PRINTK( "hw_spi_init\r\n" );
 
 	// configure GPIO
 	hw_spi_init_spi_pio();

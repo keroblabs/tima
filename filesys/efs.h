@@ -13,7 +13,8 @@
 
 typedef struct _mount_data
 {
-	Partition part;
+	Partition  part;
+    FileSystem fs;
 	char device_name[15];
 
 } mount_data_t;

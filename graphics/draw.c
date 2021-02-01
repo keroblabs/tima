@@ -92,6 +92,14 @@ void draw_circle( uint16_t posx, uint16_t posy, int ratio, uint16_t colour )
 	}
 }
 
+void draw_rectangle( uint16_t posx, uint16_t posy, uint16_t width, uint16_t height, uint16_t colour )
+{
+    draw_line( posx, posy, posx+width, posy, colour );
+    draw_line( posx, posy+height, posx+width, posy+height, colour );
+    
+    draw_line( posx, posy, posx, posy+height, colour );
+    draw_line( posx+width, posy, posx+width, posy+height, colour );
+}
 
 uint32_t draw_get_line_data( uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t * buffer, uint32_t max_size )
 {
@@ -537,7 +545,7 @@ uint32_t draw_get_text_width( char * text )
 		}
 		else
 		{
-			len += p_selected_font->height;	
+			len += p_selected_font->width;
 		}
 	}
 

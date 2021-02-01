@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////
 
 
-#define FILENAME_IMAGE			"/Users/marciocherobim/Projects/GIT/disc_004.vhd"
+#define FILENAME_IMAGE			"/Users/marciocherobim/Projects/GIT/disc_005.vhd"
 #define IMAGE_SIZE				(4096)
 
 //#define FILENAME_IMAGE		"C:\\Projects\\timaos_v40\\drive_003.vhd"
@@ -102,7 +102,6 @@ static const msd_driver_t emul_disc_mount =
     _unit_read_block,
     _unit_get_image_size,
     NULL,
-	NULL,
 	NULL,
 	0,
 	0,

@@ -26,6 +26,7 @@ void graphics_init( void );
 void graphics_set_landscape( void );
 void graphics_set_portrait( void );
 void graphics_init_auto_vsync( void );
+void graphics_clear_screen( void );
 
 bool_t graphics_driver_ready( void );
 

@@ -1,7 +1,6 @@
 #include "system.h"
-#include "debug.h"
-//#include "commands.h"
 #include "timer.h"
+#include "debug.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -252,7 +251,6 @@ static void spi_flash_write_internal( uint32_t addr, uint8_t * buff, uint16_t si
         // wait for hw status ready
         if( spi_flash_wait_no_busy() == SPI_STATUS_FAILED )
         {
-        	CONSOLE_PRINTK( "Write AAI failed\r\n" );
         	return;
         }
     }
@@ -262,7 +260,6 @@ static void spi_flash_write_internal( uint32_t addr, uint8_t * buff, uint16_t si
 
     if( spi_flash_wait_no_busy() == SPI_STATUS_FAILED )
     {
-        CONSOLE_PRINTK( "Write failed\r\n" );
     	return;
     }
 }
@@ -286,10 +283,11 @@ static int spi_flash_init( void )
     if( spi_device == NULL ) return -1;
 
     flash_id = spi_flash_read_id();
-    /* if( flash_id != SPI_FLASH_ID_DRIVER )
+    if( flash_id != SPI_FLASH_ID_DRIVER )
     {
+        DEBUG_PRINTK( "Unknown Flash: %08x\r\n", flash_id );
     	return 1;
-    } */
+    }
 
 #ifdef DEBUG_ENABLED
     DEBUG_PRINTK( "Flash ID: %08x\r\n", flash_id );
@@ -297,7 +295,6 @@ static int spi_flash_init( void )
 
     // get status
     status = spi_flash_read_status();
-	CONSOLE_PRINTK( "Status = 0x%02x\r\n", status );
 
     // check if write is enabled
     if( status & SPI_WRITE_PROTECT )
@@ -310,7 +307,6 @@ static int spi_flash_init( void )
 
         // get status
         status = spi_flash_read_status();
-    	CONSOLE_PRINTK( "Status updated = 0x%02x\r\n", status );
     	if( status & SPI_WRITE_PROTECT )
     	{
     		return 2;
@@ -323,8 +319,6 @@ static int spi_flash_init( void )
 static int spi_flash_read(uint64_t addr64, uint8_t *readbuff, uint32_t BlockSize)
 {
 	__IO uint32_t addr32 = addr64;
-
-	CONSOLE_PRINTK( "Flash read 0x%08x (0x%08x)\r\n", addr32, sector_start );
 
     if( sector_start != ( addr32 & ( ~SPI_CACHE_MASK ) ) )
     {
@@ -351,8 +345,6 @@ static int spi_flash_write( uint64_t addr64, uint8_t *writebuff, uint32_t BlockS
 {
     uint8_t status;
 	__IO uint32_t addr32 = addr64;
-
-	CONSOLE_PRINTK( "Flash Write 0x%08x (0x%08x)\r\n", addr32, sector_start );
 
     if( sector_start != ( addr32 & ( ~SPI_CACHE_MASK ) ) )
     {
@@ -389,8 +381,6 @@ static void spi_flash_process( void )
 	{
 		timer_Stop( &write_timer );
 
-		CONSOLE_PRINTK( "Flash flush 0x%08x\r\n", sector_start );
-
 		is_flush = TRUE;
         spi_flash_erase_sector( sector_start );
         spi_flash_write_internal( sector_start, sector_cache, SPI_CACHE_MASK + 1 );
@@ -405,6 +395,11 @@ static uint32_t spi_flash_block_count( void )
 static uint32_t spi_flash_block_size( void )
 {
     return( 512 );
+}
+
+static void flash_global_init( void )
+{
+	is_enabled = FALSE;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -428,6 +423,7 @@ static const msd_driver_t flash_mount =
 	0
 };
 
+DECLARE_INIT_POWERUP_SECTION( flash_global_init );
 DECLARE_STORAGE_DEVICE_SECTION( flash_mount );
 DECLARE_PROCESS_SECTION( spi_flash_process );
 

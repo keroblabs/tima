@@ -7,9 +7,19 @@
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void rand_generate( void );
-void rand_get_seed( int64_t * seed );
-uint32_t rand_get_next( int64_t * seed );
+typedef struct _randon_t
+{
+    uint16_t param1;
+    uint16_t param2;
+    int64_t seed;
+    uint32_t max_value;
+
+} random_t;
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+void rand_init( random_t * data, int64_t seed, uint32_t max_value );
+uint32_t rand_get_next( random_t * data );
 
 //////////////////////////////////////////////////////////////////////////////////////
 

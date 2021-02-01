@@ -180,7 +180,7 @@ uint16_t MAL_Write(uint8_t lun, uint64_t Memory_Offset, uint8_t *Writebuff, uint
     driver = system_Get_Storage_Driver( lun );
     if( driver == NULL ) return MAL_FAIL;
     
-    mem_address = Memory_Offset + (driver->addr_offset*MAL_BLOCK_SIZE);
+    mem_address = Memory_Offset + driver->addr_offset;
     status = driver->write_block(mem_address, Writebuff, Transfer_Length);
     if ( status ) return MAL_FAIL;
     
@@ -198,7 +198,7 @@ uint16_t MAL_Read(uint8_t lun, uint64_t Memory_Offset, uint8_t *Readbuff, uint16
     driver = system_Get_Storage_Driver( lun );
     if( driver == NULL ) return MAL_FAIL;
     
-    mem_address = Memory_Offset + (driver->addr_offset*MAL_BLOCK_SIZE);
+    mem_address = Memory_Offset + driver->addr_offset;
     
     if( _mal_cache_get( Readbuff, (uint32_t)(mem_address/512), lun ) != NULL ) return status;
     status = driver->read_block(mem_address, Readbuff, Transfer_Length);
@@ -211,19 +211,20 @@ uint16_t MAL_Read(uint8_t lun, uint64_t Memory_Offset, uint8_t *Readbuff, uint16
 
 uint8_t MAL_GetLun( const char * name )
 {
-    uint8_t counter;
+    uint8_t counter = 0;
     msd_driver_t * driver;
     
-    for( counter = 0; counter < 255; counter++ )
+    while( 1 )
     {
         driver = system_Get_Storage_Driver( counter );
         
-        if( driver == NULL ) break;
-        if( driver->init == NULL ) continue;
-        if( strcmp( driver->name, name ) == 0 ) return counter;
+        if( driver == NULL ) return LUN_NOT_FOUND;
+        if( ( driver->init != NULL ) && !strcmp( driver->name, name ) ) break;
+        
+        counter++;
     }
     
-    return LUN_NOT_FOUND;
+    return counter;
 }
 
 uint32_t MAL_GetBlockCount( uint8_t lun )

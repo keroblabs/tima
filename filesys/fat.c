@@ -6,31 +6,23 @@ uint32_t fat_getSectorAddressFatEntry(FileSystem *fs,uint32_t cluster_addr)
 { 
 	uint32_t base = fs->volumeId.ReservedSectorCount,res;
 	
-	switch(fs->type){
+	switch(fs->type)
+    {
 		case FAT12:
 			res=(cluster_addr*3/1024);
-			if(res>=fs->FatSectorCount){
-				return(0);
-			}else{
-				return(base+res);
-			}
+			if(res>=fs->FatSectorCount) return(0);
+            else return(base+res);
 			break;
 		case FAT16:
 			res=cluster_addr/256;
-			if(res>=fs->FatSectorCount){
-				return(0);
-			}else{
-				return(base+res);
-			}
+			if(res>=fs->FatSectorCount) return(0);
+			else return(base+res);
 			break;
 		case FAT32:
 			res=cluster_addr/128;
-			if(res>=fs->FatSectorCount){
-				return(0);
-			}else{
-				return(base+res);
-			}
-			break; 
+			if(res>=fs->FatSectorCount) return(0);
+			else return(base+res);
+			break;
 	}
 	return(0);
 }
@@ -44,10 +36,7 @@ uint32_t fat_getNextClusterAddress(FileSystem *fs,uint32_t cluster_addr,uint16_t
 	uint32_t nextcluster=0;
 	
 	sector=fat_getSectorAddressFatEntry(fs,cluster_addr);
-	if( (fs->FatSectorCount <= (sector-fs->volumeId.ReservedSectorCount)) || sector==0 )
-	{
-		return(0);
-	}
+	if( ( fs->FatSectorCount <= (sector-fs->volumeId.ReservedSectorCount)) || ( sector == 0 ) ) return(0);
 	
 	buf=part_getSect(fs->partition,sector,0);
 		

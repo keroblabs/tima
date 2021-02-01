@@ -25,7 +25,6 @@ typedef struct
     //int (*format_unit)( void );
     
     uint32_t (*get_block_count)( void );
-    uint32_t (*get_block_size)( void );
     
     // data used by USB system
     bool_t (*usb_present)( void );

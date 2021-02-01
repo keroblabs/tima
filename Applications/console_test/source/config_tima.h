@@ -18,7 +18,7 @@
 
 #define TIMA_OS
 
-#define DEV_PRINTK				"/dev/tty10"
+#define DEV_PRINTK				"/dev/tty3"
 #define DEV_SOCKET_CLIENT		"/dev/tty7"
 #define DEV_SOCKET_SERVER		"/dev/tty6"
 #define DEV_CONSOLE				"/dev/tty8"
@@ -55,8 +55,4 @@
 #define DONT_WANT_GPIO
 
 #define WANT_GRAPHICS
-
-#ifdef __MACH__
-#define _USE_FRONTEND
-#endif
 

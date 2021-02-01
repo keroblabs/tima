@@ -21,38 +21,7 @@ int fs_last_error = FILE_OK;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-
-uint32_t	_file_required_cluster(File *file,uint32_t offset, uint32_t size);
-void		_file_initFile(File *file, FileSystem *fs, FileLocation *loc);
-uint8_t		_file_validateChar(uint8_t c);
-
-///////////////////////////////////////////////////////////////////////////////
-
-char file_locatePath( const char * full_filename )
-{
-    //char fatfilename[11];
-    FileLocation loc;
-    FileSystem *fs;
-	char * filename;
-    
-	// identify the device driver
-	filename = file_getVolume( full_filename, volume );
-
-    fs = efs_get_filesystem( volume );
-	if( fs == NULL ) return( -6 );
-    
-    if( filename == NULL ) return FS_IS_ROOT_DIR;
-    
-    if( !strcmp( filename, "/" ) ) return FS_IS_ROOT_DIR;
-
-    //dir_getFatFileName(filename,fatfilename);
-    //dir_getFatFileName_Long( filename, long_filename );    
-    
-    return fs_findFile(fs,filename,&loc,0);  
-}
-
-void _file_set_pos(File *file,uint32_t pos)
+static void _file_set_pos(File *file,uint32_t pos)
 {
     if( file == NULL ) return;
     
@@ -66,7 +35,7 @@ void _file_set_pos(File *file,uint32_t pos)
     }
 }
 
-uint32_t _file_required_cluster(File *file,uint32_t offset, uint32_t size)
+static uint32_t _file_required_cluster(File *file,uint32_t offset, uint32_t size)
 {
 	uint32_t clusters_required,clustersize;
 	uint32_t hc;
@@ -100,7 +69,57 @@ uint32_t _file_required_cluster(File *file,uint32_t offset, uint32_t size)
 	return(clusters_required);
 }
 
+static void _file_initFile(File *file, FileSystem *fs, FileLocation *loc)
+{
+    file->fs=fs;
+    
+    file->FileSize=file->DirEntry.FileSize;
+    file->FilePtr=0;
+    file->Location.firstSector=loc->firstSector;
+    file->Location.Sector=loc->Sector;
+    file->Location.Offset=loc->Offset;
+    file->Cache.Linear=0;
+    file->Cache.FirstCluster=(((uint32_t)file->DirEntry.FirstClusterHigh)<<16)+
+    file->DirEntry.FirstClusterLow;
+    file->Cache.LastCluster=0;
+    file->Cache.LogicCluster=0;
+    file->Cache.DiscCluster=file->Cache.FirstCluster;
+}
+
+static uint8_t _file_validateChar(uint8_t c)
+{
+    if( (c<0x20) || (c>0x20&&c<0x30&&c!='-') || (c>0x39&&c<0x41) || (c>0x5A&&c<0x61&&c!='_') ||    (c>0x7A&&c!='~') )
+        return(0x58);
+    if( c>=0x61 && c<=0x7A )
+        return(c-32);
+    
+    return(c);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+char file_locatePath( const char * full_filename )
+{
+    //char fatfilename[11];
+    FileLocation loc;
+    FileSystem *fs;
+    char * filename;
+    
+    // identify the device driver
+    filename = file_getVolume( full_filename, volume );
+    
+    fs = efs_get_filesystem( volume );
+    if( fs == NULL ) return( -6 );
+    
+    if( filename == NULL ) return FS_IS_ROOT_DIR;
+    
+    if( !strcmp( filename, "/" ) ) return FS_IS_ROOT_DIR;
+    
+    //dir_getFatFileName(filename,fatfilename);
+    //dir_getFatFileName_Long( filename, long_filename );
+    
+    return fs_findFile(fs,filename,&loc,0);
+}
 
 int file_ferror( void )
 {
@@ -664,23 +683,6 @@ void file_fclose(File *file)
 	MFREE( file );
 }
 
-void _file_initFile(File *file, FileSystem *fs, FileLocation *loc)
-{
-	file->fs=fs;
-
-	file->FileSize=file->DirEntry.FileSize;
-	file->FilePtr=0;
-    file->Location.firstSector=loc->firstSector;
-	file->Location.Sector=loc->Sector;
-	file->Location.Offset=loc->Offset;
-	file->Cache.Linear=0;
-	file->Cache.FirstCluster=(((uint32_t)file->DirEntry.FirstClusterHigh)<<16)+
-	                                    file->DirEntry.FirstClusterLow;
-	file->Cache.LastCluster=0;
-	file->Cache.LogicCluster=0;
-	file->Cache.DiscCluster=file->Cache.FirstCluster;
-}
-
 char* file_normalToFatName(char* filename,char* fatfilename)
 {
 	uint8_t c,dot=0,vc=0;
@@ -836,16 +838,6 @@ char* file_normalToFatName2(char* filename,char* fatfilename)
 	}
 }
 
-uint8_t _file_validateChar(uint8_t c)
-{
-    if( (c<0x20) || (c>0x20&&c<0x30&&c!='-') || (c>0x39&&c<0x41) || (c>0x5A&&c<0x61&&c!='_') ||	(c>0x7A&&c!='~') )
-		return(0x58);
-    if( c>=0x61 && c<=0x7A )
-		return(c-32);
-
-	return(c);
-}
-
 void file_setAttr(File* file,uint8_t attribute,uint8_t val)
 {
 	if(val)
@@ -886,4 +878,3 @@ char file_remove( char* full_filename )
 void file_flush( File * file )
 {
 }
-

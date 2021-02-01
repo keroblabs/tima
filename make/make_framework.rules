@@ -43,11 +43,13 @@ CINCDIR += $(FRAMEWORK_PATH)
 #
 
 SRC += $(FRAMEWORK_PATH)/buffer.c
+SRC += $(FRAMEWORK_PATH)/datalink.c
 SRC += $(FRAMEWORK_PATH)/message.c
 #SRC += $(FRAMEWORK_PATH)/lp_filter.c
 SRC += $(FRAMEWORK_PATH)/pipe.c
-#SRC += $(FRAMEWORK_PATH)/random.c
+SRC += $(FRAMEWORK_PATH)/random.c
 SRC += $(FRAMEWORK_PATH)/crc.c
+SRC += $(FRAMEWORK_PATH)/lists.c
 #SRC += $(FRAMEWORK_PATH)/t_lzw.c
 #SRC += $(FRAMEWORK_PATH)/vocoder.c
 

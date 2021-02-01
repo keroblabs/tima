@@ -1,6 +1,7 @@
 #include "device.h"
 #include "system.h"
 #include "tima_libc.h"
+#include "debug.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,22 +37,15 @@ device_data_t * _device_search( const char * name, uint32_t * index )
     char * dev_pointer;
 	int ret_cmp;
     int ret_index;
+    
+    if( strncmp( name, device_disc_name, strlen( device_disc_name ) ) ) return NULL;
 
     while( TRUE )
     {
-        search_dev = NULL;
+        search_dev = ( device_data_t * )system_Get_Device_Driver(counter);
+        if( search_dev == NULL ) break;
         
-        if( !strncmp( name, device_disc_name, strlen( device_disc_name ) ) )
-        {
-            search_dev = ( device_data_t * )system_Get_Device_Driver(counter);
-            strcpy( dev_name_temp, device_disc_name );
-        }
-        
-        if( search_dev == NULL )
-        {
-            break;
-        }
-        
+        strcpy( dev_name_temp, device_disc_name );
 		strcat( dev_name_temp, "/" );
         strcat( dev_name_temp, search_dev->name );
 
@@ -63,8 +57,7 @@ device_data_t * _device_search( const char * name, uint32_t * index )
         {
 			len_cmp = ( uint32_t )strlen( dev_name_temp );
 
-			if( ( strlen( name ) >= len_cmp ) &&
-				( !strncmp( name, dev_name_temp, len_cmp - 1 ) ) )
+			if( ( strlen( name ) >= len_cmp ) && !strncmp( name, dev_name_temp, len_cmp - 1 ) )
 			{
 	            index_32 = ( uint32_t )tima_atoi( &name[ len_cmp - 1 ] );
 				ret_cmp = 0;			
@@ -80,8 +73,7 @@ device_data_t * _device_search( const char * name, uint32_t * index )
                 // parameter is everything after '?'
                 len_cmp = ( uint32_t )strlen( dev_name_temp );
 
-                if( ( strlen( name ) >= len_cmp ) &&
-                    ( !strncmp( name, dev_name_temp, len_cmp - 1 ) ) )
+                if( ( strlen( name ) >= len_cmp ) && !strncmp( name, dev_name_temp, len_cmp - 1 ) )
                 {
                     index_32 = DEVICE_WITH_PARAM;
                     dev_pointer = ( char * )&name[ len_cmp-1 ];
@@ -100,8 +92,7 @@ device_data_t * _device_search( const char * name, uint32_t * index )
             
             if( dev_pointer == NULL ) return search_dev;
 
-            if( ( search_dev->validate != NULL ) &&
-                ( search_dev->validate( index_32 ) == TRUE ) )
+            if( ( search_dev->validate != NULL ) && ( search_dev->validate( index_32 ) == TRUE ) )
             {
                 return search_dev;
             }

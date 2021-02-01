@@ -142,6 +142,19 @@ uint16_t graphics_height( void )
 	return lcd_driver->height;
 }
 
+void graphics_clear_screen( void )
+{
+    if( lcd_mode == LCD_MODE_API )
+    {
+        lcd_driver->clear_lcd();
+    }
+    else if( lcd_mode == LCD_MODE_FRAMEBUFFER )
+    {
+        // memset( lcd_driver->get_buffer(), 0x00, lcd_driver->height * lcd_driver->height * sizeof( uint16_t ) );
+        graphics_fill_box(0, 0, lcd_driver->width, lcd_driver->height, 0);
+    }
+}
+
 void graphics_set_pixel( uint16_t posx, uint16_t posy, uint16_t colour )
 {
 	uint16_t tx;
