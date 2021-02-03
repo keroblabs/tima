@@ -120,7 +120,6 @@ static heap_header_t * _internal_malloc( uint16_t size )
     heap_header_t * p_new;
     uint8_t * p_mem;
     uint16_t signature;
-    int counter = 100;
 
     p_mem = NULL;
 
@@ -130,9 +129,8 @@ static heap_header_t * _internal_malloc( uint16_t size )
     // get first block
     p = ( heap_header_t * )&p_heap_data->memory[ 0 ];
 
-    while( ( p != NULL ) && counter )
+    while( p != NULL )
     {
-        counter--;
         signature = p->signature & ~HEAP_FIELD_MASK;
 
         if( ( signature != HEAP_FREE_BLOCK ) &&

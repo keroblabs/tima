@@ -44,7 +44,8 @@ typedef struct can_device_data_t_
 
     uint32_t    index;
     uint16_t    id;
-    pipe_data_t pipe;
+    pipe_data_t rx_pipe;
+    pipe_data_t tx_pipe;
 
 } can_device_data_t;
 
@@ -83,15 +84,29 @@ static void can_tx_process( const can_bus_t * data )
 {
     uint8_t mailbox;
 
-    if( ( pipe_is_empty( &tx_pipe ) == FALSE ) )
+    can_device_data_t * dev = NULL;
+
+    // find a destination
+    while( ( dev = ( can_device_data_t * )list_get_prev( &device_list, dev ? &dev->node : NULL ) ) != NULL )
     {
-        if( ( mailbox = CAN_GetMailBox( data->CANx ) ) != CAN_TxStatus_NoMailBox )
+        if( ( pipe_is_empty( &dev->tx_pipe ) == FALSE ) && ( ( mailbox = CAN_GetMailBox( data->CANx ) ) != CAN_TxStatus_NoMailBox ) )
         {
-            CanTxMsg * tx_data = ( CanTxMsg * )pipe_read( &tx_pipe, NULL );
-            CAN_Transmit( data->CANx, tx_data, mailbox );
+            CanTxMsg TxMessage;
+            uint8_t * buffer = pipe_read( &dev->tx_pipe, NULL );
+
+            TxMessage.StdId = dev->id;
+            TxMessage.ExtId = 0x00;
+            TxMessage.RTR = CAN_RTR_Data;
+            TxMessage.IDE = CAN_Id_Standard;
+            TxMessage.DLC = 8;
+
+            memset( TxMessage.Data, 0x00, sizeof( TxMessage.Data ) );
+            memcpy( TxMessage.Data, buffer, 8 );
+
+            CAN_Transmit( data->CANx, &TxMessage, mailbox );
 
             DEBUG_PRINTK( "CAN sending [0x%03x] on %d\r\n", tx_data->StdId, mailbox );
-            pipe_release_buffer( ( uint8_t * )tx_data );
+            pipe_release_buffer( buffer );
         }
     }
 }
@@ -111,7 +126,7 @@ static void can_rx_irq( const can_bus_t * data, uint8_t fifo )
         {
             if( ( dev->id != 0 ) && ( dev->id == rx_data.StdId ) )
             {
-                pipe_send_buffer( &dev->pipe, rx_data.Data, 8 );
+                pipe_send_buffer( &dev->rx_pipe, rx_data.Data, 8 );
             }
         }
     }
@@ -200,7 +215,7 @@ static uint32_t add_device( uint16_t id )
         dev->id = id;
         dev->index = dev_index++;
 
-        pipe_init( &dev->pipe, "PIPE_RX_CAN", MAX_PIPE_SIZE );
+        pipe_init( &dev->rx_pipe, "PIPE_RX_CAN", MAX_PIPE_SIZE );
         list_insert_tail( &device_list, &dev->node );
 
         return dev->index;
@@ -272,19 +287,34 @@ static uint32_t can_drv_ioctl( uint32_t index, uint32_t param, void * value )
     return 0;
 }
 
+static pipe_data_t * can_get_rx_pipe( uint32_t index )
+{
+    can_device_data_t * dev = find_device(index);
+    if( dev == NULL ) return NULL;
+    return &dev->rx_pipe;
+}
+
+static pipe_data_t * can_get_tx_pipe( uint32_t index )
+{
+    can_device_data_t * dev = find_device(index);
+    if( dev == NULL ) return NULL;
+    return &dev->tx_pipe;
+}
+
+#if 0
 static uint32_t can_read_buffer( uint32_t index, uint8_t * buffer, uint32_t size )
 {
     can_device_data_t * dev = find_device(index);
     if( dev == NULL ) return 0;
 
-    if( pipe_is_empty( &dev->pipe ) == TRUE ) return 0;
+    if( pipe_is_empty( &dev->rx_pipe ) == TRUE ) return 0;
 
     if( buffer != NULL )
     {
         uint32_t pos = 0;
         while( size >= 8 )
         {
-            uint8_t * temp = pipe_read( &dev->pipe, NULL );
+            uint8_t * temp = pipe_read( &dev->rx_pipe, NULL );
             memcpy( &buffer[pos], temp, 8 );
             pos += 8;
             size -= 8;
@@ -296,31 +326,21 @@ static uint32_t can_read_buffer( uint32_t index, uint8_t * buffer, uint32_t size
     }
     else
     {
-        return pipe_get_used( &dev->pipe ) * 8;
+        return pipe_get_used( &dev->rx_pipe ) * 8;
     }
 }
 
 static uint32_t can_write_buffer( uint32_t index, uint8_t * buffer, uint32_t size )
 {
-    if( ( size < 2 ) || ( size > 10 ) ) return 0;
+    if( size != 8 ) return 0;
 
     can_device_data_t * dev = find_device(index);
     if( dev == NULL ) return 0;
 
-    CanTxMsg TxMessage;
-
-    TxMessage.StdId = dev->id;
-    TxMessage.ExtId = 0x00;
-    TxMessage.RTR = CAN_RTR_Data;
-    TxMessage.IDE = CAN_Id_Standard;
-    TxMessage.DLC = 8;
-
-    memset( TxMessage.Data, 0x00, sizeof( TxMessage.Data ) );
-    memcpy( TxMessage.Data, buffer, size );
-
-    pipe_send_buffer( &tx_pipe, ( uint8_t * )&TxMessage, sizeof( TxMessage ) );
+    pipe_send_buffer( &dev->tx_pipe, buffer, size );
     return size;
 }
+#endif
 
 static void can_drv_close( uint32_t index )
 {
@@ -353,7 +373,7 @@ static int can_drv_getindex( char * param )
 static void device_delete_node( list_node_t * node )
 {
     can_device_data_t * dev_data = ( can_device_data_t * )node;
-    pipe_clear( &dev_data->pipe );
+    pipe_clear( &dev_data->rx_pipe );
 }
 
 static void can_bus_driver_init( void )
@@ -388,10 +408,10 @@ const device_data_t can_bus_device =
     can_drv_ioctl,
     NULL,
 
-    DEV_MODE_CHANNEL,
+    DEV_MODE_PIPE,
 
-    can_read_buffer,
-    can_write_buffer,
+    can_get_rx_pipe, // can_read_buffer,
+    can_get_tx_pipe, // can_write_buffer,
 
 };
 

@@ -4,6 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 #include "types.h"
+#include "pipe.h"
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +33,7 @@ enum
 {
     DEV_MODE_CHANNEL,
     DEV_MODE_BYTE,
+    DEV_MODE_PIPE,
             
     DEVICE_IOCTRL_PARAM = 0x00000100,
     DEVICE_GET_API,
@@ -91,6 +93,8 @@ typedef struct _device_location_t
 {
     device_data_t * device_ptr;
     uint32_t device_index;
+    void * tx_pipe;
+    void * rx_pipe;
     
 } device_t;
 
@@ -108,6 +112,9 @@ uint32_t device_ioctrl( device_t * file, uint32_t param, void * data );
 
 uint32_t device_write_buffer( device_t * dev, uint8_t * data, uint32_t size );
 uint32_t device_read_buffer( device_t * dev, uint8_t * data, uint32_t size );
+
+pipe_data_t * device_get_rx_pipe( device_t * dev );
+pipe_data_t * device_get_tx_pipe( device_t * dev );
 
 uint8_t device_read( device_t * dev  );
 void device_write( device_t * dev, uint8_t data );

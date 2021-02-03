@@ -3,6 +3,7 @@
 #include "can_comms.h"
 #include "debug.h"
 #include "timer.h"
+#include "pipe.h"
 
 ////////////////////////////////////////////////////////////////////
 
@@ -14,10 +15,19 @@ typedef void ( *filter_handler_t )( const void * data, uint8_t * buffer );
 
 typedef struct can_comms_data_t_
 {
+    uint8_t  index;
     uint16_t filter;
     filter_handler_t handler;
 
 } can_comms_data_t;
+
+typedef struct can_dev_data_t_
+{
+    device_t * device;
+    pipe_data_t * tx_pipe;
+    pipe_data_t * rx_pipe;
+
+} can_dev_data_t;
 
 ////////////////////////////////////////////////////////////////////
 
@@ -31,14 +41,14 @@ static void filter_7f3( const void * data, uint8_t * buffer );
 static timer_data_t timer;
 static const can_comms_data_t can_comms_list[MAX_CAN_DEVICES] =
 {
-    { 0x07f0, filter_7f0 },
-    { 0x07f1, filter_7f1 },
-    { 0x07f2, filter_7f2 },
-    { 0x07f3, filter_7f3 },
-    { 0xFFFF, NULL },
+    { 0, 0x07f0, filter_7f0 },
+    { 1, 0x07f1, filter_7f1 },
+    { 2, 0x07f2, filter_7f2 },
+    { 3, 0x07f3, filter_7f3 },
+    { 0, 0xFFFF, NULL },
 };
 
-static device_t * device_list[MAX_CAN_DEVICES];
+static can_dev_data_t * device_list[MAX_CAN_DEVICES];
 
 const static uint8_t tx_test_data[8] = { 0x0b, 0xb8, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 };
 
@@ -54,23 +64,26 @@ static void open_can_devices( void )
         if( can_comms_list[counter].handler == NULL ) break;
 
         sprintk( dev_name, "/dev/can?h%03x", can_comms_list[counter].filter );
-        device_list[counter] = device_open( dev_name );
+        device_list[counter]->device = device_open( dev_name );
+        device_list[counter]->rx_pipe = device_get_rx_pipe( device_list[counter]->device );
+        device_list[counter]->tx_pipe = device_get_tx_pipe( device_list[counter]->device );
     }
 }
 
 static void check_can_devices( void )
 {
     int counter = 0;
-    uint8_t buffer[8];
+    uint8_t * buffer;
 
     for( counter = 0; counter < MAX_CAN_DEVICES; counter++ )
     {
         if( can_comms_list[counter].handler == NULL ) break;
 
-        if( ( device_list[counter] != NULL ) && device_is_rx_pending( device_list[counter] ) )
+        if( ( device_list[counter]->device != NULL ) && ( pipe_is_empty( device_list[counter]->rx_pipe ) == FALSE ) )
         {
-            device_read_buffer( device_list[counter], ( uint8_t * )buffer, 8 );
+            buffer = pipe_read( device_list[counter]->rx_pipe, NULL );
             can_comms_list[counter].handler( &can_comms_list[counter], buffer );
+            pipe_release_buffer( buffer );
         }
     }
 }
@@ -83,9 +96,9 @@ static void send_can_devices( uint16_t id, uint8_t * buffer )
     {
         if( can_comms_list[counter].handler == NULL ) break;
 
-        if( ( device_list[counter] != NULL ) && ( can_comms_list[counter].filter == id ) )
+        if( ( device_list[counter]->device != NULL ) && ( can_comms_list[counter].filter == id ) )
         {
-            device_write_buffer( device_list[counter], ( uint8_t * )buffer, 8 );
+            pipe_send_buffer( device_list[counter]->tx_pipe, buffer, 8 );
             break;
         }
     }

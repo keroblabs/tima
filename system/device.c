@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 typedef uint32_t ( *dev_channel_mode_t )( uint32_t index, uint8_t * data, uint32_t size );
-typedef uint8_t * ( *dev_pipe_mode_t )( uint32_t index, uint32_t * size );
 typedef int ( *dev_byte_mode_t )( uint32_t index, uint8_t data );
+typedef pipe_data_t * ( *dev_pipe_mode_t )( uint32_t index );
 
 device_data_t * _device_search( const char * name, uint32_t * index );
 
@@ -341,14 +341,14 @@ void device_write( device_t * dev, uint8_t data )
     device_data_t * dev_data = dev->device_ptr;
     dev_byte_mode_t dev_byte;
     
-    if( dev_data->dev_mode == DEV_MODE_BYTE )
+    if( dev_data->dev_mode == DEV_MODE_CHANNEL )
+    {
+        device_write_buffer( dev, &data, 1 );
+    }
+    else if( dev_data->dev_mode == DEV_MODE_BYTE )
     {
         dev_byte = ( dev_byte_mode_t )dev_data->tx_channel;
         dev_byte( dev_offset, data );
-    }
-    else
-    {
-    	device_write_buffer( dev, &data, 1 );
     }
 }
 
@@ -394,7 +394,11 @@ uint8_t device_read( device_t * dev )
     dev_byte_mode_t dev_byte;
     int ret_byte;
     
-    if( dev_data->dev_mode == DEV_MODE_BYTE )
+    if( dev_data->dev_mode == DEV_MODE_CHANNEL )
+    {
+        device_read_buffer( dev, &data, 1 );
+    }
+    else if( dev_data->dev_mode == DEV_MODE_BYTE )
     {
         dev_byte = ( dev_byte_mode_t )dev_data->rx_channel;
 
@@ -403,12 +407,38 @@ uint8_t device_read( device_t * dev )
 
         data = ( uint8_t )( ret_byte & 0x0FF );
     }
-    else
-    {
-        device_read_buffer( dev, &data, 1 );
-    }
     
     return data;
+}
+
+pipe_data_t * device_get_rx_pipe( device_t * dev )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    pipe_data_t * pipe = NULL;
+
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )dev_data->rx_channel;
+        pipe = dev_pipe( dev_offset );
+    }
+
+    return pipe;
+}
+
+pipe_data_t * device_get_tx_pipe( device_t * dev )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    pipe_data_t * pipe = NULL;
+
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )dev_data->tx_channel;
+        pipe = dev_pipe( dev_offset );
+    }
+
+    return pipe;
 }
 
 void device_close( device_t * dev )
