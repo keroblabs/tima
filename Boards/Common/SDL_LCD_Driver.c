@@ -10,12 +10,14 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <pthread.h>
 #endif
 
 #include "types.h"
 #include "device.h"
 #include "system.h"
 #include "lcd.h"
+#include "pipe.h"
 
 ///////////////////////////////////////////////////////////////
 
@@ -339,13 +341,6 @@ uint32_t ms_timer_hw_get_ms( void )
 
 void sdl_init( void )
 {
-    //Initialize SDL
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-    {
-        printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-		return;
-    }
-
 	key_flag = 0;
 	key_code = 0;
 	v_sync = FALSE;
@@ -405,15 +400,52 @@ void sdl_set_backlight( bool_t state )
 {
 }
 
+#if 0
+
+int _fe_main( void * args );
+
+static void sdl_start_app_thread( void * data )
+{
+    SDL_Thread *thread;
+    int         threadReturnValue;
+    
+    printf("Simple SDL_CreateThread test:\n");
+    
+    /* Simply create a thread */
+    thread = SDL_CreateThread(_fe_main, "TestThread", (void *)data);
+    
+    if (NULL == thread)
+    {
+        printf("SDL_CreateThread failed: %s\n", SDL_GetError());
+    }
+    else
+    {
+        SDL_WaitThread(thread, &threadReturnValue);
+        printf("Thread returned value: %d\n", threadReturnValue);
+    }
+}
+
 #if defined __MACH__
 int SDL_main( int argc, char* argv[] )
 #else
 int main( int argc, char* argv[] )
 #endif
 {
-    int _fe_main( void * args );
-    return _fe_main(NULL);
+#if 0
+    _fe_main(NULL);
+#else
+    //Initialize SDL
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+    {
+        printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+        return 0;
+    }
+
+    sdl_start_app_thread(NULL);
+#endif
+    return 0;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////
 
@@ -502,4 +534,4 @@ const static device_data_t keypad_device =
 };
 
 DECLARE_DEVICE_SECTION( keypad_device );
-DECLARE_PROCESS_SECTION( sdl_do_events );
+// DECLARE_PROCESS_SECTION( sdl_do_events );

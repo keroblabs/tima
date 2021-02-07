@@ -3,13 +3,13 @@
 
 ///////////////////////////////////////////////////////////////
 
-static device_t * dev_debug;
+static device_t * dev_debug = NULL;
 
 ///////////////////////////////////////////////////////////////
 
-
 void debug_init( void )
 {
+    if( dev_debug != NULL ) return;
 	uint32_t baud = 115200;
     dev_debug = NULL;
     dev_debug = device_open( DEV_PRINTK );

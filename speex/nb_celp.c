@@ -938,7 +938,7 @@ int nb_decode(SpeexBits *bits, void *vout)
             /* Decode second codebook (only for some modes) - only for 24 kpbs */
             if (DEC_SUBMODE(double_codebook))
             {
-               char *tmp_stack=NULL;
+               //char *tmp_stack=NULL;
 
 			   SPEEX_MEMSET(dec_mmu._innov2, 0, NB_SUBFRAME_SIZE);
 			   
@@ -1313,5 +1313,35 @@ void nb_decode_vocoder_submode1( spx_word16_t * exc, int ol_pitch, spx_word16_t 
     }
 }
 
+void nb_speex_init( speex_data_t * data, uint32_t rate )
+{
+    // init speex
+    data->mode = speex_lib_get_mode();
+    spx_int32_t speex_bitrate = ( spx_int32_t )rate;
 
+    /* Speex encoding initializations */
+    data->enc_state = nb_encoder_init(data->mode);
+    nb_encoder_ctl( data->enc_state, SPEEX_SET_BITRATE, &speex_bitrate );
+    speex_bits_init(&data->enc_bits);
 
+    /* speex decoding initialization */
+    data->dec_state = nb_decoder_init(data->mode);
+    speex_bits_init(&data->dec_bits);
+}
+
+uint16_t nb_speex_encode( speex_data_t * data, int16_t * input, uint8_t * output, uint32_t max_size )
+{
+    uint16_t nbytes;
+
+    nb_encode( data->enc_state, input, &data->enc_bits );
+    nbytes = speex_bits_write( &data->enc_bits, ( char * )output, max_size );
+    speex_bits_reset( &data->enc_bits );
+
+    return nbytes;
+}
+
+void nb_speex_decode( speex_data_t * data, uint8_t * input, uint32_t size, int16_t * output )
+{
+    speex_bits_read_from(&data->dec_bits, ( char * )input, size);
+    nb_decode(&data->dec_bits, ( spx_int16_t * )output);
+}

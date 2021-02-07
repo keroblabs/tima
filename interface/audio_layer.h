@@ -6,6 +6,7 @@
 #include "types.h"
 //#include "device.h"
 #include "lists.h"
+#include "pipe.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,11 +26,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+typedef void ( *audio_process_t )( void * pp_data );
+
 typedef struct _audio_data_t_
 {
-	LIST_HEADER;
+	list_node_t node;
 
 	void * audio_device;
+    void * pp_data;
+    audio_process_t proc;
     
 	int16_t * buffer;
 	int16_t * buffer_ready;
@@ -44,7 +49,7 @@ typedef struct _audio_data_t_
 
 ////////////////////////////////////////////////////////////////////////////////
 
-audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask );
+audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask, audio_process_t proc, void * pp_data );
 
 void audio_stop( audio_data_t * audio );
 
@@ -54,6 +59,9 @@ uint32_t audio_codec_cmd( audio_data_t * audio, uint32_t command, uint32_t param
 
 int16_t * audio_get_buffer( audio_data_t * audio );
 bool_t audio_is_ready( audio_data_t * audio );
+
+void audio_layer_process( void );
+void audio_layer_init( void );
 
 ////////////////////////////////////////////////////////////////////////////////
 

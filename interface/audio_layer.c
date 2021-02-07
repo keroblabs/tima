@@ -1,23 +1,72 @@
 #include "system.h"
 #include "audio_layer.h"
 #include "tima_libc.h"
-#include "lists.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static list_t * p_audio_list = NULL;
+static list_t     audio_list;
 static device_t * p_dev_audio_in;
 static device_t * p_dev_audio_out;
+
+////////////////////////////////////////////////////////////////////////////////
+
+static void audio_layer_copy_stereo_to_mono( int16_t * output, int16_t * input )
+{
+    int16_t * p_sample = output;
+    int32_t audio32;
+    int cnt;
+    
+    // for mono instances, mix left and right
+    for( cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
+    {
+        audio32 = ( input[cnt] + input[cnt+1] ) >> 1;
+        *( p_sample ) = ( int16_t )audio32;
+        p_sample++;
+    }
+}
+
+static void audio_layer_mix( int16_t * output, int16_t * input, bool_t is_input_stereo, bool_t is_first_mix )
+{
+    int cnt;
+    int16_t * p_sample = input;
+    
+    if( is_first_mix )
+    {
+        if( is_input_stereo )
+        {
+            memcpy( p_sample, input, AUDIO_BUFFER_STEREO_SIZE * sizeof( int16_t ) );
+        }
+        else
+        {
+            for( cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
+            {
+                output[cnt] = *( p_sample );
+                output[cnt+1] = *( p_sample );
+                p_sample++;
+            }
+        }
+    }
+    else
+    {
+        for( cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
+        {
+            output[cnt] = ( *( p_sample ) + output[cnt] ) >> 1;
+            if( is_input_stereo ) p_sample++;
+            output[cnt+1] = ( *( p_sample ) + output[cnt+1] ) >> 1;
+            p_sample++;
+        }
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void audio_layer_init( void )
 {
 	p_dev_audio_in = p_dev_audio_out = NULL;
-	p_audio_list = list_create();
+    list_init( &audio_list, NULL );
 }
 
-audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask )
+audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask, audio_process_t proc, void * pp_data )
 {
 	audio_data_t * p_audio;
 	char str_audio_dev[20];
@@ -37,7 +86,9 @@ audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask
 
 	p_audio->mask &= ~AUDIO_STATUS_READY;
 	p_audio->mask &= ~AUDIO_STATUS_STOP;
-	p_audio->p_next = NULL;
+    
+    p_audio->proc = proc;
+    p_audio->pp_data = pp_data;
 
 	if( p_audio->mask & AUDIO_MODE_STEREO )
 	{
@@ -63,7 +114,7 @@ audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask
 	{
 		if( p_dev_audio_in == NULL )
 		{
-			sprintk( str_audio_dev, "/dev/audio:%d,in", sample_rate );
+			sprintk( str_audio_dev, "/dev/audio?%d,in", sample_rate );
 			p_dev_audio_in = device_open( str_audio_dev );
 		}
 
@@ -78,7 +129,7 @@ audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask
 	}
 
 	// append to the list
-	list_add( p_audio_list, p_audio );
+	list_insert_tail( &audio_list, &p_audio->node );
 
 	return p_audio;
 }
@@ -96,167 +147,75 @@ uint32_t audio_codec_cmd( audio_data_t * audio, uint32_t command, uint32_t param
 
 void audio_stop( audio_data_t * audio )
 {
-	list_remove_by_pointer( p_audio_list, audio );
-	MFREE( audio );
-}
-
-int16_t * audio_layer_get_buffer( void )
-{
-	int16_t * temp_audio_buffer;
-
-	temp_audio_buffer = ( int16_t * )MMALLOC( AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
-	if( temp_audio_buffer == NULL ) return NULL;
-
-	return temp_audio_buffer;
-}
-
-void audio_layer_release_buffer( int16_t * buffer )
-{
-	MFREE( buffer );
-}
-
-bool_t audio_layer_get_status( device_t * p_dev )
-{
-	uint32_t status;
-
-	if( p_dev == NULL ) return FALSE;
-	status = 0;
-	device_ioctrl( p_dev, DEVICE_GET_RUNTIME_VALUE, &status );
-	if( status == 0 ) return FALSE;
-
-	return TRUE;
+    list_remove( &audio_list, &audio->node );
 }
 
 void audio_layer_input_process( void )
 {
-	audio_data_t * p_audio;
-	uint32_t cnt;
-	int16_t * p_sample;
-	int16_t * temp_audio_buffer;
-	int32_t audio32;
+	audio_data_t * p_audio = NULL;
+	int16_t * input_audio_buffer;
 
 	// check audio driver 
-	if( audio_layer_get_status( p_dev_audio_in ) == FALSE ) return;
-
-	// prepare temporary audio buffer
-	temp_audio_buffer = audio_layer_get_buffer();
-	if( temp_audio_buffer == NULL ) return;
-
-	// read the incoming audio
-	device_read_buffer( p_dev_audio_in, ( uint8_t * )temp_audio_buffer, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
-
-	cnt = 0;
-	while( ( p_audio = ( audio_data_t * )list_locate_by_index( p_audio_list, cnt ) ) != NULL )
+    input_audio_buffer = ( int16_t * )device_pipe_read_input( p_dev_audio_in, NULL );
+    if( input_audio_buffer == NULL ) return;
+    
+    while( ( p_audio = ( audio_data_t * )list_get_next( &audio_list, p_audio ? &p_audio->node : NULL ) ) != NULL )
 	{
 		if( p_audio->mask & AUDIO_MODE_INPUT )
 		{
-			// get an input instance
-			p_sample = p_audio->buffer;
-	
 			if( p_audio->mask & AUDIO_MODE_STEREO )
 			{
 				// if the instance is stereo, copy the whole frame
-				memcpy( p_sample, temp_audio_buffer, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
+				memcpy( p_audio->buffer, input_audio_buffer, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
 			}
 			else
 			{
 				// for mono instances, mix left and right
-				for( cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
-				{
-					audio32 = ( temp_audio_buffer[cnt] + temp_audio_buffer[cnt+1] ) >> 1;
-					*( p_sample ) = audio32;
-					p_audio++;
-				}
+                audio_layer_copy_stereo_to_mono( p_audio->buffer, input_audio_buffer );
 			}
 
 			// set this instance as ready
 			p_audio->mask |= AUDIO_STATUS_READY;
 			p_audio->buffer_ready = p_audio->buffer;
+            
+            if( p_audio->proc != NULL ) p_audio->proc( p_audio->pp_data );
 		}
-		cnt++;
 	}
-
-	audio_layer_release_buffer( temp_audio_buffer );
 }
 
 void audio_layer_output_process( void )
 {
-	audio_data_t * p_audio;
-	uint32_t cnt;
-	uint32_t sample_cnt;
+    audio_data_t * p_audio = NULL;
 	bool_t is_first;
-	int16_t * p_sample;
-	int16_t * temp_audio_buffer;
+    int16_t * output_audio_buffer;
 
-	// check for audio status
-	if( audio_layer_get_status( p_dev_audio_out ) == FALSE ) return;
-
-	// prepare temporary audio buffer
-	temp_audio_buffer = audio_layer_get_buffer();
-	if( temp_audio_buffer == NULL ) return;
-
-	// prepare audio buffer
+    // prepare audio buffer
+    output_audio_buffer = ( int16_t * )device_pipe_read_output( p_dev_audio_out, NULL );
+    if( output_audio_buffer == NULL ) return;
+    
 	is_first = TRUE;
-	memset( temp_audio_buffer, 0x00, sizeof(temp_audio_buffer) );
 
-	cnt = 0;
-	while( ( p_audio = ( audio_data_t * )list_locate_by_index( p_audio_list, cnt ) ) != NULL )
+    while( ( p_audio = ( audio_data_t * )list_get_next( &audio_list, p_audio ? &p_audio->node : NULL ) ) != NULL )
 	{
 		if( p_audio->mask & AUDIO_MODE_OUTPUT )
 		{
-			// get an output instance
-			p_sample = p_audio->buffer;
-
-			// for the first instance in the list, just place the audio onto the buffer (stereo)
-			// or duplicate the audio for both channels (mono).
-			// for the following instances, mix the audio
-			if( is_first )
-			{
-				// in order to optimize
-				for( sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
-				{
-					temp_audio_buffer[sample_cnt] = *( p_sample );
-					if( p_audio->mask & AUDIO_MODE_STEREO ) p_sample++;
-					temp_audio_buffer[sample_cnt+1] = *( p_sample );
-
-					p_sample++;
-				}
-			}
-			else
-			{
-				for( sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
-				{
-					temp_audio_buffer[sample_cnt] = ( *( p_sample ) + temp_audio_buffer[sample_cnt] ) >> 1;
-					if( p_audio->mask & AUDIO_MODE_STEREO ) p_sample++;
-					temp_audio_buffer[sample_cnt+1] = ( *( p_sample ) + temp_audio_buffer[sample_cnt+1] ) >> 1;
-
-					p_sample++;
-				}
-			}
+            audio_layer_mix( output_audio_buffer, p_audio->buffer, ( p_audio->mask & AUDIO_MODE_STEREO ) ? TRUE : FALSE, is_first );
 
 			// indicate this instance is processed
 			is_first = FALSE;
 			p_audio->mask |= AUDIO_STATUS_READY;
 			p_audio->buffer_ready = p_audio->buffer;
+
+            if( p_audio->proc != NULL ) p_audio->proc( p_audio->pp_data );            
 		}
-
-		cnt++;
 	}
-
-	// if there was any processed instance, send the audio to the driver
-	if( is_first == FALSE )
-	{
-		device_write_buffer( p_dev_audio_out, ( uint8_t * )temp_audio_buffer, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
-	}
-
-	audio_layer_release_buffer( temp_audio_buffer );
 }
 
 void audio_layer_process( void )
 {
-	if( list_is_empty( p_audio_list ) ) return;
-	audio_layer_output_process();
-	audio_layer_input_process();
+    if( list_size( &audio_list ) == 0 ) return;
+	if( p_dev_audio_out != NULL ) audio_layer_output_process();
+	if( p_dev_audio_in != NULL  ) audio_layer_input_process();
 }
 
 int16_t * audio_get_buffer( audio_data_t * audio )

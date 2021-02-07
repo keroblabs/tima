@@ -114,6 +114,64 @@ device_data_t * _device_search( const char * name, uint32_t * index )
     return NULL;
 }
 
+static uint8_t * device_pipe_read_internal( device_t * dev, uint16_t * size, bool_t is_tx )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    uint8_t * data = NULL;
+    
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )( is_tx ? dev_data->tx_channel : dev_data->rx_channel );
+        pipe_data_t * pipe = dev_pipe( dev_offset );
+        data = pipe_read( pipe, size );
+    }
+    
+    return data;
+}
+
+static void device_pipe_write_internal( device_t * dev, uint8_t * buffer, uint16_t size, bool_t is_tx )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )( is_tx ? dev_data->tx_channel : dev_data->rx_channel );
+        pipe_data_t * pipe = dev_pipe( dev_offset );
+        pipe_write( pipe, buffer, size );
+    }
+}
+
+static void device_pipe_send_buffer_internal( device_t * dev, uint8_t * buffer, uint16_t size, bool_t is_tx )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )( is_tx ? dev_data->tx_channel : dev_data->rx_channel );
+        pipe_data_t * pipe = dev_pipe( dev_offset );
+        pipe_send_buffer( pipe, buffer, size );
+    }
+}
+
+static bool_t device_pipe_has_data( device_t * dev, bool_t is_tx )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    bool_t ret = FALSE;
+    
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )( is_tx ? dev_data->tx_channel : dev_data->rx_channel );
+        pipe_data_t * pipe = dev_pipe( dev_offset );
+        ret = pipe_has_data( pipe );
+    }
+    
+    return ret;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 bool_t device_open_ex( const char * name, device_t * dev )
@@ -411,7 +469,22 @@ uint8_t device_read( device_t * dev )
     return data;
 }
 
-pipe_data_t * device_get_rx_pipe( device_t * dev )
+pipe_data_t * device_get_pipe_output( device_t * dev )
+{
+    uint32_t dev_offset = dev->device_index;
+    device_data_t * dev_data = dev->device_ptr;
+    pipe_data_t * pipe = NULL;
+    
+    if( dev_data->dev_mode == DEV_MODE_PIPE )
+    {
+        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )dev_data->tx_channel;
+        pipe = dev_pipe( dev_offset );
+    }
+    
+    return pipe;
+}
+
+pipe_data_t * device_get_pipe_input( device_t * dev )
 {
     uint32_t dev_offset = dev->device_index;
     device_data_t * dev_data = dev->device_ptr;
@@ -426,19 +499,44 @@ pipe_data_t * device_get_rx_pipe( device_t * dev )
     return pipe;
 }
 
-pipe_data_t * device_get_tx_pipe( device_t * dev )
+uint8_t * device_pipe_read_output( device_t * dev, uint16_t * size )
 {
-    uint32_t dev_offset = dev->device_index;
-    device_data_t * dev_data = dev->device_ptr;
-    pipe_data_t * pipe = NULL;
+    return device_pipe_read_internal( dev, size, TRUE );
+}
 
-    if( dev_data->dev_mode == DEV_MODE_PIPE )
-    {
-        dev_pipe_mode_t dev_pipe = ( dev_pipe_mode_t )dev_data->tx_channel;
-        pipe = dev_pipe( dev_offset );
-    }
+uint8_t * device_pipe_read_input( device_t * dev, uint16_t * size )
+{
+    return device_pipe_read_internal( dev, size, FALSE );
+}
 
-    return pipe;
+void device_pipe_write_output( device_t * dev, uint8_t * buffer, uint16_t size )
+{
+    device_pipe_write_internal( dev, buffer, size, TRUE );
+}
+
+void device_pipe_write_input( device_t * dev, uint8_t * buffer, uint16_t size )
+{
+    device_pipe_write_internal( dev, buffer, size, FALSE );
+}
+
+void device_pipe_send_buffer_output( device_t * dev, uint8_t * buffer, uint16_t size )
+{
+    device_pipe_send_buffer_internal( dev, buffer, size, TRUE );
+}
+
+void device_pipe_send_buffer_input( device_t * dev, uint8_t * buffer, uint16_t size )
+{
+    device_pipe_send_buffer_internal( dev, buffer, size, FALSE );
+}
+
+bool_t device_pipe_has_data_output( device_t * dev )
+{
+    return device_pipe_has_data( dev, TRUE );
+}
+
+bool_t device_pipe_has_data_input( device_t * dev )
+{
+    return device_pipe_has_data( dev, FALSE );
 }
 
 void device_close( device_t * dev )

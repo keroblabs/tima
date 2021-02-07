@@ -1,59 +1,49 @@
+#ifdef WIN32
+#include <SDL.h>
+#include <Windows.h>
+#include <conio.h>
+#elif defined __MACH__
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 #include "audio_layer.h"
 #include "portaudio.h"
 #include "system.h"
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 
-#define AUDIO_TOTAL_BUFFERS				2
+#define AUDIO_INDEX_OUTPUT              0
+#define AUDIO_INDEX_INPUT               1
 
-////////////////////////////////////////////////////////////////////////////////
+#define AUDIO_TEMP_BUFFER_COUNT         4
 
-#if 0
+#define AUDIO_CHANNELS                  2
+#define AUDIO_SAMPLE_COUNTER            160
+
+///////////////////////////////////////////////////////////////
 
 typedef struct WaveDeviceDataT
 {
     PaStreamParameters streamParameters;
     PaStream *stream;
-    
-    void * wave_hdl;
 
-} wave_dev_t;
+    int device;
+    uint32_t sample_rate;
+    pipe_data_t pipe;
+    int16_t buffer[AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS * AUDIO_TEMP_BUFFER_COUNT];
+    uint32_t pointer;
 
-////////////////////////////////////////////////////////////////////////////////
-
-wave_dev_t wave_dev_out;
-wave_dev_t wave_dev_in;
-
-////////////////////////////////////////////////////////////////////////////////
-
-void audio_driver_init( audio_data_t * audio );
-void audio_dma_out_start( audio_data_t * audio );
-void audio_dma_in_start( audio_data_t * audio );
-void audio_dma_out_stop( audio_data_t * audio );
-void audio_dma_in_stop( audio_data_t * audio );
-
-uint32_t audio_driver_codec_cmd( audio_data_t * audio, uint32_t command, uint32_t param );
+} audio_dev_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int audio_playback_callback( const void *inputBuffer, void *outputBuffer,
-                                    unsigned long framesPerBuffer,
-                                    const PaStreamCallbackTimeInfo* timeInfo,
-                                    PaStreamCallbackFlags statusFlags,
-                                    void *userData )
-{
-    audio_data_t *audio = ( audio_data_t * )userData; //  is the used defined data
-    int16_t * p_audio;
-    
-    p_audio = ( int16_t * )outputBuffer;
-    
-    if( audio->on_audio_event != NULL )
-    {
-        audio->on_audio_event( audio, p_audio );
-    }
-    
-    return 0;
-}
+static audio_dev_t audio_devs[2];
+
+////////////////////////////////////////////////////////////////////////////////
 
 static int audio_recording_callback( const void *inputBuffer, void *outputBuffer,
                                      unsigned long framesPerBuffer,
@@ -61,117 +51,191 @@ static int audio_recording_callback( const void *inputBuffer, void *outputBuffer
                                      PaStreamCallbackFlags statusFlags,
                                      void *userData )
 {
-    audio_data_t *audio = ( audio_data_t * )userData; //  is the used defined data
-    int16_t * p_audio;
+    audio_dev_t * audio_dev = ( audio_dev_t * )userData; //  is the used defined data
+    const int16_t * p_audio = ( const int16_t * )inputBuffer;
+    uint16_t size = AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS * sizeof( int16_t );
     
-    p_audio = ( int16_t * )inputBuffer;
+    if( p_audio != NULL ) memcpy( &audio_dev->buffer[audio_dev->pointer], p_audio, size );
+    else memset( &audio_dev->buffer[audio_dev->pointer], 0x00, size );
     
-    if( audio->on_audio_event != NULL )
+    pipe_write( &audio_dev->pipe, ( uint8_t * )&audio_dev->buffer[ audio_dev->pointer ], size );
+    
+    audio_dev->pointer += AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS;
+    if( audio_dev->pointer >= ( AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS * AUDIO_TEMP_BUFFER_COUNT ) )
     {
-        audio->on_audio_event( audio, p_audio );
+        audio_dev->pointer = 0;
     }
     
     return 0;
 }
 
-uint32_t audio_driver_codec_cmd( audio_data_t * audio, uint32_t command, uint32_t param )
+static int audio_playback_callback( const void *inputBuffer, void *outputBuffer,
+                                    unsigned long framesPerBuffer,
+                                    const PaStreamCallbackTimeInfo* timeInfo,
+                                    PaStreamCallbackFlags statusFlags,
+                                    void *userData )
 {
-	return 0;
+    audio_dev_t * audio_dev = ( audio_dev_t * )userData; //  is the used defined data
+    int16_t * p_audio = ( int16_t * )outputBuffer;
+    uint16_t size = AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS * sizeof( int16_t );
+    
+    memcpy( p_audio, &audio_dev->buffer[audio_dev->pointer], size );
+
+    audio_dev->pointer += AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS;
+    if( audio_dev->pointer >= ( AUDIO_SAMPLE_COUNTER * AUDIO_CHANNELS * AUDIO_TEMP_BUFFER_COUNT ) )
+    {
+        audio_dev->pointer = 0;
+    }
+    
+    pipe_write( &audio_dev->pipe, ( uint8_t * )&audio_dev->buffer[ audio_dev->pointer ], size );
+
+    return 0;
 }
 
-void audio_driver_init( audio_data_t * audio )
+static int hw_init_audio_ex( int rec, audio_dev_t * audio_dev )
 {
     PaError err;
 
-    audio->handler = NULL;
-    
     err = Pa_Initialize();
-    if( err != paNoError ) return;
+    if( err != paNoError ) return 0;
 
-    if( audio->is_output == TRUE )
-	{
-		audio->handler = &wave_dev_out;
+    pipe_init( &audio_dev->pipe, rec ? "PIPE_AUDIO_REC" : "PIPE_AUDIO_PLAY", AUDIO_TEMP_BUFFER_COUNT );
+    memset( &audio_dev->buffer, 0x00, sizeof( audio_dev->buffer ) );
+    audio_dev->pointer = 0;
 
-		wave_dev_out.streamParameters.device = Pa_GetDefaultOutputDevice();
-		wave_dev_out.streamParameters.suggestedLatency = Pa_GetDeviceInfo( wave_dev_out.streamParameters.device )->defaultLowOutputLatency;
-		wave_dev_out.streamParameters.channelCount = 2;
-		wave_dev_out.streamParameters.sampleFormat = paInt16;
-		wave_dev_out.streamParameters.hostApiSpecificStreamInfo = NULL;
+    audio_dev->streamParameters.device           = rec ? Pa_GetDefaultInputDevice() : Pa_GetDefaultOutputDevice();
+    audio_dev->streamParameters.suggestedLatency = rec ? Pa_GetDeviceInfo( audio_dev->streamParameters.device )->defaultLowInputLatency :
+                                                         Pa_GetDeviceInfo( audio_dev->streamParameters.device )->defaultLowOutputLatency;
+    audio_dev->streamParameters.channelCount = 2;
+    audio_dev->streamParameters.sampleFormat = paInt16;
+    audio_dev->streamParameters.hostApiSpecificStreamInfo = NULL;
+    
+    err = Pa_OpenStream( &audio_dev->stream,
+                         rec ? &audio_dev->streamParameters : NULL,
+                         rec ? NULL : &audio_dev->streamParameters,
+                         audio_dev->sample_rate,
+                         AUDIO_BUFFER_SIZE,
+                         paClipOff,
+                         rec ? audio_recording_callback : audio_playback_callback,
+                         audio_dev );
+    if( err != paNoError ) return 0;
+    
+    err = Pa_StartStream( audio_dev->stream );
+    if( err != paNoError ) return 0;
 
-		err = Pa_OpenStream( &wave_dev_out.stream,
-							 NULL,
-							 &wave_dev_out.streamParameters,
-							 audio->sample_rate,
-							 AUDIO_BUFFER_SIZE,
-							 paClipOff,
-							 audio_playback_callback,
-							 audio );
-	}
-	else 
-	{
-		audio->handler = &wave_dev_in;
-
-		wave_dev_in.streamParameters.device = Pa_GetDefaultInputDevice();
-		wave_dev_in.streamParameters.suggestedLatency = Pa_GetDeviceInfo( wave_dev_in.streamParameters.device )->defaultLowInputLatency;
-		wave_dev_in.streamParameters.channelCount = 2;
-		wave_dev_in.streamParameters.sampleFormat = paInt16;
-		wave_dev_in.streamParameters.hostApiSpecificStreamInfo = NULL;
-
-		err = Pa_OpenStream( &wave_dev_in.stream,
-							 &wave_dev_in.streamParameters,
-							 NULL,
-							 audio->sample_rate,
-							 AUDIO_BUFFER_SIZE,
-							 paClipOff,
-							 audio_recording_callback,
-							 audio );
-	}
-
-    if( err != paNoError ) return;
+    return rec + 1;
 }
 
-void audio_dma_out_start( audio_data_t * audio )
+static void hw_close_audio( audio_dev_t * audio_dev )
 {
-	wave_dev_t * dev_wave = ( wave_dev_t * )audio->handler;
-    Pa_StartStream( dev_wave->stream );
+    Pa_StopStream( audio_dev->stream );
+    Pa_CloseStream( audio_dev->stream );
 }
 
-void audio_dma_in_start( audio_data_t * audio )
+///////////////////////////////////////////////////////////////
+
+static void audio_driver_global_init( void )
 {
-	wave_dev_t * dev_wave = ( wave_dev_t * )audio->handler;
-    Pa_StartStream( dev_wave->stream );
+    audio_devs[0].device = FALSE;
+    audio_devs[1].device = FALSE;
+    
+    Pa_Initialize();
+    int total = ( int )Pa_GetDeviceCount();
+    
+    for( int i = 0; i < total; i++ )
+    {
+        const PaDeviceInfo * info = Pa_GetDeviceInfo( (PaDeviceIndex)i );
+        printf( "PA info %s\n", info->name );
+    }
 }
 
-void audio_dma_out_stop( audio_data_t * audio )
+static void audio_driver_open( uint32_t index )
 {
-	wave_dev_t * dev_wave = ( wave_dev_t * )audio->handler;
-    Pa_StopStream( dev_wave->stream );
-    Pa_CloseStream( dev_wave->stream );
+    if( audio_devs[index].device != 0 ) return;
+    audio_devs[index].device = hw_init_audio_ex( index, &audio_devs[index] );
 }
 
-void audio_dma_in_stop( audio_data_t * audio )
+static void audio_driver_close( uint32_t index )
 {
-	wave_dev_t * dev_wave = ( wave_dev_t * )audio->handler;
-    Pa_StopStream( dev_wave->stream );
-    Pa_CloseStream( dev_wave->stream );
+    if( audio_devs[index].device == 0 ) return;
+    hw_close_audio( &audio_devs[index] );
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-static const audio_driver_t _win_audio_driver = 
+static int audio_driver_get_index( char * param )
 {
-	audio_driver_init,
+    char temp_param[20];
+    char * arg0, * arg1;
+    uint8_t audio_mask;
+    int index = -1;
+    
+    if( param[0] != '?' ) return -1;
+    
+    strncpy( temp_param, param, 19 );
+    
+    arg0 = &temp_param[1];
+    arg1 = strchr( arg0, ',' ); if( arg1 == NULL ) return -1; *arg1 = 0; arg1++;
+    
+    audio_mask = 0;
+    
+    if( !strcmp( arg1, "out" ) ) index = AUDIO_INDEX_OUTPUT;
+    else if( !strcmp( arg1, "in" ) ) index = AUDIO_INDEX_INPUT;
+    else return -1;
+    
+    audio_devs[index].sample_rate = atoi(arg0);
+    //if( !strcmp( arg0, "8000" ) ) sample_rate = 8000;
+    //else return -1;
+    
+    return index;
+}
 
-	audio_driver_codec_cmd,
+static bool_t audio_driver_validate( uint32_t index )
+{
+    if( index == 0 ) return TRUE;
+    return FALSE;
+}
 
-	audio_dma_out_start,
-	audio_dma_in_start,
-	audio_dma_out_stop,
-	audio_dma_in_stop,
+static uint32_t audio_driver_io_ctrl( uint32_t index, uint32_t param, void * value )
+{
+    if( param == DEVICE_SET_RUNTIME_VALUE )
+    {
+        // set volume to the audio DAC, if there is any
+    }
+    
+    return 0;
+}
+
+static pipe_data_t * audio_input_pipe( void )
+{
+    return &audio_devs[AUDIO_INDEX_INPUT].pipe;
+}
+
+static pipe_data_t * audio_output_pipe( void )
+{
+    return &audio_devs[AUDIO_INDEX_OUTPUT].pipe;
+}
+
+///////////////////////////////////////////////////////////////
+
+static bool_t _in_use;
+
+const static device_data_t audio_device_driver =
+{
+    "audio?",
+    &_in_use,
+    
+    audio_driver_open,
+    audio_driver_close,
+    NULL,
+    audio_driver_validate,
+    audio_driver_get_index,
+    audio_driver_io_ctrl,
+    NULL,
+    
+    DEV_MODE_PIPE,
+    
+    audio_input_pipe,
+    audio_output_pipe,
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-audio_driver_t * audio_driver = ( audio_driver_t * )&_win_audio_driver;
-
-#endif
+DECLARE_DEVICE_SECTION(audio_device_driver);
+DECLARE_INIT_CRITICAL_SECTION(audio_driver_global_init);

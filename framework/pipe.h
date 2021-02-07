@@ -81,6 +81,8 @@ int			pipe_printk( pipe_data_t *pipe, const char *fmt, ... );
 
 bool_t      pipe_is_full( pipe_data_t * pipe );
 bool_t      pipe_is_empty( pipe_data_t * pipe );
+bool_t      pipe_has_data( pipe_data_t * pipe );
+
 uint16_t    pipe_get_used( pipe_data_t * pipe );
 void        pipe_clear( pipe_data_t * pipe );
 

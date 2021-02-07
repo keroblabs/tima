@@ -113,10 +113,19 @@ uint32_t device_ioctrl( device_t * file, uint32_t param, void * data );
 uint32_t device_write_buffer( device_t * dev, uint8_t * data, uint32_t size );
 uint32_t device_read_buffer( device_t * dev, uint8_t * data, uint32_t size );
 
-pipe_data_t * device_get_rx_pipe( device_t * dev );
-pipe_data_t * device_get_tx_pipe( device_t * dev );
+pipe_data_t * device_get_pipe_output( device_t * dev );
+pipe_data_t * device_get_pipe_input( device_t * dev );
 
-uint8_t device_read( device_t * dev  );
+uint8_t * device_pipe_read_output( device_t * dev, uint16_t * size );
+uint8_t * device_pipe_read_input( device_t * dev, uint16_t * size );
+
+void device_pipe_write_output( device_t * dev, uint8_t * buffer, uint16_t size );
+void device_pipe_write_input( device_t * dev, uint8_t * buffer, uint16_t size );
+
+bool_t device_pipe_has_data_output( device_t * dev );
+bool_t device_pipe_has_data_input( device_t * dev );
+
+uint8_t device_read( device_t * dev );
 void device_write( device_t * dev, uint8_t data );
 
 void device_close( device_t * dev );

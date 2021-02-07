@@ -24,8 +24,6 @@ typedef struct can_comms_data_t_
 typedef struct can_dev_data_t_
 {
     device_t * device;
-    pipe_data_t * tx_pipe;
-    pipe_data_t * rx_pipe;
 
 } can_dev_data_t;
 
@@ -65,8 +63,6 @@ static void open_can_devices( void )
 
         sprintk( dev_name, "/dev/can?h%03x", can_comms_list[counter].filter );
         device_list[counter]->device = device_open( dev_name );
-        device_list[counter]->rx_pipe = device_get_rx_pipe( device_list[counter]->device );
-        device_list[counter]->tx_pipe = device_get_tx_pipe( device_list[counter]->device );
     }
 }
 
@@ -79,9 +75,9 @@ static void check_can_devices( void )
     {
         if( can_comms_list[counter].handler == NULL ) break;
 
-        if( ( device_list[counter]->device != NULL ) && ( pipe_is_empty( device_list[counter]->rx_pipe ) == FALSE ) )
+        if( ( device_list[counter]->device != NULL ) && ( device_pipe_has_data_input( device_list[counter]->device ) == FALSE ) )
         {
-            buffer = pipe_read( device_list[counter]->rx_pipe, NULL );
+            buffer = device_pipe_read_input( device_list[counter]->device, NULL );
             can_comms_list[counter].handler( &can_comms_list[counter], buffer );
             pipe_release_buffer( buffer );
         }
@@ -98,7 +94,7 @@ static void send_can_devices( uint16_t id, uint8_t * buffer )
 
         if( ( device_list[counter]->device != NULL ) && ( can_comms_list[counter].filter == id ) )
         {
-            pipe_send_buffer( device_list[counter]->tx_pipe, buffer, 8 );
+            device_pipe_send_buffer_output( device_list[counter]->device, buffer, 8 );
             break;
         }
     }

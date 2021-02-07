@@ -362,6 +362,11 @@ bool_t pipe_is_empty( pipe_data_t * pipe )
     return( ret );
 }
 
+bool_t pipe_has_data( pipe_data_t * pipe )
+{
+    return pipe_is_empty( pipe ) ? FALSE : TRUE;
+}
+
 uint16_t pipe_get_used( pipe_data_t * pipe )
 {
     uint16_t size;

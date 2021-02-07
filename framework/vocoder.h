@@ -4,6 +4,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "types.h"
+#include "pipe.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -12,22 +13,25 @@
 #define MAX_ENCODED_SIZE        64
 #define ENCODED_SIZE_8KHZ       20
 
-/////////////////////////////////////////////////////////////////////
+typedef enum
+{
+    VOCODER_MODE_NONE,
+    VOCODER_MODE_SPEEX,
+    VOCODER_MODE_BYPASS,
+} vocoder_mode_t;
 
 /////////////////////////////////////////////////////////////////////
 
-void * vocoder_init( uint8_t mode );
-void * vocoder_speex_init( uint8_t mode );
-void vocoder_destroy( void * pp_data );
+typedef void * vocoder_t;
 
-uint16_t vocoder_encode_voice( void * pp_data, int16_t * input, uint8_t * output );
+/////////////////////////////////////////////////////////////////////
 
-void vocoder_decode_voice( void * pp_data, uint8_t * input, uint16_t size, int16_t * output );
+vocoder_t vocoder_start( uint8_t vocoder_mode, uint16_t pipe_size, uint16_t decode_threshold );
 
-void vocoder_audio_stop( void * pp_data );
+void vocoder_audio_stop( vocoder_t pp_data );
 
-bool_t vocoder_audio_output_process( void * pp_data, uint8_t * buffer, uint16_t size );
-uint16_t vocoder_audio_input_process( void * pp_data, uint8_t * buffer, uint16_t max_size );
+pipe_data_t * vocoder_decoder_get_pipe( vocoder_t pp_data );
+pipe_data_t * vocoder_encoder_get_pipe( vocoder_t pp_data );
 
 /////////////////////////////////////////////////////////////////////
 

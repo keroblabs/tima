@@ -133,6 +133,20 @@ typedef struct DecState {
    int    dtx_enabled;
 } DecState;
 
+typedef struct _speex_data_t
+{
+    /* Holds the states of the encoder & the decoder */
+    void *enc_state;
+    void *dec_state;
+
+    /* Holds bits so they can be read and written by the Speex routines */
+    SpeexBits enc_bits;
+    SpeexBits dec_bits;
+
+    const SpeexMode *mode;
+
+} speex_data_t;
+
 /** Initializes encoder state*/
 void *nb_encoder_init(const SpeexMode *m);
 
@@ -158,5 +172,9 @@ int nb_encoder_ctl(void *state, int request, void *ptr);
 /** ioctl-like function for controlling a narrowband decoder */
 int nb_decoder_ctl(void *state, int request, void *ptr);
 
+/** Speex wrappers */
+void nb_speex_init( speex_data_t * data, uint32_t rate );
+uint16_t nb_speex_encode( speex_data_t * data, int16_t * input, uint8_t * output, uint32_t max_size );
+void nb_speex_decode( speex_data_t * data, uint8_t * input, uint32_t size, int16_t * output );
 
 #endif

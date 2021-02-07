@@ -1,6 +1,6 @@
 #include "system.h"
 
-#ifdef WANT_SPEEX
+#ifdef _WANT_SPEEX
 
 #include "audio_layer.h"
 #include "file.h"
@@ -42,7 +42,7 @@ static uint8_t stream[50];
 static uint8_t encoded_payload[256];
 static uint32_t rec_time;
 static uint32_t encoded_index;
-static int16_t audio_bypass[512];
+static int16_t audio_bypass[AUDIO_BUFFER_STEREO_SIZE];
 
 static uint32_t encoded_size;	
 static uint32_t decoded_size;	
@@ -51,7 +51,7 @@ static uint8_t command_mode;
 static bool_t is_recording_first;
 	
 static uint16_t scope_posx;
-static int16_t scope_data[800];
+static int16_t scope_data[AUDIO_BUFFER_STEREO_SIZE];
 
 ///////////////////////////////////////////////////////////////
 
@@ -95,14 +95,14 @@ void cmd_speex_process( void )
 	if( command_mode == SPEEX_COMMAND_PLAYBACK )
 	{
 		if( fp == NULL ) return;
-		if( efs_feof( fp ) )
+		if( file_feof( fp ) )
 		{
 			command_mode = SPEEX_COMMAND_FINISH;
 		}
 
 		if( vocoder_audio_output_process( p_vocoder, stream, encoded_size ) == TRUE )
 		{
-			efs_fread( stream, encoded_size, 1, fp );
+			file_fread( stream, encoded_size, 1, fp );
 		}
 	}
 	else if( command_mode == SPEEX_COMMAND_RECORD )
@@ -113,8 +113,8 @@ void cmd_speex_process( void )
 			if( is_recording_first == TRUE )
 			{
 				is_recording_first = FALSE;
-				efs_fwrite( ( uint8_t * )&decoded_size, sizeof( decoded_size ), 1, fp );
-				efs_fwrite( ( uint8_t * )&encoded_size, sizeof( encoded_size ), 1, fp );
+				file_fwrite( ( uint8_t * )&decoded_size, sizeof( decoded_size ), 1, fp );
+				file_fwrite( ( uint8_t * )&encoded_size, sizeof( encoded_size ), 1, fp );
 				rec_time = 0;
 			}
 
@@ -123,7 +123,7 @@ void cmd_speex_process( void )
 			encoded_index += encoded_size;
 			if( ( encoded_index + encoded_size ) >= 128 )
 			{
-				efs_fwrite( encoded_payload, encoded_index, 1, fp );
+				file_fwrite( encoded_payload, encoded_index, 1, fp );
 				encoded_index = 0;
 			}
 			rec_time += 20;
@@ -154,7 +154,7 @@ void cmd_speex_process( void )
 	if( command_mode == SPEEX_COMMAND_FINISH )
 	{
 		if( fp == NULL ) return;
-		efs_fclose( fp );
+		file_fclose( fp );
 		fp = NULL;
 		command_mode = SPEEX_COMMAND_NONE;
 		vocoder_audio_stop( p_vocoder );
@@ -178,14 +178,14 @@ int cmd_speex_record_handler( console_instance_t * p_instance, char * input )
 
 		if( fp != NULL )
 		{
-			efs_fclose( fp );
+			file_fclose( fp );
 		}
 
-		fp = efs_fopen( path, FS_MODE_WRITE );
+		fp = file_fopen( path, FS_MODE_WRITE );
 		if( fp == NULL ) return -1;
 
 		// write WAVE header (empty)
-		efs_fwrite( stream, 44, 1, fp );
+		file_fwrite( stream, 44, 1, fp );
 
 		decoded_size = DECODED_SIZE_8KBPS;
 		command_mode = SPEEX_COMMAND_RECORD;
@@ -227,21 +227,21 @@ int cmd_speex_play_handler( console_instance_t * p_instance, char * input )
 
 			if( fp != NULL )
 			{
-				efs_fclose( fp );
+				file_fclose( fp );
 			}
 
-			fp = efs_fopen( path, FS_MODE_READ );
+			fp = file_fopen( path, FS_MODE_READ );
 			if( fp == NULL ) return -1;
 
 			// skip WAVE header
-			efs_fread( stream, 44, 1, fp );
+			file_fread( stream, 44, 1, fp );
 
 			// read the frame size and total of bytes
-			efs_fread( ( uint8_t * )&decoded_size, sizeof( decoded_size ), 1, fp );
-			efs_fread( ( uint8_t * )&encoded_size, sizeof( encoded_size ), 1, fp );
+			file_fread( ( uint8_t * )&decoded_size, sizeof( decoded_size ), 1, fp );
+			file_fread( ( uint8_t * )&encoded_size, sizeof( encoded_size ), 1, fp );
 
 			// read the first audio frame
-			efs_fread( stream, encoded_size, 1, fp );
+			file_fread( stream, encoded_size, 1, fp );
 
 			command_mode = SPEEX_COMMAND_PLAYBACK;
 		}
