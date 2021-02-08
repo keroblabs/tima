@@ -30,7 +30,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-typedef void ( *trig_pipe_t )( void );
+typedef void ( *trig_pipe_t )( void * p_data );
 
 typedef struct
 {

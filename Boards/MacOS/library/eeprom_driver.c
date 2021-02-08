@@ -8,17 +8,28 @@
 
 //////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////
+
+uint8_t * cpu_get_rom_data( uint16_t * size );
+
+//////////////////////////////////////////////////////////////////
+
 static uint8_t sram_buffer[IMAGE_SIZE];
 
 //////////////////////////////////////////////////////////////////
 
-static int _unit_init( void )
+static int eeprom_init( void )
 {
     memset( sram_buffer, 0x00, IMAGE_SIZE );
 	return MAL_OK;
 }
 
-static int _unit_write_block( uint64_t addr, uint8_t * buffer, uint32_t size )
+static int rom_init( void )
+{
+    return MAL_OK;
+}
+
+static int eeprom_write_block( uint64_t addr, uint8_t * buffer, uint32_t size )
 {
     if( addr >= IMAGE_SIZE ) return MAL_FAIL;
     if( ( addr + size ) >= IMAGE_SIZE ) size = (uint32_t)(IMAGE_SIZE - addr);
@@ -26,7 +37,7 @@ static int _unit_write_block( uint64_t addr, uint8_t * buffer, uint32_t size )
 	return MAL_OK;
 }
 
-static int _unit_read_block( uint64_t addr, uint8_t * buffer, uint32_t size )
+static int eeprom_read_block( uint64_t addr, uint8_t * buffer, uint32_t size )
 {
     if( addr >= IMAGE_SIZE ) return MAL_FAIL;
     if( ( addr + size ) >= IMAGE_SIZE ) size = (uint32_t)(IMAGE_SIZE - addr);
@@ -34,25 +45,53 @@ static int _unit_read_block( uint64_t addr, uint8_t * buffer, uint32_t size )
 	return MAL_OK;
 }
 
-static uint32_t _unit_get_image_size( void )
+static int rom_read_block( uint64_t addr, uint8_t * buffer, uint32_t size )
+{
+    uint8_t rom_buffer[512];
+    uint16_t rom_size;
+    
+    uint8_t * input = cpu_get_rom_data( &rom_size );
+    if( input == NULL ) return MAL_FAIL;
+    
+    memset( rom_buffer, 0x00, sizeof( rom_buffer ) );
+    memcpy( rom_buffer, input, rom_size );
+    memcpy( buffer, &rom_buffer[addr], size );
+
+    return MAL_OK;
+}
+
+static int rom_write_block( uint64_t addr, uint8_t * buffer, uint32_t size )
+{
+    return MAL_FAIL;
+}
+
+static uint32_t eeprom_get_image_size( void )
 {
 	return IMAGE_SIZE/512;
 }
 
+static uint32_t rom_get_image_size( void )
+{
+    uint16_t rom_size;
+    cpu_get_rom_data( &rom_size );
+    return ( rom_size < 512 ) ? 1 : ( rom_size / 512 );
+}
+
 //////////////////////////////////////////////////////////////////
 
-static const char flash_mass_name[] = "/eeprom1";
+static const char eeprom_mass_name[] = "/eeprom1";
+static const char rom_mass_name[]    = "/rom";
 
 ///////////////////////////////////////////////////////////////////////////
 
 static const msd_driver_t eeprom_disc_mount =
 {
-	flash_mass_name,
+	eeprom_mass_name,
 
-    _unit_init,
-    _unit_write_block,
-    _unit_read_block,
-    _unit_get_image_size,
+    eeprom_init,
+    eeprom_write_block,
+    eeprom_read_block,
+    eeprom_get_image_size,
     NULL,
 	NULL,
 	0,
@@ -61,3 +100,22 @@ static const msd_driver_t eeprom_disc_mount =
 };
 
 DECLARE_STORAGE_DEVICE_SECTION( eeprom_disc_mount );
+
+///////////////////////////////////////////////////////////////////////////
+
+static const msd_driver_t rom_disc_mount =
+{
+    rom_mass_name,
+    
+    rom_init,
+    rom_write_block,
+    rom_read_block,
+    rom_get_image_size,
+    NULL,
+    NULL,
+    0,
+    0,
+    FALSE
+};
+
+DECLARE_STORAGE_DEVICE_SECTION( rom_disc_mount );

@@ -147,20 +147,10 @@ void sys_free( void * ptr );
 
 #define DEBUG_PRINTK(...)
 
-#if defined USE_MULTITHREAD
-//extern						cpu_api_t * CPU_driver;
-#define DI					CPU_driver->disable_irq
-#define EI					CPU_driver->enable_irq
-#else
-#define DI					_cpu_disable_irq
-#define EI					_cpu_enable_irq
-#endif
-
-void CPU_pio_reset( bool_t state );
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void _cpu_pio( bool_t state );
+#define DI					_cpu_disable_irq
+#define EI					_cpu_enable_irq
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

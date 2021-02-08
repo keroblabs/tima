@@ -131,8 +131,6 @@ uint16_t pipe_read_buffer( pipe_data_t * pipe, uint8_t * buffer, uint16_t max_si
 	
     if( pipe == NULL ) return( 0 );
 
-	if( pipe->trig_rx != NULL ) pipe->trig_rx();
-    
     DI();
 
     // buffer is empty
@@ -190,7 +188,8 @@ uint16_t pipe_read_buffer( pipe_data_t * pipe, uint8_t * buffer, uint16_t max_si
 
     EI();
     
-	return( copy_index );
+    if( pipe->trig_rx != NULL ) pipe->trig_rx( pipe );
+   	return( copy_index );
 }
 
 void pipe_clear( pipe_data_t * pipe )
@@ -213,7 +212,6 @@ uint8_t * pipe_read( pipe_data_t * pipe, uint16_t * size )
 	uint8_t * ret_value = NULL;
 
     if( pipe == NULL ) return( NULL );
-   	if( pipe->trig_rx != NULL ) pipe->trig_rx();
 
     DI();
     
@@ -241,6 +239,7 @@ uint8_t * pipe_read( pipe_data_t * pipe, uint16_t * size )
     
     EI();
     
+    if( pipe->trig_rx != NULL ) pipe->trig_rx( pipe );
 	return( ret_value );
 }
 
@@ -249,7 +248,6 @@ uint8_t * pipe_get( pipe_data_t * pipe, uint16_t * size )
     uint8_t * ret_value = NULL;
     
     if( pipe == NULL ) return( NULL );
-   	if( pipe->trig_rx != NULL ) pipe->trig_rx();
     
     DI();
     
@@ -268,6 +266,7 @@ uint8_t * pipe_get( pipe_data_t * pipe, uint16_t * size )
     
     EI();
     
+    if( pipe->trig_rx != NULL ) pipe->trig_rx( pipe );
     return( ret_value );
 }
 
@@ -283,7 +282,6 @@ void pipe_send_buffer( pipe_data_t * pipe, uint8_t * buffer, uint16_t size )
 void pipe_write( pipe_data_t * pipe, uint8_t * buffer, uint16_t size )
 {
     if( pipe == NULL ) return;
-   	if( pipe->trig_tx != NULL ) pipe->trig_tx();
 
     DI();
     
@@ -306,6 +304,8 @@ void pipe_write( pipe_data_t * pipe, uint8_t * buffer, uint16_t size )
 	if( pipe->pointer_out == pipe->max_size ) pipe->pointer_out = 0;
     
     EI();
+
+    if( pipe->trig_tx != NULL ) pipe->trig_tx( pipe );
 }
 
 int pipe_printk( pipe_data_t *pipe, const char *fmt, ... )
