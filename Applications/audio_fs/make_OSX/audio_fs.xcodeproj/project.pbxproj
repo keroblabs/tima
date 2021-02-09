@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6B0DDBF725CCB77000A9F9CF /* SDL_Audio_Driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B0DDBF625CCB77000A9F9CF /* SDL_Audio_Driver.c */; };
 		6B4850101C1B9A0200AF407D /* lp_filter.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B48500E1C1B9A0200AF407D /* lp_filter.c */; };
 		6B4861531BF00AAE00B14486 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B48614D1BF00AAE00B14486 /* draw.c */; };
 		6B4861541BF00AAE00B14486 /* graphics.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4861511BF00AAE00B14486 /* graphics.c */; };
@@ -19,7 +18,6 @@
 		6B4962A81C89C59400695CC5 /* socket_library.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4962A51C89C59400695CC5 /* socket_library.c */; };
 		6B4962AA1C8A049D00695CC5 /* net_lib.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4962A91C8A049D00695CC5 /* net_lib.c */; };
 		6B4C47091C62A551009E7AA1 /* libportaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B4C47081C62A551009E7AA1 /* libportaudio.a */; };
-		6B4C470B1C62A589009E7AA1 /* SDL_LCD_Driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C470A1C62A589009E7AA1 /* SDL_LCD_Driver.c */; };
 		6B4C47141C62A5B3009E7AA1 /* ms_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C470E1C62A5B3009E7AA1 /* ms_timer.c */; };
 		6B4C47151C62A5B3009E7AA1 /* printf_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C470F1C62A5B3009E7AA1 /* printf_driver.c */; };
 		6B4C47161C62A5B3009E7AA1 /* rtc_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4C47101C62A5B3009E7AA1 /* rtc_driver.c */; };
@@ -72,6 +70,14 @@
 		6B9005A425CC92CB00442996 /* high_lsp_tables.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058C25CC92CB00442996 /* high_lsp_tables.c */; };
 		6B9005A525CC92CB00442996 /* exc_5_256_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058D25CC92CB00442996 /* exc_5_256_table.c */; };
 		6B9005A625CC92CB00442996 /* lsp_tables_nb.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058E25CC92CB00442996 /* lsp_tables_nb.c */; };
+		6BA26D7A25D2E2EF0019DA76 /* SDL_Audio_Driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7625D2E2EF0019DA76 /* SDL_Audio_Driver.c */; };
+		6BA26D7B25D2E2EF0019DA76 /* SDL_input_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7725D2E2EF0019DA76 /* SDL_input_driver.c */; };
+		6BA26D7C25D2E2EF0019DA76 /* SDL_cpu_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7825D2E2EF0019DA76 /* SDL_cpu_driver.c */; };
+		6BA26D7D25D2E2EF0019DA76 /* SDL_LCD_Driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7925D2E2EF0019DA76 /* SDL_LCD_Driver.c */; };
+		6BA26D7F25D2F3C80019DA76 /* SDL_touch_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7E25D2F3C80019DA76 /* SDL_touch_driver.c */; };
+		6BA26D8325D2F8920019DA76 /* SDL_mac_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D8225D2F8920019DA76 /* SDL_mac_driver.c */; };
+		6BA26D8525D2F9670019DA76 /* SDL_instance.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D8425D2F9670019DA76 /* SDL_instance.c */; };
+		6BA26D8725D308480019DA76 /* SDL_startup.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D8625D308480019DA76 /* SDL_startup.c */; };
 		6BAADBF61BEC28F000B7BE2B /* device.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE61BEC28F000B7BE2B /* device.c */; };
 		6BAADBF71BEC28F000B7BE2B /* heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE81BEC28F000B7BE2B /* heap.c */; };
 		6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBEA1BEC28F000B7BE2B /* lcd.c */; };
@@ -104,7 +110,6 @@
 		6BCD77801E131949003A7227 /* vhd_library.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD777F1E131949003A7227 /* vhd_library.c */; };
 		6BD7374E25CEB15300C08650 /* audio_driver_PA.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BD7374D25CEB15300C08650 /* audio_driver_PA.c */; };
 		6BD7375125CF535E00C08650 /* info.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6BD7375025CF532000C08650 /* info.plist */; };
-		6BDA274725D0A767001DDED5 /* SDL_cpu_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BDA274625D0A767001DDED5 /* SDL_cpu_driver.c */; };
 		6BE468DC25CC93FA00247857 /* audio_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BE468DA25CC93FA00247857 /* audio_layer.c */; };
 		6BE468DF25CC942E00247857 /* lists.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BE468DD25CC942E00247857 /* lists.c */; };
 		6BFBA0D51BF604C500E53026 /* pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BFBA0D31BF604C500E53026 /* pipe.c */; };
@@ -125,7 +130,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6B0DDBF625CCB77000A9F9CF /* SDL_Audio_Driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_Audio_Driver.c; path = ../../../../Boards/Common/SDL_Audio_Driver.c; sourceTree = "<group>"; };
 		6B48500E1C1B9A0200AF407D /* lp_filter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lp_filter.c; path = ../../../../framework/lp_filter.c; sourceTree = "<group>"; };
 		6B48500F1C1B9A0200AF407D /* lp_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lp_filter.h; path = ../../../../framework/lp_filter.h; sourceTree = "<group>"; };
 		6B48614D1BF00AAE00B14486 /* draw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = draw.c; path = ../../../../graphics/draw.c; sourceTree = "<group>"; };
@@ -142,7 +146,6 @@
 		6B4962A51C89C59400695CC5 /* socket_library.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = socket_library.c; path = ../../../../Boards/MacOS/library/socket_library.c; sourceTree = "<group>"; };
 		6B4962A91C8A049D00695CC5 /* net_lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_lib.c; path = ../../../../c_lib/net_lib.c; sourceTree = "<group>"; };
 		6B4C47081C62A551009E7AA1 /* libportaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libportaudio.a; path = ../../../Boards/MacOS/portaudio/libportaudio.a; sourceTree = "<group>"; };
-		6B4C470A1C62A589009E7AA1 /* SDL_LCD_Driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_LCD_Driver.c; path = ../../../../Boards/Common/SDL_LCD_Driver.c; sourceTree = "<group>"; };
 		6B4C470E1C62A5B3009E7AA1 /* ms_timer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ms_timer.c; path = ../../../../Boards/MacOS/library/ms_timer.c; sourceTree = "<group>"; };
 		6B4C470F1C62A5B3009E7AA1 /* printf_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = printf_driver.c; path = ../../../../Boards/MacOS/library/printf_driver.c; sourceTree = "<group>"; };
 		6B4C47101C62A5B3009E7AA1 /* rtc_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rtc_driver.c; path = ../../../../Boards/MacOS/library/rtc_driver.c; sourceTree = "<group>"; };
@@ -219,6 +222,16 @@
 		6B90058C25CC92CB00442996 /* high_lsp_tables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = high_lsp_tables.c; path = ../../../../speex/high_lsp_tables.c; sourceTree = "<group>"; };
 		6B90058D25CC92CB00442996 /* exc_5_256_table.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = exc_5_256_table.c; path = ../../../../speex/exc_5_256_table.c; sourceTree = "<group>"; };
 		6B90058E25CC92CB00442996 /* lsp_tables_nb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lsp_tables_nb.c; path = ../../../../speex/lsp_tables_nb.c; sourceTree = "<group>"; };
+		6BA26D7625D2E2EF0019DA76 /* SDL_Audio_Driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_Audio_Driver.c; path = ../../../../Boards/MacOS/SDL/SDL_Audio_Driver.c; sourceTree = "<group>"; };
+		6BA26D7725D2E2EF0019DA76 /* SDL_input_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_input_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_input_driver.c; sourceTree = "<group>"; };
+		6BA26D7825D2E2EF0019DA76 /* SDL_cpu_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_cpu_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_cpu_driver.c; sourceTree = "<group>"; };
+		6BA26D7925D2E2EF0019DA76 /* SDL_LCD_Driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_LCD_Driver.c; path = ../../../../Boards/MacOS/SDL/SDL_LCD_Driver.c; sourceTree = "<group>"; };
+		6BA26D7E25D2F3C80019DA76 /* SDL_touch_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_touch_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_touch_driver.c; sourceTree = "<group>"; };
+		6BA26D8025D2F5B50019DA76 /* SDL_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_internal.h; path = ../../../../Boards/MacOS/SDL/SDL_internal.h; sourceTree = "<group>"; };
+		6BA26D8125D2F5B50019DA76 /* SDL_library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_library.h; path = ../../../../Boards/MacOS/SDL/SDL_library.h; sourceTree = "<group>"; };
+		6BA26D8225D2F8920019DA76 /* SDL_mac_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_mac_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_mac_driver.c; sourceTree = "<group>"; };
+		6BA26D8425D2F9670019DA76 /* SDL_instance.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_instance.c; path = ../../../../Boards/MacOS/SDL/SDL_instance.c; sourceTree = "<group>"; };
+		6BA26D8625D308480019DA76 /* SDL_startup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_startup.c; path = ../../../../Boards/MacOS/SDL/SDL_startup.c; sourceTree = "<group>"; };
 		6BAADBDA1BEC28B800B7BE2B /* audio_fs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = audio_fs; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BAADBE61BEC28F000B7BE2B /* device.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = device.c; path = ../../../../system/device.c; sourceTree = "<group>"; };
 		6BAADBE71BEC28F000B7BE2B /* device.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = device.h; path = ../../../../system/device.h; sourceTree = "<group>"; };
@@ -271,7 +284,6 @@
 		6BCD777F1E131949003A7227 /* vhd_library.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vhd_library.c; path = ../../../../Boards/Common/vhd_library.c; sourceTree = "<group>"; };
 		6BD7374D25CEB15300C08650 /* audio_driver_PA.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = audio_driver_PA.c; path = ../../../../Boards/MacOS/library/audio_driver_PA.c; sourceTree = "<group>"; };
 		6BD7375025CF532000C08650 /* info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = info.plist; sourceTree = "<group>"; };
-		6BDA274625D0A767001DDED5 /* SDL_cpu_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_cpu_driver.c; path = ../../../../Boards/Common/SDL_cpu_driver.c; sourceTree = "<group>"; };
 		6BE468DA25CC93FA00247857 /* audio_layer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = audio_layer.c; path = ../../../../interface/audio_layer.c; sourceTree = "<group>"; };
 		6BE468DB25CC93FA00247857 /* audio_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = audio_layer.h; path = ../../../../interface/audio_layer.h; sourceTree = "<group>"; };
 		6BE468DD25CC942E00247857 /* lists.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lists.c; path = ../../../../framework/lists.c; sourceTree = "<group>"; };
@@ -341,6 +353,16 @@
 		6B56BAC51C1F6451006305B1 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				6BA26D8025D2F5B50019DA76 /* SDL_internal.h */,
+				6BA26D8125D2F5B50019DA76 /* SDL_library.h */,
+				6BA26D8625D308480019DA76 /* SDL_startup.c */,
+				6BA26D8425D2F9670019DA76 /* SDL_instance.c */,
+				6BA26D8225D2F8920019DA76 /* SDL_mac_driver.c */,
+				6BA26D7E25D2F3C80019DA76 /* SDL_touch_driver.c */,
+				6BA26D7625D2E2EF0019DA76 /* SDL_Audio_Driver.c */,
+				6BA26D7825D2E2EF0019DA76 /* SDL_cpu_driver.c */,
+				6BA26D7725D2E2EF0019DA76 /* SDL_input_driver.c */,
+				6BA26D7925D2E2EF0019DA76 /* SDL_LCD_Driver.c */,
 				6B4C471E1C62A6D4009E7AA1 /* SDLMain.h */,
 				6B4C471F1C62A6D4009E7AA1 /* SDLMain.m */,
 			);
@@ -471,9 +493,6 @@
 				6B4C470F1C62A5B3009E7AA1 /* printf_driver.c */,
 				6B4C47101C62A5B3009E7AA1 /* rtc_driver.c */,
 				6B4C47111C62A5B3009E7AA1 /* ttyusb_driver.c */,
-				6BDA274625D0A767001DDED5 /* SDL_cpu_driver.c */,
-				6B0DDBF625CCB77000A9F9CF /* SDL_Audio_Driver.c */,
-				6B4C470A1C62A589009E7AA1 /* SDL_LCD_Driver.c */,
 			);
 			name = DevDrivers;
 			sourceTree = "<group>";
@@ -648,11 +667,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BA26D8325D2F8920019DA76 /* SDL_mac_driver.c in Sources */,
 				6B90058F25CC92CB00442996 /* vq.c in Sources */,
+				6BA26D7D25D2E2EF0019DA76 /* SDL_LCD_Driver.c in Sources */,
 				6BCD775D1E127048003A7227 /* efs.c in Sources */,
 				6B9005A225CC92CB00442996 /* cb_search.c in Sources */,
 				6B90055B25CC73EE00442996 /* cmd_cat.c in Sources */,
-				6B4C470B1C62A589009E7AA1 /* SDL_LCD_Driver.c in Sources */,
 				6B90059425CC92CB00442996 /* lsp.c in Sources */,
 				6B90059A25CC92CB00442996 /* gain_table_lbr.c in Sources */,
 				6B9005A025CC92CB00442996 /* filters.c in Sources */,
@@ -665,7 +685,9 @@
 				6BAADC291BEC2BFF00B7BE2B /* debug.c in Sources */,
 				6B90055725CC73EE00442996 /* cmd_ymodem.c in Sources */,
 				6BFBA0DB1BF768D400E53026 /* message.c in Sources */,
+				6BA26D7F25D2F3C80019DA76 /* SDL_touch_driver.c in Sources */,
 				6B4861541BF00AAE00B14486 /* graphics.c in Sources */,
+				6BA26D7B25D2E2EF0019DA76 /* SDL_input_driver.c in Sources */,
 				6B548CB91E2DCB9300E5FC4F /* crc.c in Sources */,
 				6B4962681C89882E00695CC5 /* app_main.c in Sources */,
 				6B4C47171C62A5B3009E7AA1 /* ttyusb_driver.c in Sources */,
@@ -689,6 +711,7 @@
 				6BAADBFC1BEC28F000B7BE2B /* t_threads.c in Sources */,
 				6B9005A425CC92CB00442996 /* high_lsp_tables.c in Sources */,
 				6B90055C25CC73EE00442996 /* cmd_mkdir.c in Sources */,
+				6BA26D8725D308480019DA76 /* SDL_startup.c in Sources */,
 				6B4861531BF00AAE00B14486 /* draw.c in Sources */,
 				6B90056225CC924B00442996 /* buffer.c in Sources */,
 				6BAADBFB1BEC28F000B7BE2B /* system.c in Sources */,
@@ -717,12 +740,12 @@
 				6BAADC201BEC2A9500B7BE2B /* str_compare.c in Sources */,
 				6BB1E7F31C1E25A800CCB67A /* random.c in Sources */,
 				6B90059C25CC92CB00442996 /* lpc.c in Sources */,
+				6BA26D7C25D2E2EF0019DA76 /* SDL_cpu_driver.c in Sources */,
 				6B4C47161C62A5B3009E7AA1 /* rtc_driver.c in Sources */,
 				6B9005A525CC92CB00442996 /* exc_5_256_table.c in Sources */,
 				6BCD77621E127048003A7227 /* fs.c in Sources */,
 				6BAADBF61BEC28F000B7BE2B /* device.c in Sources */,
 				6BCD777E1E1318F3003A7227 /* file_disc.c in Sources */,
-				6BDA274725D0A767001DDED5 /* SDL_cpu_driver.c in Sources */,
 				6B4962AA1C8A049D00695CC5 /* net_lib.c in Sources */,
 				6B4C47151C62A5B3009E7AA1 /* printf_driver.c in Sources */,
 				6BCD77801E131949003A7227 /* vhd_library.c in Sources */,
@@ -730,8 +753,8 @@
 				6BAADC211BEC2A9500B7BE2B /* str_token.c in Sources */,
 				6B90059825CC92CB00442996 /* nb_celp.c in Sources */,
 				6B90059225CC92CB00442996 /* modes_nb.c in Sources */,
-				6B0DDBF725CCB77000A9F9CF /* SDL_Audio_Driver.c in Sources */,
 				6B90059F25CC92CB00442996 /* exc_10_16_table.c in Sources */,
+				6BA26D8525D2F9670019DA76 /* SDL_instance.c in Sources */,
 				6BCD775F1E127048003A7227 /* fat.c in Sources */,
 				6B90059725CC92CB00442996 /* bits.c in Sources */,
 				6B90056325CC924B00442996 /* vocoder.c in Sources */,
@@ -739,6 +762,7 @@
 				6B4962A81C89C59400695CC5 /* socket_library.c in Sources */,
 				6B90055925CC73EE00442996 /* ymodem.c in Sources */,
 				6B90055525CC73EE00442996 /* cmd_part.c in Sources */,
+				6BA26D7A25D2E2EF0019DA76 /* SDL_Audio_Driver.c in Sources */,
 				6BAADC1F1BEC2A9500B7BE2B /* sine_table.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

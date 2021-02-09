@@ -1,5 +1,6 @@
 #include "types.h"
 #include "system.h"
+#include "SDL_library.h"
 
 //////////////////////////////////////////////////////////////////
 
@@ -9,8 +10,6 @@
 //////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////
-
-uint8_t * cpu_get_rom_data( uint16_t * size );
 
 //////////////////////////////////////////////////////////////////
 
@@ -50,7 +49,7 @@ static int rom_read_block( uint64_t addr, uint8_t * buffer, uint32_t size )
     uint8_t rom_buffer[512];
     uint16_t rom_size;
     
-    uint8_t * input = cpu_get_rom_data( &rom_size );
+    uint8_t * input = ( uint8_t * )sdl_get_rom_data( &rom_size );
     if( input == NULL ) return MAL_FAIL;
     
     memset( rom_buffer, 0x00, sizeof( rom_buffer ) );
@@ -73,7 +72,7 @@ static uint32_t eeprom_get_image_size( void )
 static uint32_t rom_get_image_size( void )
 {
     uint16_t rom_size;
-    cpu_get_rom_data( &rom_size );
+    sdl_get_rom_data( &rom_size );
     return ( rom_size < 512 ) ? 1 : ( rom_size / 512 );
 }
 

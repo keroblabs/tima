@@ -90,6 +90,8 @@ void app_main( void )
     graphics_init();
     app_audio_init();
     
+    draw_line( 0, 10, 100, 10, APP_RGB(255, 255, 255));
+    
     //console_init();
     // console_connect_uart( DEV_TTY_COMMAND );
     //console_listen_telnet( 12222 );

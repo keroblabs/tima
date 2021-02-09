@@ -9,9 +9,11 @@
 #include "system.h"
 #include "types.h"
 
+uint32_t ms_timer_hw_get_ms( void );
+
 uint32_t ms_timer_get_ms( void )
 {
-    return ( uint32_t )( clock() / ( CLOCKS_PER_SEC / 1000 ) );
+    return  ms_timer_hw_get_ms();
 }
 
 static void ms_timer_drv_init( uint32_t index )

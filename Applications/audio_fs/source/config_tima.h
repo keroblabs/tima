@@ -65,6 +65,8 @@
 #define WANT_SPEEX
 #define WANT_GPIO
 
+#define WANT_MULTI_INSTANCES
+
 #if 0 // def __MACH__
 #define _USE_FRONTEND
 #endif
