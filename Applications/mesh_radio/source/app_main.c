@@ -3,7 +3,8 @@
 #include "tima_libc.h"
 #include "device.h"
 #include "timer.h"
-#include "commands.h"
+#include "graphics.h"
+#include "draw.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,8 +20,8 @@ void app_main( void )
 	timer_Start( &timer_ms, 1000 );
 	counter = 0;
     
-    console_init();
-    console_listen_telnet( 12222 );
+    graphics_init();
+    draw_line( 0, 10, 100, 10, APP_RGB(255, 255, 255));
     
 	DEBUG_PRINTK( "Console test\r\n" );
 
@@ -32,7 +33,6 @@ void app_main( void )
 			DEBUG_PRINTK( "counter = %d\r\n", counter++ );
 		}
 
-        console_process();
         SYSTEM_EVENTS();
     }
 }

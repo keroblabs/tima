@@ -1,7 +1,7 @@
 #include "system.h"
 
 #ifdef _USE_FRONTEND
-int _fe_main( void * args )
+int _fe_main( void )
 #else
 int main( void )
 #endif

@@ -16,28 +16,16 @@
 
 ///////////////////////////////////////////////////////////////
 
-SDL_Window* window = NULL;
-SDL_Surface* screenSurface = NULL;
-SDL_Renderer * screenRenderer = NULL;
-SDL_Texture * screenTexture = NULL;
-
-Uint32 vsync_ms;
-SDL_bool is_updated;
-
-static bool_t v_sync;
-
 ///////////////////////////////////////////////////////////////
 
-static void sdl_update_window( void )
+static void sdl_update_window( void * p_data )
 {
-    if( screenSurface == NULL ) return;
+    window_data_t * window_data = ( window_data_t * )p_data;
     
-    v_sync = TRUE;
-    
-    SDL_UpdateTexture( screenTexture, NULL, screenSurface->pixels, screenSurface->pitch );
-    SDL_RenderClear( screenRenderer );
-    SDL_RenderCopy( screenRenderer, screenTexture, NULL, NULL );
-    SDL_RenderPresent( screenRenderer );
+    SDL_UpdateTexture( window_data->texture, NULL, window_data->surface->pixels, window_data->surface->pitch );
+    SDL_RenderClear( window_data->renderer );
+    SDL_RenderCopy( window_data->renderer, window_data->texture, NULL, NULL );
+    SDL_RenderPresent( window_data->renderer );
 }
 
 uint32_t ms_timer_hw_get_ms( void )
@@ -47,7 +35,10 @@ uint32_t ms_timer_hw_get_ms( void )
 
 uint16_t * sdl_GetTarget( void )
 {
-    return ( uint16_t * )screenSurface->pixels;
+    window_data_t * window_data = sdl_get_window_data();
+    if( window_data == NULL ) return NULL;
+
+    return ( uint16_t * )window_data->surface->pixels;
 }
 
 void sdl_lcd_init( void )
@@ -61,10 +52,13 @@ void sdl_lcd_init( void )
 
 void sdl_lcd_stop( void )
 {
+    window_data_t * window_data = sdl_get_window_data();
+    if( window_data == NULL ) return;
+
     SDL_ShowCursor(SDL_ENABLE);
     
     //Destroy window
-    SDL_DestroyWindow( window );
+    SDL_DestroyWindow( window_data->window );
     
     //Quit SDL subsystems
     SDL_Quit();
@@ -72,62 +66,79 @@ void sdl_lcd_stop( void )
 
 void sdl_vsync_event( void )
 {
-    if( SDL_GetTicks() > vsync_ms )
+    int cnt;
+    for( cnt = 0; cnt < MAX_INSTANCES; cnt++ )
     {
-        vsync_ms = SDL_GetTicks() + VSYNC_PERIOD_MS;
-        sdl_update_window();
+        instance_data_t * instance = sdl_get_instance_from_index( cnt );
+        if( instance != NULL )
+        {
+            window_data_t * window_data = &instance->window_data;
+            if( window_data == NULL ) return;
+            
+            if( ( window_data->window != NULL ) && ( SDL_GetTicks() > window_data->vsync_ms ) )
+            {
+                window_data->vsync_ms = SDL_GetTicks() + VSYNC_PERIOD_MS;
+                sdl_update_window( window_data );
+            }
+        }
     }
 }
 
-int create_window( void )
+static int create_window( window_data_t * window_data )
 {
 	Uint32 r_mask, g_mask, b_mask, a_mask;
 	int bpp;
 
+    if( window_data == NULL )
+    {
+        printf( "Window could not be created! \n" );
+        return -1;
+    }
+
 	SDL_PixelFormatEnumToMasks( SDL_PIXELFORMAT_RGB565, &bpp, &r_mask, &g_mask, &b_mask, &a_mask );
 
     //Create window
-    window = SDL_CreateWindow( "SDL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT, 0 );
-    if( window == NULL )
+    window_data->window = SDL_CreateWindow( "SDL Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT, 0 );
+    if( window_data->window == NULL )
     {
         printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
 		return -1;
     }
 
 	// create renderer
-	screenRenderer = SDL_CreateRenderer( window, -1, 0 );
-	if( screenRenderer == NULL )
+	window_data->renderer = SDL_CreateRenderer( window_data->window, -1, 0 );
+	if( window_data->renderer == NULL )
 	{
         printf( "Renderer could not be created! SDL_Error: %s\n", SDL_GetError() );
 		return -1;
 	}
 
     //Get window surface
-	screenSurface = SDL_CreateRGBSurface(0,SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT, bpp, r_mask, g_mask, b_mask, a_mask);
-	if( screenSurface == NULL )
+	window_data->surface = SDL_CreateRGBSurface(0,SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT, bpp, r_mask, g_mask, b_mask, a_mask);
+	if( window_data->surface == NULL )
 	{
         printf( "Surface could not be created! SDL_Error: %s\n", SDL_GetError() );
 		return -1;
 	}
 
-	screenTexture = SDL_CreateTexture( screenRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT);
-	if( screenSurface == NULL )
+	window_data->texture = SDL_CreateTexture( window_data->renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SDL_SCREEN_WIDTH, SDL_SCREEN_HEIGHT);
+	if( window_data->texture == NULL )
 	{
         printf( "Texture could not be created! SDL_Error: %s\n", SDL_GetError() );
 		return -1;
 	}
 
-	vsync_ms = SDL_GetTicks() + VSYNC_PERIOD_MS;
+	window_data->vsync_ms = SDL_GetTicks() + VSYNC_PERIOD_MS;
 
 	return 0;
 }
 
 static void sdl_init_internal( void * param )
 {
-	v_sync = FALSE;
+    window_data_t * window_data = ( window_data_t * )param;
 
 	// create window
-	if( create_window() == -1 )
+	if( create_window( window_data ) == -1 )
 	{
         printf( "Texture could not be created! SDL_Error: %s\n", SDL_GetError() );
 		return;
@@ -138,22 +149,29 @@ static void sdl_init_internal( void * param )
 	//SDL_ShowCursor(SDL_DISABLE);
 
     //Fill the surface white
-    SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0, 0, 0 ) );
-	is_updated = SDL_TRUE;
+    SDL_FillRect( window_data->surface, NULL, SDL_MapRGB( window_data->surface->format, 0, 0, 0 ) );
 
     //Update the surface
-    SDL_UpdateWindowSurface( window );
-
+    SDL_UpdateWindowSurface( window_data->window );
 }
 
+#ifndef WANT_MULTI_INSTANCES
 static void sdl_init( void )
 {
     sdl_init_internal( NULL );
 }
+#endif
+
+static void sdl_driver_update_window( void )
+{
+    window_data_t * window_data = sdl_get_window_data();
+    sdl_instance_send_message( SDL_INTERNAL_DELEGATE, sdl_update_window, window_data );
+}
 
 static void sdl_init_safe( void )
 {
-    sdl_instance_send_message( SDL_INTERNAL_DELEGATE, sdl_init_internal, NULL );
+    window_data_t * window_data = sdl_get_window_data();
+    sdl_instance_send_message( SDL_INTERNAL_DELEGATE, sdl_init_internal, window_data );
 }
 
 static bool_t sdl_lcd_init_process( void )
@@ -188,7 +206,7 @@ static const lcd_driver_t sdl_lcd_driver =
     
 	sdl_clear_screen,
 	sdl_lcd_stop,
-	sdl_update_window,
+	sdl_driver_update_window,
 	sdl_lcd_init_process,
 
 	sdl_set_contrast,

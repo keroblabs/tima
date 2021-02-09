@@ -38,15 +38,29 @@ typedef void ( *sdl_delegate_t )( void * data );
 
 ////////////////////////////////////////////////////////////////////
 
+typedef struct window_data_t_
+{
+    SDL_Window *   window;
+    SDL_Surface *  surface;
+    SDL_Renderer * renderer;
+    SDL_Texture *  texture;
+    
+    uint32_t vsync_ms;
+    
+} window_data_t;
+
 typedef struct thread_list_t_
 {
     SDL_Thread * thread;
     SDL_threadID id;
+    SDL_mutex  * mutex;
     
     uint8_t current_channel;
     pipe_data_t send_pipe;
     pipe_data_t receive_pipe;
     bool_t last_tx_good;
+    
+    window_data_t window_data;
     
     const void * rom_data;
     
@@ -60,6 +74,8 @@ int sdl_get_thread_index( void );
 instance_data_t * sdl_get_current_instance( void );
 instance_data_t * sdl_get_instance_from_index( int index );
 instance_data_t * sdl_alloc_instance( void );
+
+window_data_t * sdl_get_window_data( void );
 
 void sdl_mouse_init( void );
 void sdl_mouse_event( uint32_t type, SDL_MouseButtonEvent event );

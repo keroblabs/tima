@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "6BAADBD91BEC28B800B7BE2B"
-               BuildableName = "Console_Test"
-               BlueprintName = "Console_Test"
-               ReferencedContainer = "container:Console_Test.xcodeproj">
+               BuildableName = "audio_fs"
+               BlueprintName = "mesh_radio"
+               ReferencedContainer = "container:mesh_radio.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6BAADBD91BEC28B800B7BE2B"
-            BuildableName = "Console_Test"
-            BlueprintName = "Console_Test"
-            ReferencedContainer = "container:Console_Test.xcodeproj">
+            BuildableName = "audio_fs"
+            BlueprintName = "mesh_radio"
+            ReferencedContainer = "container:mesh_radio.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6BAADBD91BEC28B800B7BE2B"
-            BuildableName = "Console_Test"
-            BlueprintName = "Console_Test"
-            ReferencedContainer = "container:Console_Test.xcodeproj">
+            BuildableName = "audio_fs"
+            BlueprintName = "mesh_radio"
+            ReferencedContainer = "container:mesh_radio.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -75,9 +75,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "6BAADBD91BEC28B800B7BE2B"
-            BuildableName = "Console_Test"
-            BlueprintName = "Console_Test"
-            ReferencedContainer = "container:Console_Test.xcodeproj">
+            BuildableName = "audio_fs"
+            BlueprintName = "mesh_radio"
+            ReferencedContainer = "container:mesh_radio.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

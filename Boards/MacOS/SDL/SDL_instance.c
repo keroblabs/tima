@@ -16,7 +16,7 @@ typedef struct rom_data_t_
 static const rom_data_t rom_data[] =
 {
     { 12222, 1, 200, "node 01" },
-    //{ 12223, 2, 100, "node 02" },
+    { 12223, 2, 100, "node 02" },
     //{ 12224, 3,  50, "node 03" },
     //{ 12225, 4, 200, "node 04" },
     {     0, 0,   0, ""        }
@@ -37,7 +37,7 @@ void sdl_instance_init( void )
 
 int sdl_get_thread_index( void )
 {
-    SDL_threadID thread_id = SDL_GetThreadID( NULL );
+    SDL_threadID thread_id = SDL_ThreadID();
     
     for( int i = 0; i < MAX_INSTANCES; i++ )
     {
@@ -48,9 +48,17 @@ int sdl_get_thread_index( void )
     return -1;
 }
 
+window_data_t * sdl_get_window_data( void )
+{
+    instance_data_t * data = sdl_get_current_instance();
+    if( data == NULL ) return NULL;
+    
+    return &data->window_data;
+}
+
 instance_data_t * sdl_get_current_instance( void )
 {
-    SDL_threadID thread_id = SDL_GetThreadID( NULL );
+    SDL_threadID thread_id = SDL_ThreadID();
     
     for( int i = 0; i < MAX_INSTANCES; i++ )
     {

@@ -140,6 +140,7 @@ static void audio_driver_global_init( void )
     audio_devs[1].device = FALSE;
     
     Pa_Initialize();
+#if 0
     int total = ( int )Pa_GetDeviceCount();
     
     for( int i = 0; i < total; i++ )
@@ -147,6 +148,7 @@ static void audio_driver_global_init( void )
         const PaDeviceInfo * info = Pa_GetDeviceInfo( (PaDeviceIndex)i );
         printf( "PA info %s\n", info->name );
     }
+#endif
 }
 
 static void audio_driver_open( uint32_t index )

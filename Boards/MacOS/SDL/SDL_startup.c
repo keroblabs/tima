@@ -3,7 +3,7 @@
 
 ////////////////////////////////////////////////////////////////////
 
-int _fe_main( void * args );
+int _fe_main( void );
 
 ////////////////////////////////////////////////////////////////////
 
@@ -113,23 +113,12 @@ static void cpu_send_frame_trigger( void * p_pipe )
     }
 }
 
-static SDL_Thread * sdl_start_app_thread( void * data )
+static int sdl_client_thread( void * param )
 {
-    SDL_Thread *thread;
-    SDL_threadID thread_id;
-    
-    printf("Simple SDL_CreateThread test:\n");
-    
-    /* Simply create a thread */
-    thread = SDL_CreateThread(_fe_main, "TestThread", (void *)data);
-    thread_id = SDL_GetThreadID( thread );
-    
-    if (NULL == thread)
-    {
-        printf("SDL_CreateThread failed: %s\n", SDL_GetError());
-    }
-    
-    return thread;
+    instance_data_t * instance = ( instance_data_t * )param;
+    SDL_LockMutex( instance->mutex );
+    SDL_UnlockMutex( instance->mutex );
+    return _fe_main();
 }
 
 void sdl_instance_send_message( int message_code, void * data1, void * data2 )
@@ -171,14 +160,27 @@ int main( int argc, char* argv[] )
         instance_data_t * instance = sdl_alloc_instance();
         if( instance == NULL ) break;
         
-        instance->thread   = sdl_start_app_thread( NULL );
-        instance->id       = SDL_GetThreadID( instance->thread );
+        instance->mutex = SDL_CreateMutex();
+        SDL_LockMutex( instance->mutex );
         
+        instance->thread = SDL_CreateThread(sdl_client_thread, "TestThread", instance);
+        
+        if (NULL == instance->thread)
+        {
+            printf("SDL_CreateThread failed: %s\n", SDL_GetError());
+            continue;
+        }
+        
+        sleep(1); // wait for the thread to start, otherwise there will be no ID
+        instance->id = SDL_GetThreadID( instance->thread );
+
         pipe_init( &instance->send_pipe,    "SEND_PIPE", 16 );
         pipe_init( &instance->receive_pipe, "RECEIVE_PIPE", 16 );
         
         pipe_set_tx_trigger( &instance->send_pipe, cpu_send_frame_trigger );
         pipe_set_tx_trigger( &instance->receive_pipe, cpu_send_frame_trigger );
+        
+        SDL_UnlockMutex( instance->mutex );
     }
     
     while( 1 )
@@ -196,5 +198,9 @@ int main( int argc, char* argv[] )
 #endif
     return 0;
 }
+
+#ifndef WANT_MULTI_INSTANCES
+DECLARE_PROCESS_SECTION(sdl_event_loop);
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
