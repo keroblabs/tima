@@ -21,7 +21,6 @@ Applications/*.o
 console/*.o
 Boards/Common/*.o
 Boards/Nucleo_446/BSP/
-Boards/Nucleo_446/CMSIS/
 Boards/imx233/library/*.o
 Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/Project/
 Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/Release_Notes.html

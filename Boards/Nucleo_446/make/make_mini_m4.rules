@@ -18,7 +18,7 @@
 BOARD_PATH = $(DEFAULT_PATH)/Boards/Nucleo_446
 
 # hardware paths
-CMSIS_ST_PATH =  $(BOARD_PATH)/CMSIS/Device/ST/STM32F4xx/Include
+CMSIS_ST_PATH =  $(BOARD_PATH)/CMSIS/Device
 CMSIS_PATH =     $(BOARD_PATH)/CMSIS/Include
 STDPERIPH_PATH = $(BOARD_PATH)/STM32F4xx_StdPeriph_Driver
 
