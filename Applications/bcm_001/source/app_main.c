@@ -10,8 +10,8 @@
 void app_main( void )
 {
     timer_data_t timer_sec;
-    static void * led_red;
-    static void * led_green;
+    void * led_red;
+    void * led_green;
     uint32_t new_value;
     
     DEBUG_PRINTK( "BCM 01\r\n" );

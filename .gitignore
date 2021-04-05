@@ -34,6 +34,7 @@ graphics/*.o
 interface/*.o
 list.txt
 system/*.o
+*.fdn
 
 Applications/instruments/make_2440/
 Applications/instruments/make_WIN32/
@@ -124,4 +125,14 @@ Applications/gem_system3/tima_link/filesystem_client.o
 Applications/gem_system3/tima_link/gpio_link.o
 Applications/gem_system3/tima_link/security_client.o
 Applications/gem_system3/tima_link/tima_link.o
+
+Boards/Nucleo_446/CMSIS/CMSIS_END_USER_LICENCE_AGREEMENT.pdf
+Boards/Nucleo_446/CMSIS/CMSIS_END_USER_LICENCE_AGREEMENT.rtf
+Boards/Nucleo_446/CMSIS/DSP_Lib/
+Boards/Nucleo_446/CMSIS/Device/ST/
+Boards/Nucleo_446/CMSIS/Documentation/
+Boards/Nucleo_446/CMSIS/Lib/
+Boards/Nucleo_446/CMSIS/README.txt
+Boards/Nucleo_446/CMSIS/RTOS/
+Boards/Nucleo_446/CMSIS/index.html
 

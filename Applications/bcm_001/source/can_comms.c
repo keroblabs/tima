@@ -29,6 +29,8 @@ static void filter_7f3( const void * data, uint8_t * buffer );
 ////////////////////////////////////////////////////////////////////
 
 static timer_data_t timer;
+static int index_debug;
+
 static const can_comms_data_t can_comms_list[MAX_CAN_DEVICES] =
 {
     { 0x07f0, filter_7f0 },
@@ -40,7 +42,13 @@ static const can_comms_data_t can_comms_list[MAX_CAN_DEVICES] =
 
 static device_t * device_list[MAX_CAN_DEVICES];
 
-const static uint8_t tx_test_data[8] = { 0x0b, 0xb8, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 };
+const static uint8_t tx_test_data[4][8] =
+{
+    { 0x0b, 0xb8, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 },
+    { 0x0b, 0x01, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 },
+    { 0x0b, 0x02, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 },
+    { 0x0b, 0x04, 0x00, 0xa1, 0x00, 0x01, 0x00, 0x01 },
+};
 
 ////////////////////////////////////////////////////////////////////
 
@@ -131,12 +139,14 @@ static void can_comms_process( void )
     if( timer_Check( &timer ) )
     {
         timer_Reload( &timer );
-        send_can_devices( 0x07F3, ( uint8_t * )tx_test_data );
+        send_can_devices( 0x07F3, ( uint8_t * )tx_test_data[(index_debug >> 2) & 0x03] );
+        index_debug++;
     }
 }
 
 void can_comms_init( void )
 {
+    index_debug = 0;
     open_can_devices();
     timer_Start( &timer, 500 );
 }
