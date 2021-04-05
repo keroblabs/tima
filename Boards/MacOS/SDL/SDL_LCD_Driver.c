@@ -16,6 +16,9 @@
 
 ///////////////////////////////////////////////////////////////
 
+static bool_t is_init = FALSE;
+static sdl_loop_t lcd_loop;
+
 ///////////////////////////////////////////////////////////////
 
 static void sdl_update_window( void * p_data )
@@ -37,7 +40,7 @@ uint16_t * sdl_GetTarget( void )
 {
     window_data_t * window_data = sdl_get_window_data();
     if( window_data == NULL ) return NULL;
-
+    
     return ( uint16_t * )window_data->surface->pixels;
 }
 
@@ -54,7 +57,7 @@ void sdl_lcd_stop( void )
 {
     window_data_t * window_data = sdl_get_window_data();
     if( window_data == NULL ) return;
-
+    
     SDL_ShowCursor(SDL_ENABLE);
     
     //Destroy window
@@ -64,8 +67,9 @@ void sdl_lcd_stop( void )
     SDL_Quit();
 }
 
-void sdl_vsync_event( void )
+static void sdl_vsync_event( void )
 {
+    #ifdef WANT_MULTI_INSTANCES
     int cnt;
     for( cnt = 0; cnt < MAX_INSTANCES; cnt++ )
     {
@@ -82,6 +86,15 @@ void sdl_vsync_event( void )
             }
         }
     }
+    #else
+    window_data_t * window_data = sdl_get_window_data();
+
+    if( ( window_data->window != NULL ) && ( SDL_GetTicks() > window_data->vsync_ms ) )
+    {
+        window_data->vsync_ms = SDL_GetTicks() + VSYNC_PERIOD_MS;
+        sdl_update_window( window_data );
+    }
+    #endif
 }
 
 static int create_window( window_data_t * window_data )
@@ -135,6 +148,13 @@ static int create_window( window_data_t * window_data )
 
 static void sdl_init_internal( void * param )
 {
+    if( is_init == FALSE )
+    {
+        lcd_loop.handler = sdl_vsync_event;
+        sdl_add_event_loop( &lcd_loop );
+        is_init = TRUE;
+    }
+    
     window_data_t * window_data = ( window_data_t * )param;
 
 	// create window
@@ -158,7 +178,7 @@ static void sdl_init_internal( void * param )
 #ifndef WANT_MULTI_INSTANCES
 static void sdl_init( void )
 {
-    sdl_init_internal( NULL );
+    sdl_init_internal( &single_window_data );
 }
 #endif
 

@@ -20,6 +20,8 @@
 
 static uint8_t key_code;
 static uint8_t key_flag;
+static bool_t is_init = FALSE;
+static sdl_loop_t kbd_loop;
 
 ////////////////////////////////////////////////////////////////////
 
@@ -186,6 +188,12 @@ static bool_t keypad_validate( uint32_t index )
 
 static void keypad_init( uint32_t index )
 {
+    if( is_init == FALSE )
+    {
+        kbd_loop.handler = sdl_input_event;
+        sdl_add_event_loop( &kbd_loop );
+        is_init = TRUE;
+    }
 }
 
 static int keypad_read_byte( uint32_t socket, uint8_t *buffer, uint32_t max_size )

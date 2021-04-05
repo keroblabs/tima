@@ -28,7 +28,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-static int setNonblocking(int fd)
+int setNonblocking(int fd)
 {
     int flags;
     
@@ -45,16 +45,16 @@ static int setNonblocking(int fd)
 #endif
 }
 
-static void socket_library_init( void )
+void socket_library_init( void )
 {
 }
 
-static void socket_close_port( uint32_t socket )
+void socket_close_port( uint32_t socket )
 {
     close( socket );
 }
 
-static uint32_t socket_accept_port( uint32_t socket )
+uint32_t socket_accept_port( uint32_t socket )
 {
     SOCKET sa;
     
@@ -76,7 +76,7 @@ static uint32_t socket_accept_port( uint32_t socket )
     return ( uint32_t )sa;
 }
 
-static uint32_t socket_connect_url( char * url_addr, uint16_t port )
+uint32_t socket_connect_url( char * url_addr, uint16_t port )
 {
     SOCKET      sa;
     struct	    sockaddr_in channel;
@@ -119,7 +119,7 @@ static uint32_t socket_connect_url( char * url_addr, uint16_t port )
     return ( uint32_t )sa;
 }
 
-static uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
+uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
 {
     SOCKET      sa;
     struct	    sockaddr_in channel;
@@ -144,7 +144,7 @@ static uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
     channel.sin_addr.s_addr = htonl(ip_32);
 	channel.sin_port = htons( port );
     
-    setNonblocking(sa);
+    //setNonblocking(sa);
     
     b = connect( sa, (struct sockaddr *) &channel, sizeof(channel));
 	if (b < 0)
@@ -157,7 +157,7 @@ static uint32_t socket_connect_addr( uint8_t * ip_addr, uint16_t port )
     return ( uint32_t )sa;
 }
 
-static uint32_t socket_listen_port( uint16_t port )
+uint32_t socket_listen_port( uint16_t port )
 {
     struct	    sockaddr_in channel;
     int		    b, l, on;
@@ -178,7 +178,7 @@ static uint32_t socket_listen_port( uint16_t port )
 	}
     
 	setsockopt(_l_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on));
-    setNonblocking(_l_socket);
+    //setNonblocking(_l_socket);
     
 	//---------------------------------------------------------
     
@@ -202,7 +202,7 @@ static uint32_t socket_listen_port( uint16_t port )
     return ( uint32_t )_l_socket;
 }
 
-static int socket_read_data( uint32_t socket, uint8_t *buffer, uint32_t max_size )
+int socket_read_data( uint32_t socket, uint8_t *buffer, uint32_t max_size )
 {
     u_long num_bytes_present = 0;
 
@@ -246,7 +246,7 @@ static int socket_read_data( uint32_t socket, uint8_t *buffer, uint32_t max_size
 	#endif
 }
 
-static int socket_write_data( uint32_t socket, uint8_t *buffer, uint32_t size )
+int socket_write_data( uint32_t socket, uint8_t *buffer, uint32_t size )
 {
     size = (uint32_t)send( socket, (char*)buffer, size, 0 );
 	//Sleep(100);

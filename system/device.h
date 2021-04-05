@@ -105,6 +105,9 @@ device_t * device_open( const char * name );
 device_t * device_socket_open( uint8_t * ip_addr, uint16_t port );
 device_t * device_socket_open_url( char * url_addr, uint16_t port );
 
+void * device_get_api( const char * name );
+void * device_get_open_api( device_t * device_hdl );
+
 uint32_t device_is_rx_pending( device_t * dev );
 uint32_t device_is_tx_pending( device_t * dev );
 
@@ -121,6 +124,9 @@ uint8_t * device_pipe_read_input( device_t * dev, uint16_t * size );
 
 void device_pipe_write_output( device_t * dev, uint8_t * buffer, uint16_t size );
 void device_pipe_write_input( device_t * dev, uint8_t * buffer, uint16_t size );
+
+void device_pipe_send_buffer_output( device_t * dev, uint8_t * buffer, uint16_t size );
+void device_pipe_send_buffer_input( device_t * dev, uint8_t * buffer, uint16_t size );
 
 bool_t device_pipe_has_data_output( device_t * dev );
 bool_t device_pipe_has_data_input( device_t * dev );

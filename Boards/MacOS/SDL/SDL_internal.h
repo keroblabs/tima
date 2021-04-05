@@ -23,8 +23,9 @@
 #include <signal.h>
 #include <unistd.h>
 
-
 #include "pipe.h"
+#include "device.h"
+#include "fsm.h"
 
 ////////////////////////////////////////////////////////////////////
 
@@ -35,6 +36,16 @@
 ////////////////////////////////////////////////////////////////////
 
 typedef void ( *sdl_delegate_t )( void * data );
+typedef void ( *loop_handler_t )( void );
+
+////////////////////////////////////////////////////////////////////
+
+typedef struct sdl_loop_t_
+{
+    loop_handler_t handler;
+    struct sdl_loop_t_ * next;
+    
+} sdl_loop_t;
 
 ////////////////////////////////////////////////////////////////////
 
@@ -49,16 +60,35 @@ typedef struct window_data_t_
     
 } window_data_t;
 
+typedef struct condition_signal_t_
+{
+    SDL_mutex *mutex;
+    SDL_cond  *condition;
+    bool_t flag;
+    bool_t state;
+    SDL_mutex *mutex_state;
+
+} condition_signal_t;
+
 typedef struct thread_list_t_
 {
     SDL_Thread * thread;
     SDL_threadID id;
-    SDL_mutex  * mutex;
+
+    uint16_t printf_port;
+    uint32_t socket_printf;
+    device_t dev_printf;
+    fsm_instance_t fsm_instance;
     
     uint8_t current_channel;
     pipe_data_t send_pipe;
     pipe_data_t receive_pipe;
     bool_t last_tx_good;
+    bool_t tx_completed;
+    bool_t is_listening;
+    void * failed_frame;
+    
+    condition_signal_t signal;
     
     window_data_t window_data;
     
@@ -70,6 +100,8 @@ typedef struct thread_list_t_
 
 void sdl_instance_init( void );
 int sdl_get_thread_index( void );
+void sdl_instance_yield( void );
+void sdl_add_event_loop( sdl_loop_t * event );
 
 instance_data_t * sdl_get_current_instance( void );
 instance_data_t * sdl_get_instance_from_index( int index );
@@ -86,11 +118,15 @@ void sdl_keypad_down_event( SDL_Keycode sym );
 int sdl_library_kbhit( void );
 void sdl_input_event( void );
 
-void sdl_vsync_event( void );
 void sdl_lcd_stop( void );
 void sdl_lcd_init( void );
 
 void sdl_instance_send_message( int message_code, void * data1, void * data2 );
+
+void sdl_signal_create( condition_signal_t * signal );
+void sdl_signal_wait( condition_signal_t * signal );
+void sdl_signal_continue( condition_signal_t * signal );
+bool_t sdl_signal_state( condition_signal_t * signal );
 
 ////////////////////////////////////////////////////////////////////
 

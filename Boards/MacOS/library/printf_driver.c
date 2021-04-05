@@ -103,7 +103,7 @@ static void console_drv_close( uint32_t index )
 
 static bool_t validate( uint32_t index )
 {
-    if( index == 3 ) return TRUE;
+    if( index == 39 ) return TRUE;
     return FALSE;
 }
 

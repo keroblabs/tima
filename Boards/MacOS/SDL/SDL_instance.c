@@ -6,7 +6,6 @@
 
 typedef struct rom_data_t_
 {
-    uint16_t socket_port;
     uint16_t node_id;
     uint16_t signal_level;
     const char node_name[32];
@@ -15,24 +14,73 @@ typedef struct rom_data_t_
 
 static const rom_data_t rom_data[] =
 {
-    { 12222, 1, 200, "node 01" },
-    { 12223, 2, 100, "node 02" },
-    //{ 12224, 3,  50, "node 03" },
-    //{ 12225, 4, 200, "node 04" },
-    {     0, 0,   0, ""        }
+    { 1, 200, "node 01" },
+    { 2, 100, "node 02" },
+    { 3,  50, "node 03" },
+    { 4, 200, "node 04" },
+    {   0,   0, ""        }
+};
+
+static uint16_t port_list[] =
+{
+    12222,
+    12223,
+    //12224,
+    //12225,
+    //12226,
+    0
 };
 
 ////////////////////////////////////////////////////////////////////
 
 static instance_data_t instance_list[MAX_INSTANCES];
+static sdl_loop_t instance_loop;
+static int current_instance;
+
+#ifndef WANT_MULTI_INSTANCES
+static window_data_t single_window_data;
+#endif
 
 int _fe_main( void * args );
 
 ////////////////////////////////////////////////////////////////////
 
+static void sdl_instance_scheduler( void )
+{
+    instance_data_t * next;
+    instance_data_t * instance = sdl_get_instance_from_index( current_instance );
+    if( sdl_signal_state( &instance->signal ) == TRUE )
+    {
+        current_instance++;
+        next = sdl_get_instance_from_index( current_instance );
+        if( next == NULL )
+        {
+            current_instance = 0;
+            next = sdl_get_instance_from_index( current_instance );
+        }
+        
+        sdl_signal_continue( &next->signal );
+    }
+}
+
 void sdl_instance_init( void )
 {
+    current_instance = 0;
+    
+    instance_loop.handler = sdl_instance_scheduler;
     memset( instance_list, 0x00, sizeof( instance_list ) );
+    
+    #ifdef WANT_MULTI_INSTANCES
+    sdl_add_event_loop( &instance_loop );
+    #endif
+}
+
+void sdl_instance_yield( void )
+{
+    instance_data_t * data = sdl_get_current_instance();
+    if( data == NULL ) return;
+
+    sdl_signal_wait( &data->signal );
 }
 
 int sdl_get_thread_index( void )
@@ -50,10 +98,14 @@ int sdl_get_thread_index( void )
 
 window_data_t * sdl_get_window_data( void )
 {
+    #ifdef WANT_MULTI_INSTANCES
     instance_data_t * data = sdl_get_current_instance();
     if( data == NULL ) return NULL;
     
     return &data->window_data;
+    #else
+    return &single_window_data;
+    #endif
 }
 
 instance_data_t * sdl_get_current_instance( void )
@@ -82,11 +134,12 @@ instance_data_t * sdl_alloc_instance( void )
 {
     for( int i = 0; i < MAX_INSTANCES; i++ )
     {
-        if( rom_data[i].socket_port == 0 ) break;
+        if( port_list[i] == 0 ) break;
         
         if( instance_list[i].thread == NULL )
         {
-            instance_list[i].rom_data = &rom_data[i];
+            instance_list[i].printf_port = port_list[i];
+            instance_list[i].rom_data    = &rom_data[i];
             return &instance_list[i];
         }
     }
@@ -100,6 +153,6 @@ const void * sdl_get_rom_data( uint16_t * size )
     if( data == NULL ) return NULL;
     
     if( size ) *size = ( uint16_t )sizeof( rom_data_t );
-    return data;
+    return data->rom_data;
 }
 

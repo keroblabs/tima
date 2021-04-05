@@ -21,6 +21,7 @@ typedef struct _cache_sector_t
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef WANT_MAL_CACHE
 static uint32_t cached_lun;
 static uint32_t cached_index_lun;
 
@@ -28,11 +29,14 @@ static cache_sector_t cache_sector[MAX_SECTOR_CACHE];
 
 static cache_sector_t * first_sector;
 static cache_sector_t * last_sector;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void _mal_cache_init( void )
 {
+#ifdef WANT_MAL_CACHE
+
     int i;
     // int size = (int)sizeof( cache_sector );
     
@@ -48,11 +52,13 @@ void _mal_cache_init( void )
         cache_sector[i-1].next = &cache_sector[i];
         cache_sector[i].next = NULL;
     }
+#endif
 }
 
 
 uint8_t * _mal_cache_add( uint8_t * buffer, uint32_t address, uint32_t lun )
 {
+#ifdef WANT_MAL_CACHE
     cache_sector_t * sector = first_sector;
     cache_sector_t * previous = NULL;
     
@@ -84,10 +90,14 @@ uint8_t * _mal_cache_add( uint8_t * buffer, uint32_t address, uint32_t lun )
         memcpy( sector->buffer, buffer, 512 );
     
     return sector->buffer;
+#else
+    return NULL;
+#endif
 }
 
 uint8_t * _mal_cache_get( uint8_t * buffer, uint32_t address, uint32_t lun )
 {
+#ifdef WANT_MAL_CACHE
     cache_sector_t * sector = first_sector;
     cache_sector_t * previous = NULL;
     
@@ -113,7 +123,7 @@ uint8_t * _mal_cache_get( uint8_t * buffer, uint32_t address, uint32_t lun )
         previous = sector;
         sector = sector->next;
     }
-    
+#endif
     return NULL;
 }
 
@@ -124,8 +134,10 @@ void MAL_Init_All( void )
     //uint32_t counter;
     //msd_driver_t * driver;
 
+#ifdef WANT_MAL_CACHE
     cached_index_lun = ( NEG_U32 );
     cached_lun = ( NEG_U32 );
+#endif
     
     _mal_cache_init();
     

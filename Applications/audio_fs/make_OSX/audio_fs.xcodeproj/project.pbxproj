@@ -80,7 +80,6 @@
 		6BA26D8725D308480019DA76 /* SDL_startup.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D8625D308480019DA76 /* SDL_startup.c */; };
 		6BAADBF61BEC28F000B7BE2B /* device.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE61BEC28F000B7BE2B /* device.c */; };
 		6BAADBF71BEC28F000B7BE2B /* heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE81BEC28F000B7BE2B /* heap.c */; };
-		6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBEA1BEC28F000B7BE2B /* lcd.c */; };
 		6BAADBF91BEC28F000B7BE2B /* mass_mal.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */; };
 		6BAADBFB1BEC28F000B7BE2B /* system.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBF11BEC28F000B7BE2B /* system.c */; };
 		6BAADBFC1BEC28F000B7BE2B /* t_threads.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBF31BEC28F000B7BE2B /* t_threads.c */; };
@@ -154,6 +153,7 @@
 		6B4C471B1C62A6A4009E7AA1 /* font_12x16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = font_12x16.c; path = ../../../../graphics/font_12x16.c; sourceTree = "<group>"; };
 		6B4C471E1C62A6D4009E7AA1 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDLMain.h; path = ../../../../Boards/MacOS/SDL/SDLMain.h; sourceTree = "<group>"; };
 		6B4C471F1C62A6D4009E7AA1 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = ../../../../Boards/MacOS/SDL/SDLMain.m; sourceTree = "<group>"; };
+		6B4FE4E425E5B76A007F407D /* mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mac.h; path = ../../../../system/mac.h; sourceTree = "<group>"; };
 		6B50867A1C80E37000D39FBB /* adc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = adc.c; path = ../../../../Boards/MacOS/library/adc.c; sourceTree = "<group>"; };
 		6B548CB71E2DCB9300E5FC4F /* crc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crc.c; path = ../../../../framework/crc.c; sourceTree = "<group>"; };
 		6B548CB81E2DCB9300E5FC4F /* crc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crc.h; path = ../../../../framework/crc.h; sourceTree = "<group>"; };
@@ -237,7 +237,6 @@
 		6BAADBE71BEC28F000B7BE2B /* device.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = device.h; path = ../../../../system/device.h; sourceTree = "<group>"; };
 		6BAADBE81BEC28F000B7BE2B /* heap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = heap.c; path = ../../../../system/heap.c; sourceTree = "<group>"; };
 		6BAADBE91BEC28F000B7BE2B /* heap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = heap.h; path = ../../../../system/heap.h; sourceTree = "<group>"; };
-		6BAADBEA1BEC28F000B7BE2B /* lcd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lcd.c; path = ../../../../system/lcd.c; sourceTree = "<group>"; };
 		6BAADBEB1BEC28F000B7BE2B /* lcd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lcd.h; path = ../../../../system/lcd.h; sourceTree = "<group>"; };
 		6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mass_mal.c; path = ../../../../system/mass_mal.c; sourceTree = "<group>"; };
 		6BAADBED1BEC28F000B7BE2B /* mass_mal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mass_mal.h; path = ../../../../system/mass_mal.h; sourceTree = "<group>"; };
@@ -466,8 +465,8 @@
 				6BAADBE71BEC28F000B7BE2B /* device.h */,
 				6BAADBE81BEC28F000B7BE2B /* heap.c */,
 				6BAADBE91BEC28F000B7BE2B /* heap.h */,
-				6BAADBEA1BEC28F000B7BE2B /* lcd.c */,
 				6BAADBEB1BEC28F000B7BE2B /* lcd.h */,
+				6B4FE4E425E5B76A007F407D /* mac.h */,
 				6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */,
 				6BAADBED1BEC28F000B7BE2B /* mass_mal.h */,
 				6BAADBF11BEC28F000B7BE2B /* system.c */,
@@ -718,7 +717,6 @@
 				6BAADC221BEC2A9500B7BE2B /* vsnprintk.c in Sources */,
 				6BCCEDB11E1DACEB00878E17 /* dummy_tty.c in Sources */,
 				6BD7374E25CEB15300C08650 /* audio_driver_PA.c in Sources */,
-				6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */,
 				6B49627D1C8989EA00695CC5 /* cmd_heap.c in Sources */,
 				6BCD77601E127048003A7227 /* file.c in Sources */,
 				6BAADC1B1BEC2A9500B7BE2B /* atoi.c in Sources */,

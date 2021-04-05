@@ -245,9 +245,9 @@ bool_t audio_is_ready( audio_data_t * audio )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if 0 // def WANT_AUDIO_INTERFACE
+#ifdef WANT_AUDIO_INTERFACE
 
-DECLARE_INIT_SECTION( audio_layer_init );
+DECLARE_INIT_MODULE_SECTION( audio_layer_init );
 DECLARE_PROCESS_SECTION( audio_layer_process );
 
 #endif

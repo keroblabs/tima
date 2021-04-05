@@ -174,6 +174,26 @@ static bool_t device_pipe_has_data( device_t * dev, bool_t is_tx )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+void * device_get_api( const char * name )
+{
+    device_t device_hdl;
+    void * driver_api;
+    
+    if( device_open_ex( name, &device_hdl ) == FALSE ) return NULL;
+    
+    device_ioctrl( &device_hdl, DEVICE_GET_API, &driver_api );
+    device_close( &device_hdl );
+
+    return driver_api;
+}
+
+void * device_get_open_api( device_t * device_hdl )
+{
+    void * driver_api;
+    device_ioctrl( device_hdl, DEVICE_GET_API, &driver_api );
+    return driver_api;
+}
+
 bool_t device_open_ex( const char * name, device_t * dev )
 {
     device_data_t * dev_data;

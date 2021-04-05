@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6B2EBCF625D5A4250000DCC8 /* config_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B2EBCF425D5A4250000DCC8 /* config_reader.c */; };
+		6B2EBCF825D5EC010000DCC8 /* net_printf_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B2EBCF725D5EC010000DCC8 /* net_printf_driver.c */; };
 		6B4850101C1B9A0200AF407D /* lp_filter.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B48500E1C1B9A0200AF407D /* lp_filter.c */; };
 		6B4861531BF00AAE00B14486 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B48614D1BF00AAE00B14486 /* draw.c */; };
 		6B4861541BF00AAE00B14486 /* graphics.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B4861511BF00AAE00B14486 /* graphics.c */; };
@@ -70,6 +72,10 @@
 		6B9005A425CC92CB00442996 /* high_lsp_tables.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058C25CC92CB00442996 /* high_lsp_tables.c */; };
 		6B9005A525CC92CB00442996 /* exc_5_256_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058D25CC92CB00442996 /* exc_5_256_table.c */; };
 		6B9005A625CC92CB00442996 /* lsp_tables_nb.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B90058E25CC92CB00442996 /* lsp_tables_nb.c */; };
+		6B9A1C7325DACAC4002DD409 /* mac_layer_fsm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B9A1C7225DACAC4002DD409 /* mac_layer_fsm.c */; };
+		6B9F65BF25DDB65400C98612 /* debug_fsm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6B9F65BC25DDB65400C98612 /* debug_fsm.c */; };
+		6BA00E1825E0250F00DE765E /* node_fsm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA00E1625E0250F00DE765E /* node_fsm.c */; };
+		6BA00E1B25E0300300DE765E /* buffer_data.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA00E1A25E0300300DE765E /* buffer_data.c */; };
 		6BA26D7A25D2E2EF0019DA76 /* SDL_Audio_Driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7625D2E2EF0019DA76 /* SDL_Audio_Driver.c */; };
 		6BA26D7B25D2E2EF0019DA76 /* SDL_input_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7725D2E2EF0019DA76 /* SDL_input_driver.c */; };
 		6BA26D7C25D2E2EF0019DA76 /* SDL_cpu_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D7825D2E2EF0019DA76 /* SDL_cpu_driver.c */; };
@@ -80,7 +86,6 @@
 		6BA26D8725D308480019DA76 /* SDL_startup.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BA26D8625D308480019DA76 /* SDL_startup.c */; };
 		6BAADBF61BEC28F000B7BE2B /* device.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE61BEC28F000B7BE2B /* device.c */; };
 		6BAADBF71BEC28F000B7BE2B /* heap.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBE81BEC28F000B7BE2B /* heap.c */; };
-		6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBEA1BEC28F000B7BE2B /* lcd.c */; };
 		6BAADBF91BEC28F000B7BE2B /* mass_mal.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */; };
 		6BAADBFB1BEC28F000B7BE2B /* system.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBF11BEC28F000B7BE2B /* system.c */; };
 		6BAADBFC1BEC28F000B7BE2B /* t_threads.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADBF31BEC28F000B7BE2B /* t_threads.c */; };
@@ -110,6 +115,9 @@
 		6BCD77801E131949003A7227 /* vhd_library.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD777F1E131949003A7227 /* vhd_library.c */; };
 		6BD7374E25CEB15300C08650 /* audio_driver_PA.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BD7374D25CEB15300C08650 /* audio_driver_PA.c */; };
 		6BD7375125CF535E00C08650 /* info.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6BD7375025CF532000C08650 /* info.plist */; };
+		6BD769E525D855F800B90CF3 /* fsm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BD769E325D855F800B90CF3 /* fsm.c */; };
+		6BD9E99725F197460023EFA2 /* fsm_signals_debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BD9E99625F197460023EFA2 /* fsm_signals_debug.c */; };
+		6BDE56E025DF26DB009A739B /* scan_fsm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BDE56DF25DF26DB009A739B /* scan_fsm.c */; };
 		6BE468DC25CC93FA00247857 /* audio_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BE468DA25CC93FA00247857 /* audio_layer.c */; };
 		6BE468DF25CC942E00247857 /* lists.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BE468DD25CC942E00247857 /* lists.c */; };
 		6BFBA0D51BF604C500E53026 /* pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BFBA0D31BF604C500E53026 /* pipe.c */; };
@@ -130,6 +138,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6B2EBCF425D5A4250000DCC8 /* config_reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config_reader.c; path = ../../../../framework/config_reader.c; sourceTree = "<group>"; };
+		6B2EBCF525D5A4250000DCC8 /* config_reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config_reader.h; path = ../../../../framework/config_reader.h; sourceTree = "<group>"; };
+		6B2EBCF725D5EC010000DCC8 /* net_printf_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_printf_driver.c; path = ../../../../Boards/MacOS/library/net_printf_driver.c; sourceTree = "<group>"; };
 		6B48500E1C1B9A0200AF407D /* lp_filter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lp_filter.c; path = ../../../../framework/lp_filter.c; sourceTree = "<group>"; };
 		6B48500F1C1B9A0200AF407D /* lp_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lp_filter.h; path = ../../../../framework/lp_filter.h; sourceTree = "<group>"; };
 		6B48614D1BF00AAE00B14486 /* draw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = draw.c; path = ../../../../graphics/draw.c; sourceTree = "<group>"; };
@@ -154,6 +165,7 @@
 		6B4C471B1C62A6A4009E7AA1 /* font_12x16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = font_12x16.c; path = ../../../../graphics/font_12x16.c; sourceTree = "<group>"; };
 		6B4C471E1C62A6D4009E7AA1 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDLMain.h; path = ../../../../Boards/MacOS/SDL/SDLMain.h; sourceTree = "<group>"; };
 		6B4C471F1C62A6D4009E7AA1 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = ../../../../Boards/MacOS/SDL/SDLMain.m; sourceTree = "<group>"; };
+		6B4FE4E525E5BB30007F407D /* mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mac.h; path = ../../../../system/mac.h; sourceTree = "<group>"; };
 		6B50867A1C80E37000D39FBB /* adc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = adc.c; path = ../../../../Boards/MacOS/library/adc.c; sourceTree = "<group>"; };
 		6B548CB71E2DCB9300E5FC4F /* crc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crc.c; path = ../../../../framework/crc.c; sourceTree = "<group>"; };
 		6B548CB81E2DCB9300E5FC4F /* crc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crc.h; path = ../../../../framework/crc.h; sourceTree = "<group>"; };
@@ -222,6 +234,22 @@
 		6B90058C25CC92CB00442996 /* high_lsp_tables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = high_lsp_tables.c; path = ../../../../speex/high_lsp_tables.c; sourceTree = "<group>"; };
 		6B90058D25CC92CB00442996 /* exc_5_256_table.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = exc_5_256_table.c; path = ../../../../speex/exc_5_256_table.c; sourceTree = "<group>"; };
 		6B90058E25CC92CB00442996 /* lsp_tables_nb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lsp_tables_nb.c; path = ../../../../speex/lsp_tables_nb.c; sourceTree = "<group>"; };
+		6B9A1C7125DACAC4002DD409 /* mac_layer_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mac_layer_fsm.h; path = ../../mac_layer_fsm/mac_layer_fsm.h; sourceTree = "<group>"; };
+		6B9A1C7225DACAC4002DD409 /* mac_layer_fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mac_layer_fsm.c; path = ../../mac_layer_fsm/mac_layer_fsm.c; sourceTree = "<group>"; };
+		6B9A1C7625DACAFB002DD409 /* fsm_signals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fsm_signals.h; path = ../../fsm_signals/fsm_signals.h; sourceTree = "<group>"; };
+		6B9A1C7725DACAFB002DD409 /* fsm_signals_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fsm_signals_output.h; path = ../../fsm_signals/fsm_signals_output.h; sourceTree = "<group>"; };
+		6B9A1C7825DACB5F002DD409 /* mac_layer_fsm_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mac_layer_fsm_definition.h; path = ../../mac_layer_fsm/mac_layer_fsm_definition.h; sourceTree = "<group>"; };
+		6B9A1C7925DACFF0002DD409 /* mac_layer_fsm_processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mac_layer_fsm_processor.h; path = ../../mac_layer_fsm/mac_layer_fsm_processor.h; sourceTree = "<group>"; };
+		6B9F65BC25DDB65400C98612 /* debug_fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = debug_fsm.c; path = ../../debug_fsm/debug_fsm.c; sourceTree = "<group>"; };
+		6B9F65BD25DDB65400C98612 /* debug_fsm_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug_fsm_definition.h; path = ../../debug_fsm/debug_fsm_definition.h; sourceTree = "<group>"; };
+		6B9F65BE25DDB65400C98612 /* debug_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug_fsm.h; path = ../../debug_fsm/debug_fsm.h; sourceTree = "<group>"; };
+		6B9F65C025DDB91E00C98612 /* debug_fsm_processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug_fsm_processor.h; path = ../../debug_fsm/debug_fsm_processor.h; sourceTree = "<group>"; };
+		6BA00E1425E0250F00DE765E /* node_fsm_processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = node_fsm_processor.h; path = ../../node_fsm/node_fsm_processor.h; sourceTree = "<group>"; };
+		6BA00E1525E0250F00DE765E /* node_fsm_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = node_fsm_definition.h; path = ../../node_fsm/node_fsm_definition.h; sourceTree = "<group>"; };
+		6BA00E1625E0250F00DE765E /* node_fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = node_fsm.c; path = ../../node_fsm/node_fsm.c; sourceTree = "<group>"; };
+		6BA00E1725E0250F00DE765E /* node_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = node_fsm.h; path = ../../node_fsm/node_fsm.h; sourceTree = "<group>"; };
+		6BA00E1925E0300300DE765E /* buffer_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = buffer_data.h; path = ../../../../framework/buffer_data.h; sourceTree = "<group>"; };
+		6BA00E1A25E0300300DE765E /* buffer_data.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = buffer_data.c; path = ../../../../framework/buffer_data.c; sourceTree = "<group>"; };
 		6BA26D7625D2E2EF0019DA76 /* SDL_Audio_Driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_Audio_Driver.c; path = ../../../../Boards/MacOS/SDL/SDL_Audio_Driver.c; sourceTree = "<group>"; };
 		6BA26D7725D2E2EF0019DA76 /* SDL_input_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_input_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_input_driver.c; sourceTree = "<group>"; };
 		6BA26D7825D2E2EF0019DA76 /* SDL_cpu_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_cpu_driver.c; path = ../../../../Boards/MacOS/SDL/SDL_cpu_driver.c; sourceTree = "<group>"; };
@@ -237,7 +265,6 @@
 		6BAADBE71BEC28F000B7BE2B /* device.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = device.h; path = ../../../../system/device.h; sourceTree = "<group>"; };
 		6BAADBE81BEC28F000B7BE2B /* heap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = heap.c; path = ../../../../system/heap.c; sourceTree = "<group>"; };
 		6BAADBE91BEC28F000B7BE2B /* heap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = heap.h; path = ../../../../system/heap.h; sourceTree = "<group>"; };
-		6BAADBEA1BEC28F000B7BE2B /* lcd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lcd.c; path = ../../../../system/lcd.c; sourceTree = "<group>"; };
 		6BAADBEB1BEC28F000B7BE2B /* lcd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lcd.h; path = ../../../../system/lcd.h; sourceTree = "<group>"; };
 		6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mass_mal.c; path = ../../../../system/mass_mal.c; sourceTree = "<group>"; };
 		6BAADBED1BEC28F000B7BE2B /* mass_mal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mass_mal.h; path = ../../../../system/mass_mal.h; sourceTree = "<group>"; };
@@ -284,6 +311,14 @@
 		6BCD777F1E131949003A7227 /* vhd_library.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vhd_library.c; path = ../../../../Boards/Common/vhd_library.c; sourceTree = "<group>"; };
 		6BD7374D25CEB15300C08650 /* audio_driver_PA.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = audio_driver_PA.c; path = ../../../../Boards/MacOS/library/audio_driver_PA.c; sourceTree = "<group>"; };
 		6BD7375025CF532000C08650 /* info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = info.plist; sourceTree = "<group>"; };
+		6BD769E325D855F800B90CF3 /* fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fsm.c; path = ../../../../framework/fsm.c; sourceTree = "<group>"; };
+		6BD769E425D855F800B90CF3 /* fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fsm.h; path = ../../../../framework/fsm.h; sourceTree = "<group>"; };
+		6BD9E99625F197460023EFA2 /* fsm_signals_debug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fsm_signals_debug.c; path = ../../fsm_signals/fsm_signals_debug.c; sourceTree = "<group>"; };
+		6BDBFEEE25D467BF00988393 /* socket_library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket_library.h; path = ../../../../Boards/MacOS/library/socket_library.h; sourceTree = "<group>"; };
+		6BDE56DC25DF26DA009A739B /* scan_fsm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scan_fsm.h; path = ../../scan_fsm/scan_fsm.h; sourceTree = "<group>"; };
+		6BDE56DD25DF26DB009A739B /* scan_fsm_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scan_fsm_definition.h; path = ../../scan_fsm/scan_fsm_definition.h; sourceTree = "<group>"; };
+		6BDE56DE25DF26DB009A739B /* scan_fsm_processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scan_fsm_processor.h; path = ../../scan_fsm/scan_fsm_processor.h; sourceTree = "<group>"; };
+		6BDE56DF25DF26DB009A739B /* scan_fsm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = scan_fsm.c; path = ../../scan_fsm/scan_fsm.c; sourceTree = "<group>"; };
 		6BE468DA25CC93FA00247857 /* audio_layer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = audio_layer.c; path = ../../../../interface/audio_layer.c; sourceTree = "<group>"; };
 		6BE468DB25CC93FA00247857 /* audio_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = audio_layer.h; path = ../../../../interface/audio_layer.h; sourceTree = "<group>"; };
 		6BE468DD25CC942E00247857 /* lists.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lists.c; path = ../../../../framework/lists.c; sourceTree = "<group>"; };
@@ -415,6 +450,58 @@
 			name = Speex;
 			sourceTree = "<group>";
 		};
+		6B9A1C7025DACAB1002DD409 /* MAC FSM */ = {
+			isa = PBXGroup;
+			children = (
+				6B9A1C7825DACB5F002DD409 /* mac_layer_fsm_definition.h */,
+				6B9A1C7925DACFF0002DD409 /* mac_layer_fsm_processor.h */,
+				6B9A1C7225DACAC4002DD409 /* mac_layer_fsm.c */,
+				6B9A1C7125DACAC4002DD409 /* mac_layer_fsm.h */,
+			);
+			name = "MAC FSM";
+			sourceTree = "<group>";
+		};
+		6B9A1C7425DACACF002DD409 /* Startup */ = {
+			isa = PBXGroup;
+			children = (
+				6B4962661C89882E00695CC5 /* app_main.c */,
+				6B4962671C89882E00695CC5 /* config_tima.h */,
+			);
+			name = Startup;
+			sourceTree = "<group>";
+		};
+		6B9A1C7525DACAE7002DD409 /* FSM Signals */ = {
+			isa = PBXGroup;
+			children = (
+				6BD9E99625F197460023EFA2 /* fsm_signals_debug.c */,
+				6B9A1C7725DACAFB002DD409 /* fsm_signals_output.h */,
+				6B9A1C7625DACAFB002DD409 /* fsm_signals.h */,
+			);
+			name = "FSM Signals";
+			sourceTree = "<group>";
+		};
+		6B9F65BB25DDB62700C98612 /* Debug FSM */ = {
+			isa = PBXGroup;
+			children = (
+				6B9F65BD25DDB65400C98612 /* debug_fsm_definition.h */,
+				6B9F65C025DDB91E00C98612 /* debug_fsm_processor.h */,
+				6B9F65BC25DDB65400C98612 /* debug_fsm.c */,
+				6B9F65BE25DDB65400C98612 /* debug_fsm.h */,
+			);
+			name = "Debug FSM";
+			sourceTree = "<group>";
+		};
+		6BA00E1325E0237000DE765E /* Node FSM */ = {
+			isa = PBXGroup;
+			children = (
+				6BA00E1525E0250F00DE765E /* node_fsm_definition.h */,
+				6BA00E1425E0250F00DE765E /* node_fsm_processor.h */,
+				6BA00E1625E0250F00DE765E /* node_fsm.c */,
+				6BA00E1725E0250F00DE765E /* node_fsm.h */,
+			);
+			name = "Node FSM";
+			sourceTree = "<group>";
+		};
 		6BAADBD11BEC28B800B7BE2B = {
 			isa = PBXGroup;
 			children = (
@@ -443,16 +530,16 @@
 		6BAADBDC1BEC28B800B7BE2B /* Audio FS */ = {
 			isa = PBXGroup;
 			children = (
+				6BFBA0D21BF604AA00E53026 /* Framework */,
+				6BAADC0C1BEC295300B7BE2B /* Application */,
+				6BAADBFD1BEC28FE00B7BE2B /* DevDrivers */,
 				6B90056425CC927500442996 /* Speex */,
 				6BCD77381E127029003A7227 /* Filesystem */,
 				6B4962691C8989CD00695CC5 /* Console */,
 				6B56BAC51C1F6451006305B1 /* SDL */,
-				6BFBA0D21BF604AA00E53026 /* Framework */,
 				6B48614C1BF00A8F00B14486 /* Graphics */,
 				6BAADC231BEC2AC900B7BE2B /* Interface */,
 				6BAADC111BEC2A8600B7BE2B /* Lib C */,
-				6BAADC0C1BEC295300B7BE2B /* Application */,
-				6BAADBFD1BEC28FE00B7BE2B /* DevDrivers */,
 				6BAADBE41BEC28DE00B7BE2B /* System */,
 			);
 			name = "Audio FS";
@@ -466,8 +553,8 @@
 				6BAADBE71BEC28F000B7BE2B /* device.h */,
 				6BAADBE81BEC28F000B7BE2B /* heap.c */,
 				6BAADBE91BEC28F000B7BE2B /* heap.h */,
-				6BAADBEA1BEC28F000B7BE2B /* lcd.c */,
 				6BAADBEB1BEC28F000B7BE2B /* lcd.h */,
+				6B4FE4E525E5BB30007F407D /* mac.h */,
 				6BAADBEC1BEC28F000B7BE2B /* mass_mal.c */,
 				6BAADBED1BEC28F000B7BE2B /* mass_mal.h */,
 				6BAADBF11BEC28F000B7BE2B /* system.c */,
@@ -482,6 +569,8 @@
 		6BAADBFD1BEC28FE00B7BE2B /* DevDrivers */ = {
 			isa = PBXGroup;
 			children = (
+				6BDBFEEE25D467BF00988393 /* socket_library.h */,
+				6B2EBCF725D5EC010000DCC8 /* net_printf_driver.c */,
 				6BD7374D25CEB15300C08650 /* audio_driver_PA.c */,
 				6B4962A51C89C59400695CC5 /* socket_library.c */,
 				6BCCEDAC1E1DA79900878E17 /* socket_driver.c */,
@@ -500,9 +589,13 @@
 		6BAADC0C1BEC295300B7BE2B /* Application */ = {
 			isa = PBXGroup;
 			children = (
+				6B9A1C7025DACAB1002DD409 /* MAC FSM */,
+				6BA00E1325E0237000DE765E /* Node FSM */,
+				6BDE56DB25DF26C5009A739B /* Scan FSM */,
+				6B9F65BB25DDB62700C98612 /* Debug FSM */,
+				6B9A1C7525DACAE7002DD409 /* FSM Signals */,
+				6B9A1C7425DACACF002DD409 /* Startup */,
 				6BD7375025CF532000C08650 /* info.plist */,
-				6B4962661C89882E00695CC5 /* app_main.c */,
-				6B4962671C89882E00695CC5 /* config_tima.h */,
 				6BAADC0D1BEC296D00B7BE2B /* main.c */,
 			);
 			name = Application;
@@ -588,9 +681,26 @@
 			name = Commands;
 			sourceTree = "<group>";
 		};
+		6BDE56DB25DF26C5009A739B /* Scan FSM */ = {
+			isa = PBXGroup;
+			children = (
+				6BDE56DD25DF26DB009A739B /* scan_fsm_definition.h */,
+				6BDE56DE25DF26DB009A739B /* scan_fsm_processor.h */,
+				6BDE56DF25DF26DB009A739B /* scan_fsm.c */,
+				6BDE56DC25DF26DA009A739B /* scan_fsm.h */,
+			);
+			name = "Scan FSM";
+			sourceTree = "<group>";
+		};
 		6BFBA0D21BF604AA00E53026 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				6BA00E1A25E0300300DE765E /* buffer_data.c */,
+				6BA00E1925E0300300DE765E /* buffer_data.h */,
+				6BD769E325D855F800B90CF3 /* fsm.c */,
+				6BD769E425D855F800B90CF3 /* fsm.h */,
+				6B2EBCF425D5A4250000DCC8 /* config_reader.c */,
+				6B2EBCF525D5A4250000DCC8 /* config_reader.h */,
 				6BE468DD25CC942E00247857 /* lists.c */,
 				6BE468DE25CC942E00247857 /* lists.h */,
 				6B90055F25CC924B00442996 /* buffer.c */,
@@ -676,6 +786,7 @@
 				6B90059425CC92CB00442996 /* lsp.c in Sources */,
 				6B90059A25CC92CB00442996 /* gain_table_lbr.c in Sources */,
 				6B9005A025CC92CB00442996 /* filters.c in Sources */,
+				6BDE56E025DF26DB009A739B /* scan_fsm.c in Sources */,
 				6BCD77611E127048003A7227 /* fs_time.c in Sources */,
 				6B9005A325CC92CB00442996 /* window.c in Sources */,
 				6B4C47201C62A6D4009E7AA1 /* SDLMain.m in Sources */,
@@ -713,14 +824,15 @@
 				6B90055C25CC73EE00442996 /* cmd_mkdir.c in Sources */,
 				6BA26D8725D308480019DA76 /* SDL_startup.c in Sources */,
 				6B4861531BF00AAE00B14486 /* draw.c in Sources */,
+				6BD9E99725F197460023EFA2 /* fsm_signals_debug.c in Sources */,
 				6B90056225CC924B00442996 /* buffer.c in Sources */,
 				6BAADBFB1BEC28F000B7BE2B /* system.c in Sources */,
 				6BAADC221BEC2A9500B7BE2B /* vsnprintk.c in Sources */,
 				6BCCEDB11E1DACEB00878E17 /* dummy_tty.c in Sources */,
 				6BD7374E25CEB15300C08650 /* audio_driver_PA.c in Sources */,
-				6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */,
 				6B49627D1C8989EA00695CC5 /* cmd_heap.c in Sources */,
 				6BCD77601E127048003A7227 /* file.c in Sources */,
+				6B2EBCF825D5EC010000DCC8 /* net_printf_driver.c in Sources */,
 				6BAADC1B1BEC2A9500B7BE2B /* atoi.c in Sources */,
 				6B90059125CC92CB00442996 /* ltp.c in Sources */,
 				6B90055825CC73EE00442996 /* cmd_rm.c in Sources */,
@@ -738,6 +850,7 @@
 				6B90055D25CC73EE00442996 /* cmd_dump.c in Sources */,
 				6B4C471C1C62A6A4009E7AA1 /* font_8x8.c in Sources */,
 				6BAADC201BEC2A9500B7BE2B /* str_compare.c in Sources */,
+				6BD769E525D855F800B90CF3 /* fsm.c in Sources */,
 				6BB1E7F31C1E25A800CCB67A /* random.c in Sources */,
 				6B90059C25CC92CB00442996 /* lpc.c in Sources */,
 				6BA26D7C25D2E2EF0019DA76 /* SDL_cpu_driver.c in Sources */,
@@ -747,16 +860,21 @@
 				6BAADBF61BEC28F000B7BE2B /* device.c in Sources */,
 				6BCD777E1E1318F3003A7227 /* file_disc.c in Sources */,
 				6B4962AA1C8A049D00695CC5 /* net_lib.c in Sources */,
+				6BA00E1B25E0300300DE765E /* buffer_data.c in Sources */,
 				6B4C47151C62A5B3009E7AA1 /* printf_driver.c in Sources */,
 				6BCD77801E131949003A7227 /* vhd_library.c in Sources */,
 				6B4962831C8989EA00695CC5 /* cmd_rtc.c in Sources */,
+				6BA00E1825E0250F00DE765E /* node_fsm.c in Sources */,
+				6B2EBCF625D5A4250000DCC8 /* config_reader.c in Sources */,
 				6BAADC211BEC2A9500B7BE2B /* str_token.c in Sources */,
 				6B90059825CC92CB00442996 /* nb_celp.c in Sources */,
 				6B90059225CC92CB00442996 /* modes_nb.c in Sources */,
 				6B90059F25CC92CB00442996 /* exc_10_16_table.c in Sources */,
+				6B9A1C7325DACAC4002DD409 /* mac_layer_fsm.c in Sources */,
 				6BA26D8525D2F9670019DA76 /* SDL_instance.c in Sources */,
 				6BCD775F1E127048003A7227 /* fat.c in Sources */,
 				6B90059725CC92CB00442996 /* bits.c in Sources */,
+				6B9F65BF25DDB65400C98612 /* debug_fsm.c in Sources */,
 				6B90056325CC924B00442996 /* vocoder.c in Sources */,
 				6B4850101C1B9A0200AF407D /* lp_filter.c in Sources */,
 				6B4962A81C89C59400695CC5 /* socket_library.c in Sources */,
@@ -860,8 +978,8 @@
 					TIMA_USE_CONFIG,
 					"_USE_SCREEN_WIDTH=240",
 					"_USE_SCREEN_HEIGHT=320",
-					_USE_FRONTEND,
 					MAC_OS_EMULATOR,
+					_USE_FRONTEND,
 					"DEBUG=1",
 					"$(inherited)",
 				);

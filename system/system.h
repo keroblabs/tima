@@ -76,6 +76,8 @@ static void __cdecl f(void)
 #error "unknown compiler type"
 #endif
 
+#define MAX_SUB_APPLICATION_COUNT       256
+
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef USE_SECTIONS
@@ -103,6 +105,7 @@ enum
 	SYSTEM_START_MAIN_APPLICATION,
 	SYSTEM_START_SUB_APPLICATION,
 
+    SYSTEM_START_SUB_APPLICATION_MAX = SYSTEM_START_SUB_APPLICATION + MAX_SUB_APPLICATION_COUNT,
 	SYSTEM_RUN_PROCESS,
 
 	SYSTEM_RUN_POWERDOWN_CRITICAL,
@@ -114,7 +117,7 @@ enum
 	SYSTEM_CUSTOM_DEVICE,
 	SYSTEM_STORAGE_DEVICE,
 
-	SYSTEM_LIST_SECTION = 0x50
+	SYSTEM_LIST_SECTION = 0x5000
 };
 
 typedef struct _data_section_t
@@ -148,8 +151,8 @@ typedef struct _data_section_t
 #define DECLARE_INIT_MODULE_SECTION(a)         		SYSTEM_SECTION_CALL( a, SYSTEM_INIT_MODULE   	)
 #define DECLARE_INIT_APPLICATION_SECTION(a)         SYSTEM_SECTION_CALL( a, SYSTEM_INIT_APPLICATION )
 
-#define DECLARE_APPLICATION_SECTION(a)  			SYSTEM_SECTION_CALL( a, SYSTEM_START_MAIN_APPLICATION  )
-#define DECLARE_SUB_APPLICATION_SECTION(a)  		SYSTEM_SECTION_CALL( a, SYSTEM_START_SUB_APPLICATION   )
+#define DECLARE_APPLICATION_SECTION(a)  			SYSTEM_SECTION_CALL( a, SYSTEM_START_MAIN_APPLICATION    )
+#define DECLARE_SUB_APPLICATION_SECTION(a,b)  		SYSTEM_SECTION_CALL( a, SYSTEM_START_SUB_APPLICATION + b )
 
 #define DECLARE_PROCESS_SECTION(a)      			SYSTEM_SECTION_CALL( a, SYSTEM_RUN_PROCESS  )
 
@@ -163,13 +166,12 @@ typedef struct _data_section_t
 
 void system_Events( void );
 void system_Startup( void );
-void System_PowerDown( void );
-
-bool_t system_syscall_entrypoint( uint32_t index );
+void system_PowerDown( void );
+void system_start_sub_applications( uint8_t index );
 
 void * system_Get_Item( uint32_t * start, uint32_t * end, uint32_t index );
 
-void * system_List_Get_Item( uint8_t type, uint32_t index );
+void * system_List_Get_Item( uint32_t type, uint32_t index );
 
 msd_driver_t * system_Get_Storage_Driver( uint32_t index );
 device_data_t * system_Get_Device_Driver( uint32_t index );

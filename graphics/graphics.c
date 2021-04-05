@@ -44,7 +44,7 @@ void graphics_init( void )
 	lcd_ready = FALSE;
 	lcd_init_done = FALSE;
 
-	lcd_driver = lcd_layer_get_driver();
+    lcd_driver = device_get_api( "/dev/lcd" );
 	if( lcd_driver == NULL )
 	{
 		DEBUG_PRINTK( "LCD failed\r\n" );

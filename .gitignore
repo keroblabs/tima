@@ -35,6 +35,7 @@ graphics/*.o
 interface/*.o
 list.txt
 system/*.o
+*.fdn
 
 Applications/instruments/make_2440/
 Applications/instruments/make_WIN32/

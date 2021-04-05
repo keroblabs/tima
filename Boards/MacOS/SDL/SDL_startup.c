@@ -13,6 +13,8 @@ static SDL_mutex *user_signal_lock;
 static SDL_cond  *user_signal_cond;
 static bool_t user_signal_flag;
 
+static sdl_loop_t * event_loop;
+
 ////////////////////////////////////////////////////////////////////
 
 static void sdl_event_init( void )
@@ -29,6 +31,17 @@ static void run_delegate( void * data1, void * data2 )
     delegate( data2 );
 }
 
+static void sdl_event_loop_background( void )
+{
+    sdl_loop_t * loop = event_loop;
+    
+    while( loop != NULL )
+    {
+        loop->handler();
+        loop = loop->next;
+    }
+}
+
 static int sdl_event_loop( void )
 {
     //Event handler
@@ -37,8 +50,7 @@ static int sdl_event_loop( void )
     // console keyboard
     sdl_input_event();
     
-    // vsync
-    sdl_vsync_event();
+    sdl_event_loop_background();
     
     //Handle events on queue
     while( SDL_PollEvent( &e ) != 0 )
@@ -76,7 +88,7 @@ static int sdl_event_loop( void )
                     break;
                     
                 case SDL_QUIT:
-                    System_PowerDown();
+                    system_PowerDown();
                     break;
             }
         }
@@ -85,40 +97,64 @@ static int sdl_event_loop( void )
     return 1;
 }
 
-static void cpu_send_frame_trigger( void * p_pipe )
-{
-    int cnt;
-    
-    instance_data_t * curr_instance = sdl_get_current_instance();
-    if( curr_instance == NULL ) return;
-    
-    uint8_t * frame;
-    uint16_t size;
-    
-    pipe_data_t * pipe = ( pipe_data_t * )p_pipe;
-    frame = pipe_read( pipe, &size );
-    
-    for( cnt = 0; cnt < MAX_INSTANCES; cnt++ )
-    {
-        instance_data_t * instance = sdl_get_instance_from_index( cnt );
-        if( instance != NULL )
-        {
-            if( ( instance->current_channel == curr_instance->current_channel ) && ( instance->id != curr_instance->id ) )
-            {
-                pipe_send_buffer( &instance->send_pipe, frame, size );
-                
-                curr_instance->last_tx_good = TRUE;
-            }
-        }
-    }
-}
-
 static int sdl_client_thread( void * param )
 {
     instance_data_t * instance = ( instance_data_t * )param;
-    SDL_LockMutex( instance->mutex );
-    SDL_UnlockMutex( instance->mutex );
+    sdl_signal_wait( &instance->signal );
     return _fe_main();
+}
+
+void sdl_add_event_loop( sdl_loop_t * event )
+{
+    if( event_loop != NULL ) event->next = event_loop;
+    event_loop = event;
+}
+
+void sdl_signal_create( condition_signal_t * signal )
+{
+    signal->mutex = SDL_CreateMutex();
+    signal->mutex_state = SDL_CreateMutex();
+    signal->condition = SDL_CreateCond();
+    signal->flag = FALSE;
+    signal->state = FALSE;
+}
+
+void sdl_signal_wait( condition_signal_t * signal )
+{
+    SDL_LockMutex( signal->mutex_state );
+    signal->state = TRUE;
+    SDL_UnlockMutex( signal->mutex_state );
+
+    SDL_LockMutex( signal->mutex );
+    while( signal->flag == FALSE )
+    {
+        SDL_CondWait( signal->condition, signal->mutex );
+    }
+    signal->flag = FALSE;
+    SDL_UnlockMutex( signal->mutex );
+
+    SDL_LockMutex( signal->mutex_state );
+    signal->state = FALSE;
+    SDL_UnlockMutex( signal->mutex_state );
+}
+
+void sdl_signal_continue( condition_signal_t * signal )
+{
+    SDL_LockMutex( signal->mutex );
+    signal->flag = TRUE;
+    SDL_CondBroadcast( signal->condition );
+    SDL_UnlockMutex( signal->mutex );
+}
+
+bool_t sdl_signal_state( condition_signal_t * signal )
+{
+    bool_t ret;
+    
+    SDL_LockMutex( signal->mutex_state );
+    ret = signal->state;
+    SDL_UnlockMutex( signal->mutex_state );
+
+    return ret;
 }
 
 void sdl_instance_send_message( int message_code, void * data1, void * data2 )
@@ -150,6 +186,8 @@ int main( int argc, char* argv[] )
 #endif
 {
 #ifdef WANT_MULTI_INSTANCES
+    instance_data_t * instance;
+    
     sdl_instance_init();
     sdl_mouse_init();
     sdl_event_init();
@@ -157,11 +195,10 @@ int main( int argc, char* argv[] )
     
     for( int i = 0; i < MAX_INSTANCES; i++ )
     {
-        instance_data_t * instance = sdl_alloc_instance();
+        instance = sdl_alloc_instance();
         if( instance == NULL ) break;
         
-        instance->mutex = SDL_CreateMutex();
-        SDL_LockMutex( instance->mutex );
+        sdl_signal_create( &instance->signal );
         
         instance->thread = SDL_CreateThread(sdl_client_thread, "TestThread", instance);
         
@@ -173,15 +210,10 @@ int main( int argc, char* argv[] )
         
         sleep(1); // wait for the thread to start, otherwise there will be no ID
         instance->id = SDL_GetThreadID( instance->thread );
-
-        pipe_init( &instance->send_pipe,    "SEND_PIPE", 16 );
-        pipe_init( &instance->receive_pipe, "RECEIVE_PIPE", 16 );
-        
-        pipe_set_tx_trigger( &instance->send_pipe, cpu_send_frame_trigger );
-        pipe_set_tx_trigger( &instance->receive_pipe, cpu_send_frame_trigger );
-        
-        SDL_UnlockMutex( instance->mutex );
     }
+    
+    instance = sdl_get_instance_from_index( 0 );
+    sdl_signal_continue( &instance->signal );
     
     while( 1 )
     {
@@ -194,7 +226,7 @@ int main( int argc, char* argv[] )
      }
      */
 #else
-    _fe_main(NULL);
+    _fe_main();
 #endif
     return 0;
 }

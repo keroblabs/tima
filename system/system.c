@@ -36,7 +36,7 @@ volatile uint32_t   _list_ptr_ = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void * _system_get_internal_section( void * start, void * end, uint8_t type, uint32_t index )
+static void * _system_get_internal_section( void * start, void * end, uint32_t type, uint32_t index )
 {
     void ** pp_data;
     void ** pp_end;
@@ -69,7 +69,7 @@ static void * _system_get_internal_section( void * start, void * end, uint8_t ty
     return NULL;
 }
 
-static void _system_run_internal_section( void * start, void * end, uint8_t type )
+static void _system_run_internal_section( void * start, void * end, uint32_t type )
 {
     void ** pp_data;
     void ** pp_end;
@@ -95,7 +95,7 @@ static void _system_run_internal_section( void * start, void * end, uint8_t type
 	}
 }
 
-void _system_call_section( uint8_t type )
+void _system_call_section( uint32_t type )
 {
     _system_run_internal_section( _list_section, type );
 }
@@ -162,7 +162,7 @@ uint16_t system_Get_Build_Date( void )
     return build_date;
 }
 
-void * system_List_Get_Item( uint8_t type, uint32_t index )
+void * system_List_Get_Item( uint32_t type, uint32_t index )
 {
     return _system_get_internal_section( _list_section, type+SYSTEM_LIST_SECTION, index );
 }
@@ -199,12 +199,17 @@ void * system_Get_Item( uint32_t * start, uint32_t * end, uint32_t index )
 	return *p_start;
 }
 
+void system_start_sub_applications( uint8_t index )
+{
+    _system_call_section( SYSTEM_START_SUB_APPLICATION + index );
+}
+
 void system_Events( void )
 {
     _system_call_section( SYSTEM_RUN_PROCESS );
 }
 
-void System_PowerDown( void )
+void system_PowerDown( void )
 {
     _system_call_section( SYSTEM_RUN_POWERDOWN_CRITICAL );
     _system_call_section( SYSTEM_RUN_POWERDOWN_DEVICE );
@@ -243,7 +248,7 @@ void system_Startup( void )
     
     /* execute applications in the pool */
     _system_call_section( SYSTEM_START_MAIN_APPLICATION );
-    
+
     /* start al threads */
 	#ifdef USE_MULTITHREAD
     thread_start();

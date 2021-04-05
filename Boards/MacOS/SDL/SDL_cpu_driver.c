@@ -20,6 +20,11 @@ static void cpu_init( void )
     pthread_mutex_init( &cpu_mutex, NULL );
 }
 
+static void _cpu_scheduler( void )
+{
+    sdl_instance_yield();
+}
+
 void _cpu_disable_irq( void )
 {
     pthread_mutex_lock( &cpu_mutex );
@@ -31,6 +36,7 @@ void _cpu_enable_irq( void )
 }
 
 DECLARE_INIT_CRITICAL_SECTION( cpu_init );
+DECLARE_PROCESS_SECTION( _cpu_scheduler );
 
 ////////////////////////////////////////////////////////////////////////////////
 

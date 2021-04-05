@@ -18,8 +18,8 @@ typedef struct _lcd_driver_t
 	void ( *update )( void );
 	bool_t ( *ready )( void );
 
-	void ( *set_contrast)( uint8_t value );
-	void ( *set_backlight)( bool_t state );
+	void ( *set_contrast )( uint8_t value );
+	void ( *set_backlight )( bool_t state );
 
 	uint16_t * ( *get_buffer )( void );
 
@@ -33,14 +33,6 @@ typedef struct _lcd_driver_t
 	int ( *input_ts )( uint16_t * posx, uint16_t * posy, uint16_t * posz );
 
 } lcd_driver_t;
-
-///////////////////////////////////////////////////////////////
-
-// extern lcd_driver_t * lcd_driver;
-
-///////////////////////////////////////////////////////////////
-
-lcd_driver_t * lcd_layer_get_driver( void );
 
 ///////////////////////////////////////////////////////////////
 
