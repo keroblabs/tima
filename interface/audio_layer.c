@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static list_t * p_audio_list = NULL;
+static list_t p_audio_list;
 static device_t * p_dev_audio_in;
 static device_t * p_dev_audio_out;
 
@@ -14,7 +14,7 @@ static device_t * p_dev_audio_out;
 void audio_layer_init( void )
 {
 	p_dev_audio_in = p_dev_audio_out = NULL;
-	p_audio_list = list_create();
+    list_init( &p_audio_list, NULL );
 }
 
 audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask )
@@ -37,7 +37,6 @@ audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask
 
 	p_audio->mask &= ~AUDIO_STATUS_READY;
 	p_audio->mask &= ~AUDIO_STATUS_STOP;
-	p_audio->p_next = NULL;
 
 	if( p_audio->mask & AUDIO_MODE_STEREO )
 	{
@@ -78,7 +77,7 @@ audio_data_t * audio_start( uint32_t sample_rate, int16_t * buffer, uint8_t mask
 	}
 
 	// append to the list
-	list_add( p_audio_list, p_audio );
+	list_insert_tail( &p_audio_list, &p_audio->node );
 
 	return p_audio;
 }
@@ -96,7 +95,7 @@ uint32_t audio_codec_cmd( audio_data_t * audio, uint32_t command, uint32_t param
 
 void audio_stop( audio_data_t * audio )
 {
-	list_remove_by_pointer( p_audio_list, audio );
+	list_remove( &p_audio_list, &audio->node );
 	MFREE( audio );
 }
 
@@ -129,8 +128,7 @@ bool_t audio_layer_get_status( device_t * p_dev )
 
 void audio_layer_input_process( void )
 {
-	audio_data_t * p_audio;
-	uint32_t cnt;
+	audio_data_t * p_audio = NULL;
 	int16_t * p_sample;
 	int16_t * temp_audio_buffer;
 	int32_t audio32;
@@ -145,8 +143,7 @@ void audio_layer_input_process( void )
 	// read the incoming audio
 	device_read_buffer( p_dev_audio_in, ( uint8_t * )temp_audio_buffer, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
 
-	cnt = 0;
-	while( ( p_audio = ( audio_data_t * )list_locate_by_index( p_audio_list, cnt ) ) != NULL )
+    while( ( p_audio = ( audio_data_t * )list_get_next( &p_audio_list, p_audio ? &p_audio->node : NULL ) ) != NULL )
 	{
 		if( p_audio->mask & AUDIO_MODE_INPUT )
 		{
@@ -161,7 +158,7 @@ void audio_layer_input_process( void )
 			else
 			{
 				// for mono instances, mix left and right
-				for( cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
+				for( int cnt = 0; cnt < AUDIO_BUFFER_STEREO_SIZE; cnt += 2 )
 				{
 					audio32 = ( temp_audio_buffer[cnt] + temp_audio_buffer[cnt+1] ) >> 1;
 					*( p_sample ) = audio32;
@@ -173,7 +170,6 @@ void audio_layer_input_process( void )
 			p_audio->mask |= AUDIO_STATUS_READY;
 			p_audio->buffer_ready = p_audio->buffer;
 		}
-		cnt++;
 	}
 
 	audio_layer_release_buffer( temp_audio_buffer );
@@ -181,9 +177,7 @@ void audio_layer_input_process( void )
 
 void audio_layer_output_process( void )
 {
-	audio_data_t * p_audio;
-	uint32_t cnt;
-	uint32_t sample_cnt;
+	audio_data_t * p_audio = NULL;
 	bool_t is_first;
 	int16_t * p_sample;
 	int16_t * temp_audio_buffer;
@@ -197,10 +191,9 @@ void audio_layer_output_process( void )
 
 	// prepare audio buffer
 	is_first = TRUE;
-	memset( temp_audio_buffer, 0x00, sizeof(temp_audio_buffer) );
+	memset( temp_audio_buffer, 0x00, AUDIO_BUFFER_STEREO_SIZE*sizeof( int16_t ) );
 
-	cnt = 0;
-	while( ( p_audio = ( audio_data_t * )list_locate_by_index( p_audio_list, cnt ) ) != NULL )
+    while( ( p_audio = ( audio_data_t * )list_get_next( &p_audio_list, p_audio ? &p_audio->node : NULL ) ) != NULL )
 	{
 		if( p_audio->mask & AUDIO_MODE_OUTPUT )
 		{
@@ -213,7 +206,7 @@ void audio_layer_output_process( void )
 			if( is_first )
 			{
 				// in order to optimize
-				for( sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
+				for( int sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
 				{
 					temp_audio_buffer[sample_cnt] = *( p_sample );
 					if( p_audio->mask & AUDIO_MODE_STEREO ) p_sample++;
@@ -224,7 +217,7 @@ void audio_layer_output_process( void )
 			}
 			else
 			{
-				for( sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
+				for( int sample_cnt = 0; sample_cnt < AUDIO_BUFFER_STEREO_SIZE; sample_cnt += 2 )
 				{
 					temp_audio_buffer[sample_cnt] = ( *( p_sample ) + temp_audio_buffer[sample_cnt] ) >> 1;
 					if( p_audio->mask & AUDIO_MODE_STEREO ) p_sample++;
@@ -239,8 +232,6 @@ void audio_layer_output_process( void )
 			p_audio->mask |= AUDIO_STATUS_READY;
 			p_audio->buffer_ready = p_audio->buffer;
 		}
-
-		cnt++;
 	}
 
 	// if there was any processed instance, send the audio to the driver
@@ -254,7 +245,7 @@ void audio_layer_output_process( void )
 
 void audio_layer_process( void )
 {
-	if( list_is_empty( p_audio_list ) ) return;
+	if( list_is_empty( &p_audio_list ) ) return;
 	audio_layer_output_process();
 	audio_layer_input_process();
 }

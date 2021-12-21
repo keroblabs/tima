@@ -1,16 +1,10 @@
 //Using SDL and standard IO
 
-#ifdef WIN32
-#include <SDL.h>
-#include <Windows.h>
-#include <conio.h>
-#elif defined __MACH__
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
-#endif
 
 #include "types.h"
 #include "device.h"

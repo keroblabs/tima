@@ -143,7 +143,7 @@ bool_t device_open_ex( const char * name, device_t * dev )
     dev->device_ptr = dev_data;
     dev->device_index = index;
 
-    DEBUG_PRINTK( "Open %s (0x%08x, %d)\r\n", name, (int)dev, sys_heap_used() );
+    //DEBUG_PRINTK( "Open %s (0x%08x, %d)\r\n", name, (int)dev, sys_heap_used() );
 
     return TRUE;
 }
@@ -419,7 +419,7 @@ void device_close( device_t * dev )
     if( dev_data == NULL ) return;
     //if( dev_data->disable == NULL ) return;
     
-    DEBUG_PRINTK( "Close (0x%08x, %d)\r\n", (int)dev, sys_heap_used() );
+    //DEBUG_PRINTK( "Close (0x%08x, %d)\r\n", (int)dev, sys_heap_used() );
 
     if( dev_data->in_use != NULL ) *dev_data->in_use = FALSE;
 

@@ -58,6 +58,14 @@
 		6BAADC261BEC2B0500B7BE2B /* timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADC241BEC2B0500B7BE2B /* timer.c */; };
 		6BAADC291BEC2BFF00B7BE2B /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BAADC271BEC2BFF00B7BE2B /* debug.c */; };
 		6BB1E7F31C1E25A800CCB67A /* random.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BB1E7F11C1E25A800CCB67A /* random.c */; };
+		6BBB955D2771273200BDFFC5 /* cmd_part.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB95552771273200BDFFC5 /* cmd_part.c */; };
+		6BBB955E2771273200BDFFC5 /* cmd_ymodem.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB95562771273200BDFFC5 /* cmd_ymodem.c */; };
+		6BBB955F2771273200BDFFC5 /* cmd_mkdir.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB95572771273200BDFFC5 /* cmd_mkdir.c */; };
+		6BBB95602771273200BDFFC5 /* cmd_dump.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB95582771273200BDFFC5 /* cmd_dump.c */; };
+		6BBB95612771273200BDFFC5 /* cmd_ls.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB95592771273200BDFFC5 /* cmd_ls.c */; };
+		6BBB95622771273200BDFFC5 /* cmd_rm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB955A2771273200BDFFC5 /* cmd_rm.c */; };
+		6BBB95632771273200BDFFC5 /* cmd_cat.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB955B2771273200BDFFC5 /* cmd_cat.c */; };
+		6BBB95642771273200BDFFC5 /* cmd_cd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BBB955C2771273200BDFFC5 /* cmd_cd.c */; };
 		6BCCEDAD1E1DA79900878E17 /* socket_driver.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCCEDAC1E1DA79900878E17 /* socket_driver.c */; };
 		6BCCEDB11E1DACEB00878E17 /* dummy_tty.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCCEDB01E1DACEB00878E17 /* dummy_tty.c */; };
 		6BCD775C1E127048003A7227 /* dir.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77431E127048003A7227 /* dir.c */; };
@@ -68,16 +76,7 @@
 		6BCD77611E127048003A7227 /* fs_time.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD774D1E127048003A7227 /* fs_time.c */; };
 		6BCD77621E127048003A7227 /* fs.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD774F1E127048003A7227 /* fs.c */; };
 		6BCD77631E127048003A7227 /* partition.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77511E127048003A7227 /* partition.c */; };
-		6BCD776A1E1273BE003A7227 /* cmd_ymodem.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77671E1273BE003A7227 /* cmd_ymodem.c */; };
 		6BCD776B1E1273BE003A7227 /* ymodem.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77681E1273BE003A7227 /* ymodem.c */; };
-		6BCD77751E1273D6003A7227 /* cmd_cat.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD776C1E1273D6003A7227 /* cmd_cat.c */; };
-		6BCD77761E1273D6003A7227 /* cmd_cd.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD776D1E1273D6003A7227 /* cmd_cd.c */; };
-		6BCD77771E1273D6003A7227 /* cmd_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD776E1E1273D6003A7227 /* cmd_common.c */; };
-		6BCD77781E1273D6003A7227 /* cmd_dump.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77701E1273D6003A7227 /* cmd_dump.c */; };
-		6BCD77791E1273D6003A7227 /* cmd_ls.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77711E1273D6003A7227 /* cmd_ls.c */; };
-		6BCD777A1E1273D6003A7227 /* cmd_mkdir.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77721E1273D6003A7227 /* cmd_mkdir.c */; };
-		6BCD777B1E1273D6003A7227 /* cmd_part.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77731E1273D6003A7227 /* cmd_part.c */; };
-		6BCD777C1E1273D6003A7227 /* cmd_rm.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD77741E1273D6003A7227 /* cmd_rm.c */; };
 		6BCD777E1E1318F3003A7227 /* file_disc.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD777D1E1318F3003A7227 /* file_disc.c */; };
 		6BCD77801E131949003A7227 /* vhd_library.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCD777F1E131949003A7227 /* vhd_library.c */; };
 		6BFBA0D51BF604C500E53026 /* pipe.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BFBA0D31BF604C500E53026 /* pipe.c */; };
@@ -169,6 +168,14 @@
 		6BAADC281BEC2BFF00B7BE2B /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug.h; path = ../../../../interface/debug.h; sourceTree = "<group>"; };
 		6BB1E7F11C1E25A800CCB67A /* random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = random.c; path = ../../../../framework/random.c; sourceTree = "<group>"; };
 		6BB1E7F21C1E25A800CCB67A /* random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = random.h; path = ../../../../framework/random.h; sourceTree = "<group>"; };
+		6BBB95552771273200BDFFC5 /* cmd_part.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_part.c; path = ../../../../console/cmd_part.c; sourceTree = "<group>"; };
+		6BBB95562771273200BDFFC5 /* cmd_ymodem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_ymodem.c; path = ../../../../console/cmd_ymodem.c; sourceTree = "<group>"; };
+		6BBB95572771273200BDFFC5 /* cmd_mkdir.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_mkdir.c; path = ../../../../console/cmd_mkdir.c; sourceTree = "<group>"; };
+		6BBB95582771273200BDFFC5 /* cmd_dump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_dump.c; path = ../../../../console/cmd_dump.c; sourceTree = "<group>"; };
+		6BBB95592771273200BDFFC5 /* cmd_ls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_ls.c; path = ../../../../console/cmd_ls.c; sourceTree = "<group>"; };
+		6BBB955A2771273200BDFFC5 /* cmd_rm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_rm.c; path = ../../../../console/cmd_rm.c; sourceTree = "<group>"; };
+		6BBB955B2771273200BDFFC5 /* cmd_cat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_cat.c; path = ../../../../console/cmd_cat.c; sourceTree = "<group>"; };
+		6BBB955C2771273200BDFFC5 /* cmd_cd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_cd.c; path = ../../../../console/cmd_cd.c; sourceTree = "<group>"; };
 		6BCCEDAC1E1DA79900878E17 /* socket_driver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = socket_driver.c; path = ../../../../Boards/Common/socket_driver.c; sourceTree = "<group>"; };
 		6BCCEDB01E1DACEB00878E17 /* dummy_tty.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dummy_tty.c; path = ../../../../interface/dummy_tty.c; sourceTree = "<group>"; };
 		6BCD77431E127048003A7227 /* dir.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dir.c; path = ../../../../filesys/dir.c; sourceTree = "<group>"; };
@@ -187,18 +194,8 @@
 		6BCD77501E127048003A7227 /* fs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fs.h; path = ../../../../filesys/fs.h; sourceTree = "<group>"; };
 		6BCD77511E127048003A7227 /* partition.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = partition.c; path = ../../../../filesys/partition.c; sourceTree = "<group>"; };
 		6BCD77521E127048003A7227 /* partition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = partition.h; path = ../../../../filesys/partition.h; sourceTree = "<group>"; };
-		6BCD77671E1273BE003A7227 /* cmd_ymodem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_ymodem.c; path = ../../../../filesys/file_xfer/cmd_ymodem.c; sourceTree = "<group>"; };
 		6BCD77681E1273BE003A7227 /* ymodem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ymodem.c; path = ../../../../filesys/file_xfer/ymodem.c; sourceTree = "<group>"; };
 		6BCD77691E1273BE003A7227 /* ymodem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ymodem.h; path = ../../../../filesys/file_xfer/ymodem.h; sourceTree = "<group>"; };
-		6BCD776C1E1273D6003A7227 /* cmd_cat.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_cat.c; path = ../../../../filesys/commands/cmd_cat.c; sourceTree = "<group>"; };
-		6BCD776D1E1273D6003A7227 /* cmd_cd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_cd.c; path = ../../../../filesys/commands/cmd_cd.c; sourceTree = "<group>"; };
-		6BCD776E1E1273D6003A7227 /* cmd_common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_common.c; path = ../../../../filesys/commands/cmd_common.c; sourceTree = "<group>"; };
-		6BCD776F1E1273D6003A7227 /* cmd_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cmd_common.h; path = ../../../../filesys/commands/cmd_common.h; sourceTree = "<group>"; };
-		6BCD77701E1273D6003A7227 /* cmd_dump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_dump.c; path = ../../../../filesys/commands/cmd_dump.c; sourceTree = "<group>"; };
-		6BCD77711E1273D6003A7227 /* cmd_ls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_ls.c; path = ../../../../filesys/commands/cmd_ls.c; sourceTree = "<group>"; };
-		6BCD77721E1273D6003A7227 /* cmd_mkdir.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_mkdir.c; path = ../../../../filesys/commands/cmd_mkdir.c; sourceTree = "<group>"; };
-		6BCD77731E1273D6003A7227 /* cmd_part.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_part.c; path = ../../../../filesys/commands/cmd_part.c; sourceTree = "<group>"; };
-		6BCD77741E1273D6003A7227 /* cmd_rm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmd_rm.c; path = ../../../../filesys/commands/cmd_rm.c; sourceTree = "<group>"; };
 		6BCD777D1E1318F3003A7227 /* file_disc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = file_disc.c; path = ../../../../Boards/MacOS/library/file_disc.c; sourceTree = "<group>"; };
 		6BCD777F1E131949003A7227 /* vhd_library.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vhd_library.c; path = ../../../../Boards/Common/vhd_library.c; sourceTree = "<group>"; };
 		6BFBA0D31BF604C500E53026 /* pipe.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pipe.c; path = ../../../../framework/pipe.c; sourceTree = "<group>"; };
@@ -243,6 +240,14 @@
 		6B4962691C8989CD00695CC5 /* Console */ = {
 			isa = PBXGroup;
 			children = (
+				6BBB955B2771273200BDFFC5 /* cmd_cat.c */,
+				6BBB955C2771273200BDFFC5 /* cmd_cd.c */,
+				6BBB95582771273200BDFFC5 /* cmd_dump.c */,
+				6BBB95592771273200BDFFC5 /* cmd_ls.c */,
+				6BBB95572771273200BDFFC5 /* cmd_mkdir.c */,
+				6BBB95552771273200BDFFC5 /* cmd_part.c */,
+				6BBB955A2771273200BDFFC5 /* cmd_rm.c */,
+				6BBB95562771273200BDFFC5 /* cmd_ymodem.c */,
 				6B49626D1C8989EA00695CC5 /* cmd_heap.c */,
 				6B4962701C8989EA00695CC5 /* cmd_obd2.c */,
 				6B4962731C8989EA00695CC5 /* cmd_rtc.c */,
@@ -422,7 +427,6 @@
 		6BCD77651E127383003A7227 /* File Xfer */ = {
 			isa = PBXGroup;
 			children = (
-				6BCD77671E1273BE003A7227 /* cmd_ymodem.c */,
 				6BCD77681E1273BE003A7227 /* ymodem.c */,
 				6BCD77691E1273BE003A7227 /* ymodem.h */,
 			);
@@ -432,15 +436,6 @@
 		6BCD77661E12738C003A7227 /* Commands */ = {
 			isa = PBXGroup;
 			children = (
-				6BCD776C1E1273D6003A7227 /* cmd_cat.c */,
-				6BCD776D1E1273D6003A7227 /* cmd_cd.c */,
-				6BCD776E1E1273D6003A7227 /* cmd_common.c */,
-				6BCD776F1E1273D6003A7227 /* cmd_common.h */,
-				6BCD77701E1273D6003A7227 /* cmd_dump.c */,
-				6BCD77711E1273D6003A7227 /* cmd_ls.c */,
-				6BCD77721E1273D6003A7227 /* cmd_mkdir.c */,
-				6BCD77731E1273D6003A7227 /* cmd_part.c */,
-				6BCD77741E1273D6003A7227 /* cmd_rm.c */,
 			);
 			name = Commands;
 			sourceTree = "<group>";
@@ -501,6 +496,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 6BAADBD11BEC28B800B7BE2B;
@@ -519,6 +515,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6BCD775D1E127048003A7227 /* efs.c in Sources */,
+				6BBB95632771273200BDFFC5 /* cmd_cat.c in Sources */,
 				6B4C470B1C62A589009E7AA1 /* SDL_LCD_Driver.c in Sources */,
 				6BCD77611E127048003A7227 /* fs_time.c in Sources */,
 				6B4C47201C62A6D4009E7AA1 /* SDLMain.m in Sources */,
@@ -527,11 +524,9 @@
 				6B50867B1C80E37000D39FBB /* adc.c in Sources */,
 				6BAADC291BEC2BFF00B7BE2B /* debug.c in Sources */,
 				6B4C47121C62A5B3009E7AA1 /* cpu_driver.c in Sources */,
-				6BCD777A1E1273D6003A7227 /* cmd_mkdir.c in Sources */,
-				6BCD77781E1273D6003A7227 /* cmd_dump.c in Sources */,
 				6BFBA0DB1BF768D400E53026 /* message.c in Sources */,
-				6BCD777C1E1273D6003A7227 /* cmd_rm.c in Sources */,
 				6B4861541BF00AAE00B14486 /* graphics.c in Sources */,
+				6BBB95642771273200BDFFC5 /* cmd_cd.c in Sources */,
 				6B548CB91E2DCB9300E5FC4F /* crc.c in Sources */,
 				6B4962681C89882E00695CC5 /* app_main.c in Sources */,
 				6B4C47171C62A5B3009E7AA1 /* ttyusb_driver.c in Sources */,
@@ -546,26 +541,24 @@
 				6BAADBDE1BEC28B900B7BE2B /* main.c in Sources */,
 				6BCD77631E127048003A7227 /* partition.c in Sources */,
 				6BAADC261BEC2B0500B7BE2B /* timer.c in Sources */,
-				6BCD777B1E1273D6003A7227 /* cmd_part.c in Sources */,
 				6BAADC0E1BEC296D00B7BE2B /* main.c in Sources */,
 				6BAADBFC1BEC28F000B7BE2B /* t_threads.c in Sources */,
-				6BCD776A1E1273BE003A7227 /* cmd_ymodem.c in Sources */,
 				6B4861531BF00AAE00B14486 /* draw.c in Sources */,
 				6BAADBFB1BEC28F000B7BE2B /* system.c in Sources */,
 				6BAADC221BEC2A9500B7BE2B /* vsnprintk.c in Sources */,
 				6BCCEDB11E1DACEB00878E17 /* dummy_tty.c in Sources */,
 				6BAADBF81BEC28F000B7BE2B /* lcd.c in Sources */,
+				6BBB955F2771273200BDFFC5 /* cmd_mkdir.c in Sources */,
 				6B49627D1C8989EA00695CC5 /* cmd_heap.c in Sources */,
 				6BCD77601E127048003A7227 /* file.c in Sources */,
 				6BAADC1B1BEC2A9500B7BE2B /* atoi.c in Sources */,
 				6B55BA991C6FB5D60058008A /* eeprom_driver.c in Sources */,
 				6BAADBF71BEC28F000B7BE2B /* heap.c in Sources */,
-				6BCD77761E1273D6003A7227 /* cmd_cd.c in Sources */,
+				6BBB95622771273200BDFFC5 /* cmd_rm.c in Sources */,
 				6B4C47141C62A5B3009E7AA1 /* ms_timer.c in Sources */,
 				6B4962801C8989EA00695CC5 /* cmd_obd2.c in Sources */,
 				6BAADC1C1BEC2A9500B7BE2B /* date_time.c in Sources */,
 				6B4C471D1C62A6A4009E7AA1 /* font_12x16.c in Sources */,
-				6BCD77791E1273D6003A7227 /* cmd_ls.c in Sources */,
 				6B4C471C1C62A6A4009E7AA1 /* font_8x8.c in Sources */,
 				6BAADC201BEC2A9500B7BE2B /* str_compare.c in Sources */,
 				6BB1E7F31C1E25A800CCB67A /* random.c in Sources */,
@@ -573,16 +566,18 @@
 				6BCD77621E127048003A7227 /* fs.c in Sources */,
 				6BAADBF61BEC28F000B7BE2B /* device.c in Sources */,
 				6BCD777E1E1318F3003A7227 /* file_disc.c in Sources */,
-				6BCD77751E1273D6003A7227 /* cmd_cat.c in Sources */,
+				6BBB955E2771273200BDFFC5 /* cmd_ymodem.c in Sources */,
 				6B4962AA1C8A049D00695CC5 /* net_lib.c in Sources */,
 				6B4C47151C62A5B3009E7AA1 /* printf_driver.c in Sources */,
 				6BCD77801E131949003A7227 /* vhd_library.c in Sources */,
 				6B4962831C8989EA00695CC5 /* cmd_rtc.c in Sources */,
-				6BCD77771E1273D6003A7227 /* cmd_common.c in Sources */,
 				6BAADC211BEC2A9500B7BE2B /* str_token.c in Sources */,
+				6BBB95612771273200BDFFC5 /* cmd_ls.c in Sources */,
 				6BCD775F1E127048003A7227 /* fat.c in Sources */,
 				6B4850101C1B9A0200AF407D /* lp_filter.c in Sources */,
 				6B4962A81C89C59400695CC5 /* socket_library.c in Sources */,
+				6BBB955D2771273200BDFFC5 /* cmd_part.c in Sources */,
+				6BBB95602771273200BDFFC5 /* cmd_dump.c in Sources */,
 				6BAADC1F1BEC2A9500B7BE2B /* sine_table.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -27,7 +27,7 @@
 
 typedef struct _audio_data_t_
 {
-	LIST_HEADER;
+    list_node_t node;
 
 	void * audio_device;
     

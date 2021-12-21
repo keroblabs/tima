@@ -33,6 +33,7 @@
 #define NULL            0
 #endif
 
+#if 0
 // defined types
 #if defined USE_TIMA_TYPES //  1 // !defined ARM
 typedef unsigned char uint8_t;
@@ -69,6 +70,7 @@ typedef uint16_t  u16_t;
 typedef int16_t   s16_t;
 typedef uint8_t   u08_t;
 typedef int8_t    s08_t;
+#endif
 #endif
 
 typedef unsigned char   bool_t;

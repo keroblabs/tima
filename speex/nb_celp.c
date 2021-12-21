@@ -885,9 +885,9 @@ int nb_decode(SpeexBits *bits, void *vout)
                (ABS(best_pitch-3*pitch)<4) || 
                (ABS(best_pitch-4*pitch)<5))) ||
              ((MULT16_16_Q15(QCONST16(.67,15),tmp)>best_pitch_gain)&&
-              (ABS(2*best_pitch-pitch)<3)||
-              (ABS(3*best_pitch-pitch)<4)||
-              (ABS(4*best_pitch-pitch)<5)))
+              ((ABS(2*best_pitch-pitch)<3)||
+               (ABS(3*best_pitch-pitch)<4)||
+               (ABS(4*best_pitch-pitch)<5))))
          {
             best_pitch = pitch;
             if (tmp > best_pitch_gain) best_pitch_gain = tmp;
@@ -938,8 +938,6 @@ int nb_decode(SpeexBits *bits, void *vout)
             /* Decode second codebook (only for some modes) - only for 24 kpbs */
             if (DEC_SUBMODE(double_codebook))
             {
-               char *tmp_stack=NULL;
-
 			   SPEEX_MEMSET(dec_mmu._innov2, 0, NB_SUBFRAME_SIZE);
 			   
                DEC_SUBMODE(innovation_unquant)(dec_mmu._innov2, DEC_SUBMODE(innovation_params), NB_SUBFRAME_SIZE, bits, NULL, &dec_mmu._local_st.seed);

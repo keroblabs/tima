@@ -22,7 +22,7 @@ bool_t tima_tokenizer(const char *s1, const char ** exit, int * size, const char
     {
         /* Found another delimiter, split string and save state. */
         *exit = s1;
-        *size = ( int )tmp - ( int )s1;
+        *size = ( int )( ( long )tmp - ( long )s1 );
         *lastToken = ( char * )tmp + 1;
     }
     else

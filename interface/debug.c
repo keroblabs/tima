@@ -1,6 +1,10 @@
 #include "system.h"
 #include "tima_libc.h"
 
+#ifndef DEV_PRINTK
+#define DEV_PRINTK                "/dev/tty90"
+#endif
+
 ///////////////////////////////////////////////////////////////
 
 static device_t * dev_debug;

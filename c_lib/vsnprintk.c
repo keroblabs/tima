@@ -190,7 +190,7 @@ int vsnprintk(char *buf, int size, const char *fmt, va_list args)
 
     if (end < buf - 1) {
         end = ((char *) -1);
-        size = (int)end - (int)buf + 1;
+        size = (int)((long)end - (long)buf + 1);
     }
 
     for (; *fmt ; ++fmt) {
@@ -392,7 +392,7 @@ int vsnprintk(char *buf, int size, const char *fmt, va_list args)
     /* the trailing null byte doesn't count towards the total
     * ++str;
     */
-    return (int)str-(int)buf;
+    return (int)((long)str-(long)buf);
 }
 
 int sprintk( char * out, const char *fmt, ... )

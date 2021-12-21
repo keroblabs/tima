@@ -75,12 +75,20 @@ int64_t tima_atoi( const char * str )
 	return ( tima_atoi_n( str, (uint32_t)strlen( str ) ) );
 }
 
+char tima_isdigit( unsigned char c)
+{
+  if ( c >= '0' && c <= '9' )
+      return 1;
+
+  return 0;
+}
+
 bool_t tima_is_numeric( const char * str )
 {
 	int i;
 	for( i = 0; i < (int)strlen( str ); i++ )
 	{
-		if( !isdigit( ( *str ) ) ) return FALSE;
+		if( !tima_isdigit( ( *str ) ) ) return FALSE;
 		str++;
 	}
 

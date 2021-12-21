@@ -62,7 +62,7 @@ static heap_header_t * _locate_next( heap_header_t * p )
        return NULL;
    }
 
-   heap_index = ( uint32_t )p - ( uint32_t )&p_heap_data->memory[0];
+   heap_index = ( uint32_t )( ( void * )p - ( void * )&p_heap_data->memory[0] );
    heap_index += p->size + HEAP_HEAD_SIZE;
 
    if( heap_index >= p_heap_data->size ) return( NULL );

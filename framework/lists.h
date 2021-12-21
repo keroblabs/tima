@@ -7,6 +7,8 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
+#define LIST_HEADER            void * p_next
+
 // MUST be the first element of a data structure
 typedef struct _list_node_t
 {
