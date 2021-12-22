@@ -178,7 +178,7 @@ static void sdl_init_internal( void * param )
 #ifndef WANT_MULTI_INSTANCES
 static void sdl_init( void )
 {
-    sdl_init_internal( &single_window_data );
+    sdl_init_internal( sdl_get_window_data() );
 }
 #endif
 

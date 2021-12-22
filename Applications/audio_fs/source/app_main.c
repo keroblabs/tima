@@ -13,23 +13,24 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #define DECODER_PIPE_TRIGGER        3
-#define DECODER_PIPE_SIZE           6
+#define DECODER_PIPE_SIZE           16
+#define MAX_ENCODED_SIZE            8192
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static vocoder_t vocoder_speex;
 static pipe_data_t * decoder_pipe;
 static pipe_data_t * encoded_pipe;
+static timer_data_t playback_timeout;
 static uint32_t total_data;
 static uint32_t playback_index;
 static uint8_t encoded_buffer[8192];
 static uint16_t step_size;
 static uint8_t mode;
+static uint32_t timestamp;
 
 void app_audio_init( void )
 {
-    audio_layer_init();
-    
     vocoder_speex = vocoder_start( VOCODER_MODE_SPEEX, DECODER_PIPE_SIZE, DECODER_PIPE_TRIGGER );
     decoder_pipe = vocoder_decoder_get_pipe( vocoder_speex );
     encoded_pipe = vocoder_encoder_get_pipe( vocoder_speex );
@@ -38,6 +39,7 @@ void app_audio_init( void )
     step_size = 0;
     mode = 0;
     
+    timestamp = timer_get_MS();
     DEBUG_PRINTK( "Recording\n" );
 }
 
@@ -50,12 +52,15 @@ void app_audio_process( void )
         
         memcpy( &encoded_buffer[ total_data ], data, size );
         pipe_release_buffer( data );
-        
+
         step_size = size;
         total_data += size;
         
         if( total_data >= 5000 )
         {
+            timestamp = timer_get_MS() - timestamp;
+            timer_Start( &playback_timeout, timestamp + 500 );
+            
             DEBUG_PRINTK( "Playback\n" );
             playback_index = 0;
             mode = 1;
@@ -67,13 +72,14 @@ void app_audio_process( void )
         playback_index += step_size;
         if( playback_index > 5000 )
         {
-            DEBUG_PRINTK( "Flushing\n" );
+            DEBUG_PRINTK( "Flushing \n" );
             mode = 3;
         }
     }
-    else if( ( mode == 3 ) && ( pipe_is_empty( decoder_pipe ) == TRUE ) )
+    else if( ( mode == 3 ) && timer_Check( &playback_timeout ) )
     {
-        DEBUG_PRINTK( "Recording\n" );
+        timestamp = timer_get_MS();
+        DEBUG_PRINTK( "Recording \n" );
         total_data = 0;
         mode = 0;
     }
@@ -86,7 +92,7 @@ void app_main( void )
 
     timer_Start(&timer_sec, 1000);
     new_value = 0;
-    
+
     graphics_init();
     app_audio_init();
     

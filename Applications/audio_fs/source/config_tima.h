@@ -1,7 +1,7 @@
 
 #define TIMA_OS
 
-#define DEV_PRINTK				"/dev/tty3"
+#define DEV_PRINTK				"/dev/tty39"
 //#define DEV_PRINTK				"/dev/tty8"
 #define DEV_SYSCOMM             "/dev/tty5"
 #define DEV_UNUSED              "/dev/tty18"

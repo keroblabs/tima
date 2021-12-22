@@ -11,7 +11,7 @@
 #define AUDIO_INDEX_OUTPUT              0
 #define AUDIO_INDEX_INPUT               1
 
-#define AUDIO_TEMP_BUFFER_COUNT         4
+#define AUDIO_TEMP_BUFFER_COUNT         8
 
 #define AUDIO_CHANNELS                  2
 #define AUDIO_SAMPLE_COUNTER            160
@@ -222,5 +222,5 @@ const static device_data_t sdl_audio_device_driver =
     
 };
 
-//DECLARE_DEVICE_SECTION(sdl_audio_device_driver);
-//DECLARE_INIT_CRITICAL_SECTION(audio_driver_global_init);
+DECLARE_DEVICE_SECTION(sdl_audio_device_driver);
+DECLARE_INIT_CRITICAL_SECTION(audio_driver_global_init);

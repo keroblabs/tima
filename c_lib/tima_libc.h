@@ -66,4 +66,10 @@ int acos_table( int val );
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+static INLINE int tima_isdigit( int val )
+{
+    if( ( val >= 0x30 ) && ( val <= 0x39 ) ) return 1;
+    return 0;
+}
+
 #endif // __TIMA_LIBC_H__

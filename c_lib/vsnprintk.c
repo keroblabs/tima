@@ -16,12 +16,6 @@ char vsf_printk_buf[VSF_PRINTK_BUF_SIZE];
 
 ////////////////////////////////////////////////////////////
 
-static INLINE int _isdigit( int val )
-{
-	if( ( val >= 0x30 ) && ( val <= 0x39 ) ) return 1;
-	return 0;
-}
-
 size_t _strnlen(const char *s, size_t maxlen)
 {
 	const char *ss = s;
@@ -50,7 +44,7 @@ static INLINE int skip_atoi(const char **s)
 {
     int i=0;
 
-    while (_isdigit(**s))
+    while (tima_isdigit(**s))
         i = i*10 + *((*s)++) - '0';
     return i;
 }
@@ -215,7 +209,7 @@ int vsnprintk(char *buf, int size, const char *fmt, va_list args)
 
         /* get field width */
         field_width = -1;
-        if (_isdigit(*fmt))
+        if (tima_isdigit(*fmt))
             field_width = skip_atoi(&fmt);
         else if (*fmt == '*') {
             ++fmt;
@@ -231,7 +225,7 @@ int vsnprintk(char *buf, int size, const char *fmt, va_list args)
         precision = -1;
         if (*fmt == '.') {
             ++fmt;
-            if (_isdigit(*fmt))
+            if (tima_isdigit(*fmt))
                 precision = skip_atoi(&fmt);
             else if (*fmt == '*') {
                 ++fmt;

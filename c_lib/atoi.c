@@ -1,4 +1,5 @@
 #include "types.h"
+#include "tima_libc.h"
 
 int64_t tima_atoi_n( const char * str, uint32_t len )
 {
@@ -80,7 +81,7 @@ bool_t tima_is_numeric( const char * str )
 	int i;
 	for( i = 0; i < (int)strlen( str ); i++ )
 	{
-		if( !isdigit( ( *str ) ) ) return FALSE;
+		if( !tima_isdigit( ( *str ) ) ) return FALSE;
 		str++;
 	}
 

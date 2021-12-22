@@ -649,6 +649,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 6BAADBD11BEC28B800B7BE2B;
@@ -852,7 +853,7 @@
 				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks/**",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					TIMA_USE_CONFIG,
@@ -912,7 +913,7 @@
 				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks/**",
 				);
 				INFOPLIST_FILE = "";
 				LIBRARY_SEARCH_PATHS = (

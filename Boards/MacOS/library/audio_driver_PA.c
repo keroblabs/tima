@@ -239,5 +239,5 @@ const static device_data_t audio_device_driver =
     audio_output_pipe,
 };
 
-DECLARE_DEVICE_SECTION(audio_device_driver);
-DECLARE_INIT_CRITICAL_SECTION(audio_driver_global_init);
+//DECLARE_DEVICE_SECTION(audio_device_driver);
+//DECLARE_INIT_CRITICAL_SECTION(audio_driver_global_init);
