@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint16_t size )
+void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t size )
 {
     // init buffer
     buffer_data->buffer = buffer_ptr;
@@ -17,7 +17,7 @@ void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint16_t si
     buffer_data->user_count     = 1;
 }
 
-buffer_data_t * buffer_create( uint16_t size )
+buffer_data_t * buffer_create( uint32_t size )
 {
     buffer_data_t * buffer_data = ( buffer_data_t * )MMALLOC( sizeof( buffer_data_t ) );
     if( buffer_data == NULL )
@@ -110,6 +110,7 @@ uint32_t buffer_get_max_index( buffer_data_t * buffer_data )
 
 void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
 {
+	if( ( buffer_data == NULL ) || ( new_size == 0 ) ) return;
 	if( !( buffer_data->mask & MASK_ON_HEAP ) ) return;
 
 	DI();
@@ -117,11 +118,46 @@ void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
     uint8_t * new_buffer = ( uint8_t * )MMALLOC( new_size );
     if( new_buffer != NULL )
     {
-        memcpy( new_buffer, buffer_data->buffer, MIN( new_size, buffer_data->size ) );
+        uint32_t old_size = buffer_data->size;
+        uint32_t unread_size = 0;
+        uint32_t copy_size;
+        uint32_t source_index;
+
+        if( ( old_size > 0 ) && ( buffer_data->buffer != NULL ) )
+        {
+            if( buffer_data->pointer_in >= buffer_data->pointer_out )
+            {
+                unread_size = buffer_data->pointer_in - buffer_data->pointer_out;
+            }
+            else
+            {
+                unread_size = ( old_size - buffer_data->pointer_out ) + buffer_data->pointer_in;
+            }
+        }
+
+        copy_size = MIN( unread_size, new_size - 1 );
+        source_index = buffer_data->pointer_out;
+
+        // On shrink, retain the newest unread bytes, matching overwrite-oldest writes.
+        for( uint32_t skip = unread_size - copy_size; skip > 0; skip-- )
+        {
+            source_index++;
+            if( source_index == old_size ) source_index = 0;
+        }
+
+        for( uint32_t index = 0; index < copy_size; index++ )
+        {
+            new_buffer[ index ] = buffer_data->buffer[ source_index ];
+            source_index++;
+            if( source_index == old_size ) source_index = 0;
+        }
+
         MFREE( buffer_data->buffer );
 
         buffer_data->buffer = new_buffer;
         buffer_data->size   = new_size;
+        buffer_data->pointer_out = 0;
+        buffer_data->pointer_in = copy_size;
     }
 
     EI();
@@ -206,9 +242,9 @@ bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )
     return TRUE;
 }
 
-uint16_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint16_t size )
+uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint32_t size )
 {
-	uint16_t counter;
+	uint32_t counter;
 	
     //DI();
     
@@ -222,14 +258,14 @@ uint16_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, ui
 	return counter;
 }
 
-uint16_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input )
+uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input )
 {
     return buffer_write_buffer( buffer_data, buffer_input->buffer, buffer_input->pointer_in );
 }
 
-uint16_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint16_t size )
+uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size )
 {
-	uint16_t counter;
+	uint32_t counter;
 	
     //DI();
     
@@ -246,9 +282,9 @@ uint16_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, ui
 	return counter;
 }
 
-uint16_t buffer_get_size( buffer_data_t * buffer_data )
+uint32_t buffer_get_size( buffer_data_t * buffer_data )
 {
-    uint16_t size;
+    uint32_t size;
 
 	if( buffer_data == NULL ) return 0;
     
@@ -270,7 +306,7 @@ uint16_t buffer_get_size( buffer_data_t * buffer_data )
     return( size );
 }
 
-uint16_t buffer_get_available_size( buffer_data_t * buffer_data )
+uint32_t buffer_get_available_size( buffer_data_t * buffer_data )
 {
     return buffer_data->size - buffer_get_size( buffer_data );
 }

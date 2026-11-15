@@ -561,7 +561,7 @@ int wifi_socket_receive( uint32_t index, uint8_t * buffer, uint32_t size )
         return buffer_get_size( &net_rx_buffer_data );
     }
     
-    return ( int )buffer_read_buffer( &net_rx_buffer_data, buffer, ( uint16_t )size );
+    return ( int )buffer_read_buffer( &net_rx_buffer_data, buffer, size );
 }
 
 int wifi_socket_transmit( uint32_t index, uint8_t * buffer, uint32_t size )

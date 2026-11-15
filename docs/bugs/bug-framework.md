@@ -14,7 +14,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0002` | `CLOSED` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `CLOSED` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
-| `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
+| `TIMA-FWK-0005` | `REVIEW` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `OPEN` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `OPEN` | Single-byte read cannot distinguish empty from a zero byte |
@@ -197,20 +197,27 @@ Pending.
 ### TIMA-FWK-0005
 
 **ID:** `TIMA-FWK-0005`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Resize can invalidate cursors and truncate the stored size
 
 **Description**  
 `buffer_resize()` can replace storage without preserving valid cursor positions, and accepts a 32-bit size that is stored in a 16-bit field. For Tima 6.x, standardize all buffer sizes, capacities, cursor indices, offsets, and size-related API parameters and return values on `uint32_t`, eliminating mixed 16-bit/32-bit size handling. Review the affected functions and callers so the type change is consistent throughout the buffer API.
 
 **Details**  
-**Confirmed by static review:** `buffer_resize()` copies a raw prefix, frees the old block, and assigns `buffer_data->size = new_size` without adjusting `pointer_in` or `pointer_out`. Shrinking below an active cursor can make a later access out of bounds. For `new_size > UINT16_MAX`, the stored `uint16_t size` truncates even though allocation uses the wider value. It also does not linearize wrapped unread data or report failure to its caller. No runtime test was performed.
+**Finding at discovery, confirmed by static review:** `buffer_resize()` copied a raw prefix, freed the old block, and assigned `buffer_data->size = new_size` without adjusting `pointer_in` or `pointer_out`. Shrinking below an active cursor could make a later access out of bounds. For `new_size > UINT16_MAX`, the stored 16-bit size truncated even though allocation used the wider value. It also did not linearize wrapped unread data or report failure to its caller.
+
+**Current implementation:** Buffer capacities, cursor indices, the `fill_size` field, size parameters, bulk counts, and size return values use `uint32_t`. The Nucleo buffer configuration capacity is widened and affected board callers no longer narrow 32-bit read lengths to `uint16_t`. `buffer_resize()` linearizes unread data in FIFO order; shrinking retains the newest bytes that fit within the ring's `new_size - 1` capacity, and allocation failure leaves the old storage and cursors intact. A zero resize request is ignored.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** At the user's direction, standardize every buffer size, capacity, cursor, offset, bulk count, and size return on `uint32_t`. Resize preserves unread byte order, retaining the newest bytes that fit when shrinking and normalizing cursors; allocation failure leaves the original buffer unchanged. Set status to `IN_PROGRESS`.
+- **2026-11-15 — Implementation:** Widened all buffer API and `buffer_data_t` size fields to `uint32_t`, widened the Nucleo buffer configuration capacity, and removed 16-bit narrowing casts from buffer read callers. Resize now linearizes unread bytes, retaining the newest bytes that fit when shrinking and resetting cursors; a failed allocation leaves the original storage and cursor state intact.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Added grow/shrink tests for wrapped unread data and a 70,000-byte buffer test that writes, resizes, and reads 65,540 bytes while checking wide cursor and count values. No target-board build or hardware test was run.
+- **2026-11-15 — Code Review:** Local review confirms the buffer API, its struct size fields, the Nucleo capacity member, and affected read callers consistently use 32-bit sizes. Resize cursor positions remain valid after grow and shrink. Independent review and target-board validation have not occurred.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
 
 **Proposed Change**  
-Agree on supported resize semantics (preserve unread contents, reset, or reject resizing while active). Validate representable sizes, keep indices within bounds, handle allocation failure explicitly, and add grow/shrink/wrapped-data tests. Coordinate the interrupt masking and heap concerns in TIMA-FWK-0006.
+Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk counts, and size results. Resize preserves unread bytes in FIFO order; when shrinking, retain the newest unread bytes up to the new circular capacity and reset cursors to a valid linearized layout. If allocation fails, leave the original storage and indices intact. Allocation remains protected as in the existing implementation; interrupt/heap timing is tracked by TIMA-FWK-0006.
 
 **Commits**
 

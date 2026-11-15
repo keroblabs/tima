@@ -59,7 +59,7 @@ static uint32_t console_output( uint32_t index, uint8_t * text, uint32_t size )
 static uint32_t console_input( uint32_t index, uint8_t * buffer, uint32_t size )
 {
     #ifdef WANT_INPUT_CONSOLE
-    return ( int )buffer_read_buffer( &console_buffer_data, buffer, ( uint16_t )size );
+    return buffer_read_buffer( &console_buffer_data, buffer, size );
     #else
     return 0;
     #endif

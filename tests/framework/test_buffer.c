@@ -131,11 +131,86 @@ static void test_wrapped_writes_preserve_outer_critical_section(void)
     assert(buffer.pointer_out == 2);
 }
 
+static void test_resize_preserves_newest_unread_wrapped_bytes(void)
+{
+    buffer_data_t *buffer = buffer_create(5);
+
+    assert(buffer != NULL);
+    assert(buffer_write(buffer, 1) == TRUE);
+    assert(buffer_write(buffer, 2) == TRUE);
+    assert(buffer_write(buffer, 3) == TRUE);
+    assert(buffer_write(buffer, 4) == TRUE);
+    assert(buffer_read(buffer) == 1);
+    assert(buffer_read(buffer) == 2);
+    assert(buffer_write(buffer, 5) == TRUE);
+    assert(buffer_write(buffer, 6) == TRUE);
+    assert(buffer_get_size(buffer) == 4);
+
+    buffer_resize(buffer, 7);
+
+    assert(buffer->size == 7);
+    assert(buffer->pointer_out == 0);
+    assert(buffer->pointer_in == 4);
+    assert(buffer_get_size(buffer) == 4);
+
+    buffer_resize(buffer, 3);
+
+    assert(buffer->size == 3);
+    assert(buffer->pointer_out == 0);
+    assert(buffer->pointer_in == 2);
+    assert(buffer_get_size(buffer) == 2);
+    assert(buffer_read(buffer) == 5);
+    assert(buffer_read(buffer) == 6);
+    assert(buffer_is_empty(buffer) == TRUE);
+
+    buffer_destroy(buffer);
+}
+
+static void test_buffer_sizes_and_bulk_counts_exceed_uint16(void)
+{
+    const uint32_t count = 65540;
+    uint8_t *source = (uint8_t *)malloc(count);
+    uint8_t *output = (uint8_t *)malloc(count);
+    buffer_data_t *buffer = buffer_create(70000);
+
+    assert(source != NULL);
+    assert(output != NULL);
+    assert(buffer != NULL);
+    for(uint32_t index = 0; index < count; index++)
+    {
+        source[index] = (uint8_t)index;
+    }
+
+    assert(buffer->size == 70000);
+    assert(buffer_write_buffer(buffer, source, count) == count);
+    assert(buffer->pointer_in == count);
+    assert(buffer_get_max_index(buffer) == count);
+    assert(buffer_get_size(buffer) == count);
+
+    buffer_resize(buffer, 70010);
+
+    assert(buffer->size == 70010);
+    assert(buffer->pointer_in == count);
+    assert(buffer_get_size(buffer) == count);
+    assert(buffer_read_buffer(buffer, output, count) == count);
+    for(uint32_t index = 0; index < count; index++)
+    {
+        assert(output[index] == source[index]);
+    }
+    assert(buffer->pointer_out == count);
+
+    buffer_destroy(buffer);
+    free(output);
+    free(source);
+}
+
 int main(void)
 {
     test_circular_buffer_overwrites_oldest_entry();
     test_created_buffer_uses_circular_behavior();
     test_direct_and_bulk_write_apis_remain_writable();
     test_wrapped_writes_preserve_outer_critical_section();
+    test_resize_preserves_newest_unread_wrapped_bytes();
+    test_buffer_sizes_and_bulk_counts_exceed_uint16();
     return 0;
 }

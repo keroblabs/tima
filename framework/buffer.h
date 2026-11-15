@@ -9,14 +9,14 @@
 
 typedef struct
 {
-    uint16_t pointer_in;
-    uint16_t pointer_out;
+    uint32_t pointer_in;
+    uint32_t pointer_out;
 
     uint8_t mask;
     uint8_t user_count;
 
-    uint16_t size;
-    uint16_t fill_size;
+    uint32_t size;
+    uint32_t fill_size;
 
     uint8_t *buffer;
 
@@ -24,9 +24,9 @@ typedef struct
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint16_t size );
+void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t size );
 
-buffer_data_t * buffer_create( uint16_t size );
+buffer_data_t * buffer_create( uint32_t size );
 
 void buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
@@ -49,11 +49,11 @@ uint8_t buffer_read( buffer_data_t * buffer_data );
 
 bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data );
 
-uint16_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint16_t size );
-uint16_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input );
-uint16_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint16_t size );
-uint16_t buffer_get_size( buffer_data_t * buffer_data );
-uint16_t buffer_get_available_size( buffer_data_t * buffer_data );
+uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint32_t size );
+uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input );
+uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size );
+uint32_t buffer_get_size( buffer_data_t * buffer_data );
+uint32_t buffer_get_available_size( buffer_data_t * buffer_data );
 
 bool_t buffer_is_full( buffer_data_t * buffer_data );
 bool_t buffer_is_empty( buffer_data_t * buffer_data );

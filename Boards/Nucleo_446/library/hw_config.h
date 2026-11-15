@@ -95,7 +95,7 @@ typedef struct _buffer_config_t
 {
     __IO buffer_ctrl_t   *control;
 	__IO uint8_t         *buffer;
-	__IO uint16_t        buffer_size;
+	__IO uint32_t        buffer_size;
 
 } buffer_hw_config_t;
 
