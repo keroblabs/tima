@@ -11,8 +11,8 @@ The summary is the current index; full issue records below are authoritative. Up
 | ID | Status | Title |
 | --- | --- | --- |
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
-| `TIMA-FWK-0002` | `REVIEW` | No-rollover flag fails when combined with other flags |
-| `TIMA-FWK-0003` | `REVIEW` | Read-only mode does not prevent writes |
+| `TIMA-FWK-0002` | `CLOSED` | No-rollover flag fails when combined with other flags |
+| `TIMA-FWK-0003` | `CLOSED` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
@@ -79,11 +79,11 @@ The initial focused fix routed the old rejection and success paths through one c
 ### TIMA-FWK-0002
 
 **ID:** `TIMA-FWK-0002`  
-**Status:** `REVIEW`<br>
+**Status:** `CLOSED`  
 **Title:** No-rollover flag fails when combined with other flags
 
 **Description**  
-The no-rollover behavior depends on equality with an entire bit mask, rather than testing the no-rollover bit, so unrelated mode flags can silently disable it.
+Historically, the no-rollover behavior compared the entire flag mask rather than testing its no-rollover bit, allowing unrelated flags to disable the mode unintentionally. The mode has since been removed by decision.
 
 **Details**  
 **Historical finding, confirmed by static review:** `buffer_read()` and `buffer_write()` compared `buffer_data->mask == MASK_NO_ROLL_OVER` (or negated that expression). `buffer_create()` set both `MASK_ON_HEAP` and `MASK_NO_ROLL_OVER`; the combined mask did not equal the no-rollover bit, so created buffers followed the rollover path. The flags mixed behavior with ownership state.
@@ -100,6 +100,12 @@ The no-rollover behavior depends on equality with an entire bit mask, rather tha
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-15 — Commit:** Created implementation commit `cf4083c4f16e8d04cf9c0a77d62ab082a46de255` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
+- **2026-11-15 — Project Review:** The project owner confirmed satisfaction with the removal of the no-rollover feature and authorized closure subject to independent review.
+- **2026-11-15 — Commit Reconciliation:** The previously recorded commit SHA `cf4083c4f16e8d04cf9c0a77d62ab082a46de255` cannot be resolved by GitHub. Preserved its entry as `SUPERSEDED` for traceability; the actual implementation in the current branch history is [`cdc6da3`](https://github.com/keroblabs/tima/commit/cdc6da352b0ccda0b80414bfd58cebe244e10ee7). Review approval applies only to the verified SHA, not to the unresolvable historical reference.
+- **2026-11-15 — Independent Code Review:** **Approved** the diff for `cdc6da3` and the resulting `framework/buffer.c/.h`: the no-rollover API and flag are removed; `buffer_create()` no longer sets that mode; `buffer_read()`/`buffer_write()` use the circular path; the old full-buffer rejection branch is gone. Inspected test cases for wraparound, overwrite order, heap-created buffers and nested critical-section balance. Reported host test pass is documented in the submission; the test suite was not independently rerun, and hardware behavior has not been verified.
+- **2026-11-15 — Scope:** Zero-length buffers, reported capacity, resizing and general ISR correctness remain covered by other open tickets. The original defect description was changed to historical tense; no broader buffer correctness approval is implied.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` on accepted review, then `RESOLVED` → `CLOSED` because the approved source commit is already on `phase-1-improvements`. Verified implementation commit set to `APPROVED`.
+
 **Proposed Change**  
 Remove the non-rolling mode consistently: delete its public setter and flag, make read and write paths unconditionally circular, and ensure heap ownership remains independent of buffer behavior. Verify wraparound, overwrite order, and critical-section balance with native tests.
 
@@ -107,17 +113,18 @@ Remove the non-rolling mode consistently: delete its public setter and flag, mak
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`cf4083c`](https://github.com/keroblabs/tima/commit/cf4083c4f16e8d04cf9c0a77d62ab082a46de255) | `UNREVIEWED` | Remove no-rollover mode and verify circular-buffer behavior. |
+| `phase-1-improvements` | `cf4083c` | `SUPERSEDED` | Historical recorded SHA; cannot resolve in current repository, not reviewed. |
+| `phase-1-improvements` | [`cdc6da3`](https://github.com/keroblabs/tima/commit/cdc6da352b0ccda0b80414bfd58cebe244e10ee7) | `APPROVED` | Remove no-rollover setter/flag/branches; retain circular write behavior and update host tests. |
 
 **Resolution Description**  
-Pending.
+**Accepted and closed — feature removed.** [`cdc6da3`](https://github.com/keroblabs/tima/commit/cdc6da352b0ccda0b80414bfd58cebe244e10ee7) removes `MASK_NO_ROLL_OVER`, `buffer_set_no_roll_over()` and related conditional paths from `framework/buffer.c/.h`. Both initialized and heap-created buffers now use circular semantics, retaining overwrite-oldest behavior. Updated `tests/framework/test_buffer.c` covers circular wraps, overwrite order and nesting; the submission reports the native test runner passed with `cc -std=c99 -Wall -Wextra -Werror`. Independent static review approves the targeted change; tests were not independently rerun and no on-target test is recorded. The project owner confirmed the feature-removal decision and acceptance. The issue is `CLOSED` because the reviewed implementation is already on the working branch. Other buffer issues remain open.
 
 ---
 
 ### TIMA-FWK-0003
 
 **ID:** `TIMA-FWK-0003`  
-**Status:** `REVIEW`<br>
+**Status:** `CLOSED`  
 **Title:** Read-only mode does not prevent writes
 
 **Description**  
@@ -138,6 +145,12 @@ Historically, `buffer_set_read_only(TRUE)` set a flag that write APIs ignored, s
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-15 — Commit:** Created implementation commit `154ad57c45251393843b55893a5166bf5198694f` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
+- **2026-11-15 — Project Review:** The project owner confirmed satisfaction with removal of the read-only feature and authorized closure subject to independent review.
+- **2026-11-15 — Commit Reconciliation:** The previously recorded commit SHA `154ad57c45251393843b55893a5166bf5198694f` cannot be resolved by GitHub. Preserved its entry as `SUPERSEDED` for traceability; the actual implementation in the current branch history is [`e3d9ee9`](https://github.com/keroblabs/tima/commit/e3d9ee91d36aa15f43c3643d0b6e07b568c53e59). Approval applies only to the verified SHA.
+- **2026-11-15 — Independent Code Review:** **Approved** `e3d9ee9` and its resulting `framework/buffer.c/.h`: the `MASK_READ_ONLY` constant and `buffer_set_read_only()` definition/declaration are removed; write paths remain supported; `MASK_ON_HEAP` is the only remaining buffer flag in the implementation. Reviewed newly added direct/bulk/buffer-to-buffer write checks. Reported host tests passed in the submission, but were not independently rerun, and no target-board test has been recorded.
+- **2026-11-15 — Scope:** The `buffer_write_buffer_ex()` regression case copies a raw source prefix and does not establish correct logical circular-copy behavior; that separate question remains tracked by `TIMA-FWK-0010`. The removal intentionally changes the public API and does not establish that external callers have been migrated.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` upon accepted review, then `RESOLVED` → `CLOSED` because the approved implementation is already on `phase-1-improvements`. Verified implementation commit set to `APPROVED`.
+
 **Proposed Change**  
 Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API and implementation. Verify that direct, bulk, and buffer-to-buffer writes continue to work with the remaining buffer API.
 
@@ -145,10 +158,11 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`154ad57`](https://github.com/keroblabs/tima/commit/154ad57c45251393843b55893a5166bf5198694f) | `UNREVIEWED` | Remove read-only mode and verify direct and bulk writes. |
+| `phase-1-improvements` | `154ad57` | `SUPERSEDED` | Historical recorded SHA; cannot resolve in current repository, not reviewed. |
+| `phase-1-improvements` | [`e3d9ee9`](https://github.com/keroblabs/tima/commit/e3d9ee91d36aa15f43c3643d0b6e07b568c53e59) | `APPROVED` | Remove read-only setter/flag; add direct and bulk-write regression checks. |
 
 **Resolution Description**  
-Pending.
+**Accepted and closed — feature removed.** [`e3d9ee9`](https://github.com/keroblabs/tima/commit/e3d9ee91d36aa15f43c3643d0b6e07b568c53e59) removes the public `buffer_set_read_only()` declaration/definition and `MASK_READ_ONLY` from `framework/buffer.h` and `framework/buffer.c`. Existing direct and bulk-write APIs remain available. The implementation adds host test coverage for those supported calls. The submission reports tests passed with `cc -std=c99 -Wall -Wextra -Werror`; independent code review approves the targeted removal, but did not rerun tests or validate a target build. The project owner accepted the feature removal. Ticket `CLOSED` on the designated working branch, with unrelated buffer API/copy correctness tracked separately.
 
 ---
 
