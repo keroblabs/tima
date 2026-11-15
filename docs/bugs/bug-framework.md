@@ -531,6 +531,7 @@ Pending.
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`, linking `system/heap.c`. The suite verifies valid and inert initialization states and confirms no source/test code depends on the removed member.
 - **2026-11-15 — Code Review:** Local search confirms there are no remaining `fill_size` references in C/header files; public struct consumers in this repository compile through the updated definition. Independent review and target-board validation have not occurred.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
+- **2026-11-15 — Commit:** Created implementation commit [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Remove `fill_size` because no in-repository caller uses it and no reliable update contract exists. Record the public struct layout change and rebuild all in-repository users as part of Tima 6 API integration.
@@ -539,6 +540,7 @@ Remove `fill_size` because no in-repository caller uses it and no reliable updat
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) | `UNREVIEWED` | Remove unused `fill_size` field and verify remaining initialization. |
 
 **Resolution Description**  
 Pending.
