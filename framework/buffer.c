@@ -204,29 +204,33 @@ uint8_t buffer_read( buffer_data_t * buffer_data )
 bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )
 {	
 	if( buffer_data == NULL ) return FALSE;
-	
+
+    bool_t result = TRUE;
+
     DI();
-    
+
     if( ( buffer_data->mask == MASK_NO_ROLL_OVER ) && ( buffer_data->pointer_in == ( buffer_data->size - 1 ) ) )
     {
-        return FALSE;
+        result = FALSE;
+    }
+    else
+    {
+        // insert data into the buffer
+	    buffer_data->buffer[ buffer_data->pointer_in ] = in_data;
+	    buffer_data->pointer_in++;
+
+        // update pointers and control overflow
+	    if( !( buffer_data->mask == MASK_NO_ROLL_OVER ) )
+	    {
+	        if( buffer_data->pointer_in == buffer_data->size ) buffer_data->pointer_in = 0;
+	        if( buffer_data->pointer_in == buffer_data->pointer_out ) buffer_data->pointer_out++;
+	        if( buffer_data->pointer_out == buffer_data->size ) buffer_data->pointer_out = 0;
+	    }
     }
 
-    // insert data into the buffer
-	buffer_data->buffer[ buffer_data->pointer_in ] = in_data;
-	buffer_data->pointer_in++;
-    
-    // update pointers and control overflow
-	if( !( buffer_data->mask == MASK_NO_ROLL_OVER ) )
-	{
-	    if( buffer_data->pointer_in == buffer_data->size ) buffer_data->pointer_in = 0;
-	    if( buffer_data->pointer_in == buffer_data->pointer_out ) buffer_data->pointer_out++;
-	    if( buffer_data->pointer_out == buffer_data->size ) buffer_data->pointer_out = 0;
-	}
-    
     EI();
 
-    return TRUE;
+    return result;
 }
 
 uint16_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint16_t size )

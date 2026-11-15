@@ -10,7 +10,7 @@ The summary is the current index; full issue records below are authoritative. Up
 
 | ID | Status | Title |
 | --- | --- | --- |
-| `TIMA-FWK-0001` | `OPEN` | Full-buffer rejection exits with interrupts disabled |
+| `TIMA-FWK-0001` | `REVIEW` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `OPEN` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `OPEN` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
@@ -31,7 +31,7 @@ The summary is the current index; full issue records below are authoritative. Up
 ### TIMA-FWK-0001
 
 **ID:** `TIMA-FWK-0001`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`<br>
 **Title:** Full-buffer rejection exits with interrupts disabled
 
 **Description**  
@@ -40,11 +40,21 @@ The summary is the current index; full issue records below are authoritative. Up
 **Details**  
 **Confirmed by static review:** `framework/buffer.c`, `buffer_write()`: `DI()` precedes a `MASK_NO_ROLL_OVER` / `pointer_in == size - 1` check whose failure branch returns immediately. The successful path calls `EI()`, but the rejection path does not. The path is reachable for a `buffer_init()` instance followed by `buffer_set_no_roll_over(TRUE)` (assuming a valid positive size). This is an interrupt-state balance defect irrespective of the broader board-specific interrupt implementation. The exact device-level consequence also depends on the board's `DI`/`EI` implementation.
 
+**Confirmed during investigation:** `Boards/Nucleo_446/library/cpu_driver.c` implements nested `DI()`/`EI()` calls with an interrupt counter. The missing `EI()` leaves that counter elevated, so later matching enables cannot restore the expected state. The repository does not provide a portable interrupt-state save/restore primitive for all board ports. The focused correction therefore balances the critical section through one cleanup path and does not change the existing board-level contract.
+
+**Verification scope:** `tests/framework/test_buffer.c` exercises successful writes, full-buffer rejection, unchanged data/cursors on rejection, and nested critical-section balance with a host-side `DI`/`EI` model. It does not execute on target hardware.
+
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Investigation:** Confirmed the unbalanced return path and inspected the Nucleo interrupt counter implementation. The host test will verify the existing nested `DI`/`EI` pairing contract; board hardware behavior remains untested.
+- **2026-11-15 — Decision:** At the user's direction to fix TIMA-FWK-0001, proceed with a focused single-cleanup-path correction that calls `EI()` after either a successful write or a full-buffer rejection. Narrowed the original entry-state-restoration proposal because the repository has no portable state-save primitive across its board ports. Set status to `IN_PROGRESS`.
+- **2026-11-15 — Implementation:** Changed `buffer_write()` to record rejection, skip data and cursor updates on that path, and reach the common `EI()` before returning.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed. It compiles the buffer implementation and host-side tests with `cc -std=c99 -Wall -Wextra -Werror`; both ordinary and nested critical-section cases passed.
+- **2026-11-15 — Code Review:** Local review confirms both post-`DI()` outcomes reach one `EI()`, and rejection leaves the backing bytes and cursors unchanged. Hardware execution and independent review have not been performed; the change is ready for review.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording the implementation and passing test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Ensure every exit after critical-section entry restores the entry interrupt state, using a single cleanup path or a scoped save/restore primitive. Test success, full-buffer rejection, and nested/ISR entry under the agreed board-level critical-section contract. Coordinate with the separate board-specific interrupt-control review.
+Route the full-buffer rejection and successful write through one cleanup path so every call to `DI()` has a matching `EI()`. Preserve write rejection behavior and avoid changing the board interrupt API. Verify normal and nested critical-section use with native tests, then review on target boards as appropriate.
 
 **Commits**
 
