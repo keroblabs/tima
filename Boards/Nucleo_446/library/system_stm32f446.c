@@ -78,6 +78,11 @@ void CPU_setup( void )
 	NVIC_SetPriorityGrouping(6);
 }
 
+#define SYSCLK_PLL_M		16
+#define SYSCLK_PLL_N		336
+#define SYSCLK_PLL_P		4
+#define SYSCLK_PLL_Q		7
+
 void CPU_system_init( void )
 {
 	/* Enable Power Control clock */
@@ -107,8 +112,8 @@ void CPU_system_init( void )
 	 * PLLP = 4
 	 * PLLQ = 7
 	 */
-	RCC->PLLCFGR = (uint32_t)((uint32_t)0x20000000 | (uint32_t)(16 << 0) | (uint32_t)(336 << 6) | 
-					RCC_PLLCFGR_PLLP_0 | (uint32_t)(7 << 24));
+	RCC->PLLCFGR = (uint32_t)((uint32_t)0x20000000 | (uint32_t)(SYSCLK_PLL_M << 0) | (uint32_t)(SYSCLK_PLL_N << 6) |
+					RCC_PLLCFGR_PLLP_0 | (uint32_t)(SYSCLK_PLL_Q << 24));
  
 	/* PLL On */
 	RCC->CR |= RCC_CR_PLLON;

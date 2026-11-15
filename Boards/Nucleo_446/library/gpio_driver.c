@@ -2,6 +2,7 @@
 #include "stm32f4xx_conf.h"
 #include "types.h"
 #include "system.h"
+#include "debug.h"
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -28,14 +29,49 @@ static const gpio_map_t gpio_map_list[] =
 	// dummy
 	{ GPIOC, GPIO_Pin_0, GPIO_INIT_MODE_NONE },
 
+#if defined BOARD_MINI_M4
 	{ GPIOC, GPIO_Pin_0, GPIO_INIT_MODE_OUTPUT_ON }, // 1
 	{ GPIOC, GPIO_Pin_1, GPIO_INIT_MODE_OUTPUT_ON }, // 2
 	{ GPIOC, GPIO_Pin_2, GPIO_INIT_MODE_INPUT_PU },  // 3
 	{ GPIOC, GPIO_Pin_3, GPIO_INIT_MODE_INPUT_PU },  // 4
 	{ GPIOB, GPIO_Pin_0, GPIO_INIT_MODE_OUTPUT_ON }, // 5
-	{ GPIOC, GPIO_Pin_12, GPIO_INIT_MODE_OUTPUT_OFF }, // 6
+	{ GPIOB, GPIO_Pin_3, GPIO_INIT_MODE_NONE      }, // 6
 	{ GPIOC, GPIO_Pin_13, GPIO_INIT_MODE_OUTPUT_OFF }, // 7
 	{ GPIOC, GPIO_Pin_7, GPIO_INIT_MODE_OUTPUT_OFF }, // 8
+
+    { GPIOC, GPIO_Pin_10, GPIO_INIT_MODE_OUTPUT_ON },   // 9
+    { GPIOB, GPIO_Pin_6,  GPIO_INIT_MODE_OUTPUT_ON },   // 10
+    { GPIOB, GPIO_Pin_15, GPIO_INIT_MODE_OUTPUT_OFF },  // 11
+    { GPIOB, GPIO_Pin_14, GPIO_INIT_MODE_OUTPUT_OFF },  // 12
+#elif defined BOARD_MINI_411
+	{ GPIOC, GPIO_Pin_0, GPIO_INIT_MODE_OUTPUT_ON }, // 1
+	{ GPIOC, GPIO_Pin_1, GPIO_INIT_MODE_OUTPUT_ON }, // 2
+	{ GPIOC, GPIO_Pin_2, GPIO_INIT_MODE_INPUT_PU },  // 3
+	{ GPIOC, GPIO_Pin_3, GPIO_INIT_MODE_INPUT_PU },  // 4
+	{ GPIOB, GPIO_Pin_0, GPIO_INIT_MODE_OUTPUT_ON }, // 5
+	{ GPIOB, GPIO_Pin_3, GPIO_INIT_MODE_OUTPUT_OFF }, // 6
+	{ GPIOC, GPIO_Pin_13, GPIO_INIT_MODE_OUTPUT_OFF }, // 7
+	{ GPIOC, GPIO_Pin_7, GPIO_INIT_MODE_OUTPUT_OFF }, // 8
+
+    { GPIOC, GPIO_Pin_10, GPIO_INIT_MODE_OUTPUT_ON },   // 9
+    { GPIOB, GPIO_Pin_6,  GPIO_INIT_MODE_OUTPUT_ON },   // 10
+    { GPIOB, GPIO_Pin_15, GPIO_INIT_MODE_OUTPUT_OFF },  // 11
+    { GPIOB, GPIO_Pin_14, GPIO_INIT_MODE_OUTPUT_OFF },  // 12
+#elif defined BOARD_NUCLEO_446    
+	{ GPIOC, GPIO_Pin_0, GPIO_INIT_MODE_OUTPUT_ON }, // 1
+	{ GPIOC, GPIO_Pin_1, GPIO_INIT_MODE_OUTPUT_ON }, // 2
+	{ GPIOC, GPIO_Pin_2, GPIO_INIT_MODE_OUTPUT_ON },  // 3
+	{ GPIOC, GPIO_Pin_3, GPIO_INIT_MODE_OUTPUT_ON },  // 4
+	{ GPIOB, GPIO_Pin_7, GPIO_INIT_MODE_OUTPUT_ON }, // 5
+
+	{ GPIOC, GPIO_Pin_8, GPIO_INIT_MODE_OUTPUT_ON }, // 6
+	{ GPIOC, GPIO_Pin_6, GPIO_INIT_MODE_OUTPUT_OFF }, // 7
+	{ GPIOB, GPIO_Pin_8, GPIO_INIT_MODE_OUTPUT_OFF }, // 8
+	{ GPIOC, GPIO_Pin_9, GPIO_INIT_MODE_OUTPUT_ON }, // 9
+#else
+#error "Board not defined"
+#endif
+
 #if 0
 	{ GPIOC, GPIO_Pin_14, GPIO_INIT_MODE_INPUT }, // 9
 	{ GPIOA, GPIO_Pin_8,  GPIO_INIT_MODE_INPUT }, // 10
@@ -273,7 +309,9 @@ static uint32_t gpio_drv_output( uint32_t index, uint8_t * buffer, uint32_t size
 	{
 		if( gpio_mode_list[index] == GPIO_INIT_MODE_OUTPUT )
 		{
-			if( buffer[0] == 0 )
+            //DEBUG_PRINTK( "Output: \n", buffer[0] );
+
+            if( buffer[0] == 0 )
 			{
 				GPIO_ResetBits( gpio_map_list[index].gpio, gpio_map_list[index].pin );
 			}
@@ -303,14 +341,15 @@ static uint32_t gpio_drv_input( uint32_t index, uint8_t * buffer, uint32_t size 
 	{
 		if( gpio_mode_list[index] == GPIO_INIT_MODE_INPUT )
 		{
-			*buffer =  GPIO_ReadInputDataBit( gpio_map_list[index].gpio, gpio_map_list[index].pin );
+		    buffer[0] = GPIO_ReadInputDataBit( gpio_map_list[index].gpio, gpio_map_list[index].pin );
+		    //DEBUG_PRINTK( "Read GPIO: %d %d %d %d\r\n", gpio_map_list[index].pin, index, buffer[0], size );
 		}
 	}
 	else if( ( gpio_map_list[index].gpio == NULL ) && ( gpio_map_list[index].mode == GPIO_INIT_MODE_EXPAND ) )
 	{
 		if( gpio_mode_list[index] == GPIO_INIT_MODE_INPUT )
 		{
-			*buffer = 0;
+			buffer[0] = 0;
 		}
 	}
 

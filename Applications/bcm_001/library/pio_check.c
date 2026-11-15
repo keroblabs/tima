@@ -111,7 +111,7 @@ void * pio_check_event_open_output( const char * dev_name, bool_t is_invert, boo
     device_open_ex( dev_name, &port_data->dev );
     if( device_open_ex( dev_name, &port_data->dev ) != FALSE )
     {
-        DEBUG_PRINTK( "%s OK\r\n", dev_name );
+        //DEBUG_PRINTK( "%s OK\r\n", dev_name );
 
         if( port_data != NULL )
         {
@@ -130,6 +130,8 @@ void * pio_check_event_open_output( const char * dev_name, bool_t is_invert, boo
 void pio_check_event_set_output( void * p_event, bool_t state )
 {
     gpio_event_t * event = ( gpio_event_t * )p_event;
+    if( event == NULL ) return;
+
     pio_check_set_output( &event->dev, state ? ( event->is_invert ? FALSE : TRUE ) : ( event->is_invert ? TRUE : FALSE ) );
 }
 
@@ -234,7 +236,7 @@ device_t * pio_check_open_input( const char * dev_name, uint8_t * pio_var )
 	dev_ret = device_open( dev_name );
 	if( dev_ret != NULL )
 	{
-		DEBUG_PRINTK( "%s OK\r\n", dev_name );
+		//DEBUG_PRINTK( "%s OK\r\n", dev_name );
 
 		if( pio_var != NULL )
 			device_read_buffer( dev_ret, pio_var, sizeof( uint8_t ) );

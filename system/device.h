@@ -55,7 +55,7 @@ typedef struct _device_data_t
     
     void ( *init )( uint32_t index );
     void ( *disable )( uint32_t index );
-    void ( *trig_tx )( uint32_t index );
+    uint32_t ( *update_index )( uint32_t index );
     bool_t ( *validate )( uint32_t index );
     int ( *get_index )( char * param );
     uint32_t ( *io_ctrl )( uint32_t index, uint32_t param, void * value );
@@ -91,6 +91,7 @@ typedef struct _device_location_t
 {
     device_data_t * device_ptr;
     uint32_t device_index;
+    void * p_data;
     
 } device_t;
 

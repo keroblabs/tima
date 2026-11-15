@@ -1,0 +1,51 @@
+CMakeFiles/make_kd_tima_v42_arm.dir/home/marcio/Projects/GIT_Dev/timaos_v42/system/device.c.o: \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/device.c \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/device.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/types.h \
+ /usr/arm-none-eabi/include/stdlib.h \
+ /usr/arm-none-eabi/include/machine/ieeefp.h \
+ /usr/arm-none-eabi/include/_ansi.h /usr/arm-none-eabi/include/newlib.h \
+ /usr/arm-none-eabi/include/_newlib_version.h \
+ /usr/arm-none-eabi/include/sys/config.h \
+ /usr/arm-none-eabi/include/sys/features.h \
+ /usr/lib/gcc/arm-none-eabi/14.1.0/include/stddef.h \
+ /usr/arm-none-eabi/include/sys/reent.h \
+ /usr/arm-none-eabi/include/_ansi.h \
+ /usr/arm-none-eabi/include/sys/cdefs.h \
+ /usr/arm-none-eabi/include/machine/_default_types.h \
+ /usr/arm-none-eabi/include/sys/_types.h \
+ /usr/arm-none-eabi/include/machine/_types.h \
+ /usr/arm-none-eabi/include/sys/lock.h \
+ /usr/arm-none-eabi/include/machine/stdlib.h \
+ /usr/arm-none-eabi/include/alloca.h /usr/arm-none-eabi/include/stdio.h \
+ /usr/lib/gcc/arm-none-eabi/14.1.0/include/stdarg.h \
+ /usr/arm-none-eabi/include/sys/stdio.h \
+ /usr/arm-none-eabi/include/string.h \
+ /usr/arm-none-eabi/include/sys/_locale.h \
+ /usr/arm-none-eabi/include/strings.h \
+ /usr/arm-none-eabi/include/sys/string.h \
+ /usr/lib/gcc/arm-none-eabi/14.1.0/include/stdint.h \
+ /usr/arm-none-eabi/include/stdint.h \
+ /usr/arm-none-eabi/include/sys/_intsup.h \
+ /usr/arm-none-eabi/include/sys/_stdint.h \
+ /usr/arm-none-eabi/include/math.h /usr/arm-none-eabi/include/time.h \
+ /usr/arm-none-eabi/include/machine/time.h \
+ /usr/arm-none-eabi/include/sys/types.h \
+ /usr/arm-none-eabi/include/machine/endian.h \
+ /usr/arm-none-eabi/include/machine/_endian.h \
+ /usr/arm-none-eabi/include/sys/select.h \
+ /usr/arm-none-eabi/include/sys/_sigset.h \
+ /usr/arm-none-eabi/include/sys/_timeval.h \
+ /usr/arm-none-eabi/include/sys/timespec.h \
+ /usr/arm-none-eabi/include/sys/_timespec.h \
+ /usr/arm-none-eabi/include/sys/_pthreadtypes.h \
+ /usr/arm-none-eabi/include/sys/sched.h \
+ /usr/arm-none-eabi/include/machine/types.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../source/config_tima.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/system.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/heap.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/mass_mal.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/lcd.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/system/cpu_driver.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../c_lib/tima_libc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../system/types.h

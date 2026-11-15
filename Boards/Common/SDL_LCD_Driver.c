@@ -49,7 +49,7 @@ static uint8_t key_flag;
 
 ///////////////////////////////////////////////////////////////
 
-#if defined __MACH__
+#if 1 // defined __MACH__
 int kbhit(void)
 {
     struct termios oldt, newt;

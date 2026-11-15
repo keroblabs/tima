@@ -15,9 +15,9 @@ typedef struct
     
 } timer_data_t;
 
-#if !defined _MSC_VER
-typedef long time_t;
-#endif
+//#if !defined _MSC_VER
+//typedef long int time_t;
+//#endif
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +33,7 @@ time_t timer_Now( void );
 void timer_SetRTC( const time_t time );
 
 uint32_t timer_get_MS( void );
+uint64_t timer_get_US( void );
 
 void timer_Init( void );
 void timer_Start( timer_data_t * timer_entry, uint32_t period );

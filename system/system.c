@@ -182,6 +182,11 @@ void * system_Get_Custom_Driver( uint32_t index )
     return _system_get_internal_section( _list_section, SYSTEM_CUSTOM_DEVICE, index );
 }
 
+void * system_Get_Hw_Config( void )
+{
+    return _system_get_internal_section( _list_section, SYSTEM_HW_CONFIG_DATA, 0 );
+}
+
 void * system_Get_Item( uint32_t * start, uint32_t * end, uint32_t index )
 {
 	ptr_module_t *p_start;

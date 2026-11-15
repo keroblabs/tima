@@ -1,0 +1,7 @@
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/make_kd_tima_v42_arm.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/edit_cache.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/rebuild_cache.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/list_install_components.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/install.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/install/local.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/console_test/make_kd_tima_v42_arm/build/CMakeFiles/install/strip.dir

@@ -1,0 +1,39 @@
+#ifndef __IMX233_H__
+#define __IMX233_H__
+
+///////////////////////////////////////////////////////////////
+
+#define IRAM_ORIG           0
+#define IRAM_SIZE           0x8000
+#define DRAM_ORIG           0x40000000
+#define DRAM_SIZE           (MEMORYSIZE * 0x100000)
+
+#define TTB_BASE_ADDR   (DRAM_ORIG + DRAM_SIZE - TTB_SIZE)
+#define TTB_SIZE        0x4000
+#define TTB_BASE        ((unsigned long *)TTB_BASE_ADDR)
+#define FRAME_SIZE      (LCD_WIDTH * LCD_HEIGHT * LCD_DEPTH / 8)
+#define LCD_FRAME_ADDR  (DRAM_ORIG + DRAM_SIZE - TTB_SIZE - FRAME_SIZE)
+#define FRAME           ((unsigned short *)LCD_FRAME_ADDR)
+
+/* USBOTG */
+#define USB_QHARRAY_ATTR    __attribute__((section(".qharray"),nocommon,aligned(2048)))
+#define USB_NUM_ENDPOINTS   5
+#define USB_DEVBSS_ATTR     NOCACHEBSS_ATTR
+#define USB_BASE            0x80080000
+/*
+#define QHARRAY_SIZE        ((64*USB_NUM_ENDPOINTS*2 + 2047) & (0xffffffff - 2047))
+#define QHARRAY_PHYS_ADDR   ((FRAME_PHYS_ADDR - QHARRAY_SIZE) & (0xffffffff - 2047))
+*/
+
+#define __REG_SET(reg)  (*((volatile uint32_t *)(&reg + 1)))
+#define __REG_CLR(reg)  (*((volatile uint32_t *)(&reg + 2)))
+#define __REG_TOG(reg)  (*((volatile uint32_t *)(&reg + 3)))
+
+#define __BLOCK_SFTRST  (1 << 31)
+#define __BLOCK_CLKGATE (1 << 30)
+
+#define CACHEALIGN_BITS     4
+
+///////////////////////////////////////////////////////////////
+
+#endif /* __IMX233_H__ */

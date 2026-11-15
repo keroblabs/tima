@@ -9,7 +9,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-static list_node_t *find_prev_node(list_t *list, list_node_t *node)
+static list_node_t *find_prev_node(list_data_t *list, list_node_t *node)
 {
     list_node_t *curr = list->head;
 
@@ -24,7 +24,7 @@ static list_node_t *find_prev_node(list_t *list, list_node_t *node)
     return curr;
 }
 
-void list_init(list_t *list, delete_cb_t delete_cb)
+void list_init(list_data_t *list, delete_cb_t delete_cb)
 {
     list->count     = 0;
     list->head      = NULL;
@@ -32,7 +32,7 @@ void list_init(list_t *list, delete_cb_t delete_cb)
     list->delete_cb = delete_cb;
 }
 
-void list_clear(list_t *list)
+void list_clear(list_data_t *list)
 {
     while (list->head != NULL)
     {
@@ -45,7 +45,7 @@ void list_clear(list_t *list)
     list_init(list, list->delete_cb);
 }
 
-void list_insert_head(list_t *list, list_node_t *node)
+void list_insert_head(list_data_t *list, list_node_t *node)
 {
     LIST_INIT_NODE(node, list->head);
 
@@ -57,7 +57,7 @@ void list_insert_head(list_t *list, list_node_t *node)
     list->count++;
 }
 
-void list_insert_tail(list_t *list, list_node_t *node)
+void list_insert_tail(list_data_t *list, list_node_t *node)
 {
     LIST_INIT_NODE(node, NULL);
 
@@ -74,7 +74,7 @@ void list_insert_tail(list_t *list, list_node_t *node)
     list->count++;
 }
 
-void list_insert_after(list_t *list, list_node_t *existingnode, list_node_t *node)
+void list_insert_after(list_data_t *list, list_node_t *existingnode, list_node_t *node)
 {
     LIST_INIT_NODE(node, existingnode->next);
 
@@ -87,7 +87,7 @@ void list_insert_after(list_t *list, list_node_t *existingnode, list_node_t *nod
     list->count++;
 }
 
-bool_t list_unlink(list_t *list, list_node_t *node)
+bool_t list_unlink(list_data_t *list, list_node_t *node)
 {
     if (list->head == node)
     {
@@ -114,14 +114,14 @@ bool_t list_unlink(list_t *list, list_node_t *node)
     return TRUE;
 }
 
-bool_t list_remove(list_t *list, list_node_t *node)
+bool_t list_remove(list_data_t *list, list_node_t *node)
 {
     bool_t result = list_unlink(list, node);
     LIST_DELETE_NODE(node, list->delete_cb);
     return result;
 }
 
-void list_remove_tail(list_t *list)
+void list_remove_tail(list_data_t *list)
 {
     list_node_t *curr = list->head;
     list_node_t *prev = NULL;
@@ -149,7 +149,7 @@ void list_remove_tail(list_t *list)
     }
 }
 
-list_node_t *list_find(list_t *list, size_t offset, uint16_t size, const void *value)
+list_node_t *list_find(list_data_t *list, size_t offset, uint16_t size, const void *value)
 {
     list_node_t *node = list_get_head(list);
     while (node != NULL)
@@ -164,12 +164,12 @@ list_node_t *list_find(list_t *list, size_t offset, uint16_t size, const void *v
     return NULL;
 }
 
-bool_t list_is_empty(const list_t * const list)
+bool_t list_is_empty(const list_data_t * const list)
 {
     return (list->head == NULL);
 }
 
-void * list_get_prev(const list_t * const list, list_node_t * curr)
+void * list_get_prev(const list_data_t * const list, list_node_t * curr)
 {
     list_node_t *node = list_get_head(list);
     while (node != NULL)
@@ -181,23 +181,23 @@ void * list_get_prev(const list_t * const list, list_node_t * curr)
     return NULL;
 }
 
-void * list_get_head(const list_t * const list)
+void * list_get_head(const list_data_t * const list)
 {
     return list->head;
 }
 
-void * list_get_tail(const list_t * const list)
+void * list_get_tail(const list_data_t * const list)
 {
     return list->tail;
 }
 
-void * list_get_next(const list_t * const list, list_node_t * node)
+void * list_get_next(const list_data_t * const list, list_node_t * node)
 {
     if( node == NULL ) return list->head;
     else return node->next;
 }
 
-uint16_t list_size(const list_t * const list)
+uint16_t list_size(const list_data_t * const list)
 {
     return list->count;
 }

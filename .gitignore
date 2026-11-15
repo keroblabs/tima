@@ -35,6 +35,23 @@ interface/*.o
 list.txt
 system/*.o
 *.fdn
+# macOS metadata
+.DS_Store
+
+# Local IDE state
+.vscode/
+eclipse_workspace/
+workspace/
+*.xcuserstate
+
+# Compiled artifacts
+*.o
+*.obj
+*.elf
+*.map
+
+# Local third-party distribution
+/rtos/FreeRTOSv202111.00/
 
 Applications/instruments/make_2440/
 Applications/instruments/make_WIN32/

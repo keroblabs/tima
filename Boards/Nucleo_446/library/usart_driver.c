@@ -3,20 +3,43 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_conf.h"
 #include "command_hal.h"
-// #include "debug.h"
+//#include "debug.h"
 
 ////////////////////////////////////////////////////////////////////
 
 #define RX_SERIAL_BUFFER_SIZE          1024
 #define TX_SERIAL_BUFFER_SIZE          1024
 
+
+#if defined BOARD_MINI_M4
 #define SERIAL_TOTAL					5
 
 #define UART1_TTY_INDEX					10
-#define UART2_TTY_INDEX					3
-#define UART3_TTY_INDEX					8
-#define UART4_TTY_INDEX				    9
-#define UART5_TTY_INDEX					5
+#define UART2_TTY_INDEX					5
+#define UART3_TTY_INDEX					9
+#define UART4_TTY_INDEX				    8
+#define UART5_TTY_INDEX					3
+
+#elif defined BOARD_MINI_411
+#define SERIAL_TOTAL					2
+
+#define UART1_TTY_INDEX					5
+#define UART2_TTY_INDEX					9
+#define UART3_TTY_INDEX					3
+#define UART4_TTY_INDEX				    8
+#define UART5_TTY_INDEX					10
+
+#elif defined BOARD_NUCLEO_446
+
+#define SERIAL_TOTAL					4
+
+#define UART1_TTY_INDEX					5
+#define UART2_TTY_INDEX					9
+#define UART3_TTY_INDEX					3
+#define UART4_TTY_INDEX				    8
+#define UART5_TTY_INDEX					10
+
+#endif
 
 ////////////////////////////////////////////////////////////////////
 
@@ -62,10 +85,25 @@ static const serial_config_data_t serial_data[SERIAL_TOTAL] =
         { GPIO_PinSource3, GPIO_AF_USART2, GPIOA, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOA } },
         &serial_buffer_data[1], UART2_TTY_INDEX
     },
+#if defined BOARD_NUCLEO_446    
     {
         { USART3, USART3_IRQn, { RCC_APB1PeriphClockCmd, RCC_APB1Periph_USART3 } },
-        { GPIO_PinSource10, GPIO_AF_USART3, GPIOC, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOC } },
-        { GPIO_PinSource11, GPIO_AF_USART3, GPIOC, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOC } },
+        { GPIO_PinSource10, GPIO_AF_USART3, GPIOB, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOB } },
+        { GPIO_PinSource11, GPIO_AF_USART3, GPIOB, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOB } },
+        &serial_buffer_data[2], UART3_TTY_INDEX
+    },
+    {
+        { UART4, UART4_IRQn, { RCC_APB1PeriphClockCmd, RCC_APB1Periph_UART4 } },
+        { GPIO_PinSource10, GPIO_AF_UART4, GPIOC, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOC } },
+        { GPIO_PinSource11, GPIO_AF_UART4, GPIOC, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOC } },
+        &serial_buffer_data[3], UART4_TTY_INDEX
+    },
+#endif   
+#if defined BOARD_MINI_M4
+    {
+        { USART3, USART3_IRQn, { RCC_APB1PeriphClockCmd, RCC_APB1Periph_USART3 } },
+        { GPIO_PinSource10, GPIO_AF_USART3, GPIOB, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOB } },
+        { GPIO_PinSource11, GPIO_AF_USART3, GPIOB, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOB } },
         &serial_buffer_data[2], UART3_TTY_INDEX
     },
     {
@@ -80,6 +118,7 @@ static const serial_config_data_t serial_data[SERIAL_TOTAL] =
         { GPIO_PinSource2,  GPIO_AF_UART5, GPIOD, { RCC_AHB1PeriphClockCmd, RCC_AHB1Periph_GPIOD } },
         &serial_buffer_data[4], UART5_TTY_INDEX
     },
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -208,8 +247,9 @@ static uint32_t uart_drv_ioctl( uint32_t index, uint32_t param, void * value )
     if( param == DEVICE_SET_CONFIG_DATA )
     {
         uint32_t * p_baud = ( uint32_t * )value;
-        DEBUG_PRINTK( "[%d] %d init\r\n", index, *p_baud );
         init_uart_general( data, *p_baud );
+
+        return 1;
     }
 
 	return 0;
@@ -241,7 +281,7 @@ static uint32_t uart_read_buffer( uint32_t index, uint8_t * buffer, uint32_t siz
 
 static uint32_t uart_write_buffer( uint32_t index, uint8_t * buffer, uint32_t size )
 {
-    uint32_t num_bytes_present = 0;
+    //uint32_t num_bytes_present = 0;
 	serial_buffer_data_t * p_buffer;
 	uint32_t cnt;
 	uint16_t RxByte = 0x00;
@@ -257,6 +297,8 @@ static uint32_t uart_write_buffer( uint32_t index, uint8_t * buffer, uint32_t si
 		 USART_SendData((USART_TypeDef*)data->uart_data.uart, RxByte);
 		 p_buffer->tx_busy = TRUE;
 	}
+
+	while( p_buffer->tx_busy == TRUE ) {}
 
 	return size;
 }

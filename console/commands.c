@@ -333,7 +333,7 @@ int console_flaged_printk( const char *fmt, ... )
 
 	while( p_instance != NULL )
 	{
-		if( p_instance->command_mode == FALSE )
+		if( ( p_instance->command_mode == FALSE ) && ( p_instance->is_open == TRUE ) )
 		{
 			device_write_buffer( p_instance->dev_console_tty, ( uint8_t * )vsf_printk_buf, printed_len );
 		}
@@ -397,6 +397,7 @@ console_instance_t * console_accept_telnet( console_instance_t * p_instance )
 		}
 
 		new_instance->dev_console_tty = dev_accept;
+		new_instance->is_open = TRUE;
 
 		// by default telnet is echo OFF
 		new_instance->echo_mode = FALSE;
@@ -427,6 +428,7 @@ console_instance_t * console_listen_telnet( uint16_t telnet_port )
 
 		p_instance->dev_console_tty = dev_listen;
 		p_instance->telnet_port = telnet_port;
+		p_instance->is_open = FALSE;
 
 		console_add_instance( p_instance );
 		return p_instance;
@@ -452,6 +454,7 @@ console_instance_t * console_connect_uart( const char * dev_name )
 
 	// by default UART is echo ON
 	p_instance->echo_mode = TRUE;
+	p_instance->is_open = TRUE;
 
 	i = 115200;
 	device_ioctrl( p_instance->dev_console_tty, DEVICE_SET_CONFIG_DATA, &i );

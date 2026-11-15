@@ -46,6 +46,7 @@ SRC += $(FRAMEWORK_PATH)/buffer.c
 SRC += $(FRAMEWORK_PATH)/datalink.c
 SRC += $(FRAMEWORK_PATH)/message.c
 #SRC += $(FRAMEWORK_PATH)/lp_filter.c
+SRC += $(FRAMEWORK_PATH)/fsm.c
 SRC += $(FRAMEWORK_PATH)/pipe.c
 SRC += $(FRAMEWORK_PATH)/random.c
 SRC += $(FRAMEWORK_PATH)/crc.c

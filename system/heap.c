@@ -322,7 +322,7 @@ bool_t heap_check( heap_t * heap_data )
 bool_t heap_check_internal( ptr_print_t p_print, heap_t * heap_data )
 {
     heap_header_t * p;
-    heap_header_t * p_prev;
+    //heap_header_t * p_prev;
     uint16_t signature;
 
 	p_heap_data = heap_data;
@@ -375,7 +375,7 @@ bool_t heap_check_internal( ptr_print_t p_print, heap_t * heap_data )
 		}
 
         // get next block
-        p_prev = p;
+        //p_prev = p;
         p = _locate_next( p );
     }
 

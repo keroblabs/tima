@@ -24,7 +24,7 @@ static void ms_timer_init( void )
 	NVIC_SetPriority(SysTick_IRQn, 0x0);
 
 	/* Setup SysTick Timer for 1 msec interrupts  */
-	if (SysTick_Config(84000))
+	if (SysTick_Config(840))
 	{ 
 		/* Capture error */ 
 		HardFault_Handler();
@@ -41,7 +41,7 @@ uint32_t ms_timer_get_ms( void )
 	uint32_t ret;
 	
 	DI();
-	ret = _ms_timer;
+	ret = (uint32_t)_ms_timer/100;
 	EI();
 
 	return ret;
@@ -50,14 +50,14 @@ uint32_t ms_timer_get_ms( void )
 void ms_timer_get_us( uint64_t * p_value )
 {
 	uint64_t ret = 0L;
-	uint32_t cnt;
+	//uint32_t cnt;
 
 	DI();
-	ret = _ms_timer;
-	cnt = SysTick->VAL;
+	ret = _ms_timer * 10;
+	//cnt = SysTick->VAL;
 	EI();
 
-	ret = ( ret * 1000 ) + ( cnt / 84 );
+	//ret = ( ret * 1000 ) + ( cnt / 84 );
 
 	*p_value = ret;
 }

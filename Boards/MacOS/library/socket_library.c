@@ -26,6 +26,8 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
+static int last_error = 0;
+
 ///////////////////////////////////////////////////////////////////////////
 
 static int setNonblocking(int fd)
@@ -65,7 +67,11 @@ static uint32_t socket_accept_port( uint32_t socket )
         
         if((errno != 10035)&&(errno != 35))
         {
-            printf("accept error %d \r\n", errno );
+            if( last_error != errno )
+            {
+                last_error = errno;
+                printf("accept error %d \r\n", errno );
+            }
             return SOCKET_FAIL_LISTEN;
         }
         

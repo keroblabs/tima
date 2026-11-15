@@ -66,6 +66,7 @@ SRC  =
 # List C source files here
 SRC += $(APP_PATH)/source/app_main.c
 SRC += $(APP_PATH)/source/can_comms.c
+SRC += $(APP_PATH)/source/output_ctrl.c
 SRC += $(APP_PATH)/library/pio_check.c
 
 # List ASM source files here

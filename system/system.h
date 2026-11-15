@@ -113,6 +113,7 @@ enum
 	SYSTEM_DEVICE_DATA,
 	SYSTEM_CUSTOM_DEVICE,
 	SYSTEM_STORAGE_DEVICE,
+	SYSTEM_HW_CONFIG_DATA,
 
 	SYSTEM_LIST_SECTION = 0x50
 };
@@ -156,6 +157,7 @@ typedef struct _data_section_t
 #define DECLARE_DEVICE_SECTION(a)       			SYSTEM_SECTION_PTR( a, SYSTEM_DEVICE_DATA  )
 #define DECLARE_STORAGE_DEVICE_SECTION(a)       	SYSTEM_SECTION_PTR( a, SYSTEM_STORAGE_DEVICE  )
 #define DECLARE_CUSTOM_DEVICE_SECTION(a)       		SYSTEM_SECTION_PTR( a, SYSTEM_CUSTOM_DEVICE  )
+#define DECLARE_HW_CONFIG_SECTION(a)				SYSTEM_SECTION_PTR( a, SYSTEM_HW_CONFIG_DATA )
 
 #define DECLARE_POWERDOWN_SECTION(a)                SYSTEM_SECTION_CALL( a, SYSTEM_RUN_POWERDOWN_APPLICATION )
 
@@ -174,6 +176,7 @@ void * system_List_Get_Item( uint8_t type, uint32_t index );
 msd_driver_t * system_Get_Storage_Driver( uint32_t index );
 device_data_t * system_Get_Device_Driver( uint32_t index );
 void * system_Get_Custom_Driver( uint32_t index );
+void * system_Get_Hw_Config( void );
 
 char * system_Get_Version( void );
 uint16_t system_Get_Build_Time( void );

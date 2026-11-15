@@ -72,7 +72,7 @@ static const can_bus_t can_bus_data[] =
     }
 };
 
-static list_t       device_list;
+static list_data_t  device_list;
 static pipe_data_t  tx_pipe;
 static uint32_t     dev_index;
 static bool_t       hw_ready;

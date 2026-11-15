@@ -1,7 +1,7 @@
 #include "device.h"
 #include "system.h"
 #include "tima_libc.h"
-#include "debug.h"
+//#include "debug.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,12 +138,20 @@ bool_t device_open_ex( const char * name, device_t * dev )
         *dev_data->in_use = TRUE;
     }
 
+    if( dev_data->update_index != NULL )
+    {
+        dev->device_index = dev_data->update_index( index );
+    }
+    else
+    {
+        dev->device_index = index;
+    }
+
     if( dev_data->init != NULL ) dev_data->init( index );
     
     dev->device_ptr = dev_data;
-    dev->device_index = index;
 
-    //DEBUG_PRINTK( "Open %s (0x%08x, %d)\r\n", name, (int)dev, sys_heap_used() );
+    DEBUG_PRINTK( "Open %s (0x%08x, %d)\r\n", name, (int)dev, sys_heap_used() );
 
     return TRUE;
 }
@@ -408,6 +416,7 @@ uint8_t device_read( device_t * dev )
         device_read_buffer( dev, &data, 1 );
     }
     
+    DEBUG_PRINTK( "Read device: %d\r\n", data );
     return data;
 }
 

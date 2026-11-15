@@ -1,0 +1,7 @@
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/make_kd_tima_v42_arm.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/edit_cache.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/rebuild_cache.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/list_install_components.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/install.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/install/local.dir
+/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build/CMakeFiles/install/strip.dir

@@ -14,7 +14,7 @@
 #define CS_MODE_ENABLE				2
 #define CS_MODE_DISABLE 			3
 
-#define SPI_HW_INDEX				1
+#define SPI_HW_INDEX				0
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -61,16 +61,22 @@ typedef struct
 
 static const pio_config_t chip_select_list[] =
 {
-	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_15, GPIO_PinSource15 },
-	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_13, GPIO_PinSource13 },
-	{  RCC_AHB1Periph_GPIOA, GPIOA, GPIO_Pin_8,  GPIO_PinSource8 },
+#if defined BOARD_MINI_M4
+	{  RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_4,  GPIO_PinSource4 },  // csadc
+	{  RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_12, GPIO_PinSource12 }, // cspio
+	{  RCC_AHB1Periph_GPIOC, GPIOC, GPIO_Pin_1,  GPIO_PinSource1 },  // csradio
+#elif defined BOARD_MINI_411
+	{  RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_15, GPIO_PinSource15 },  // csadc
+	{  RCC_AHB1Periph_GPIOB, GPIOA, GPIO_Pin_8,  GPIO_PinSource8  },  // cspio
+	{  RCC_AHB1Periph_GPIOB, GPIOB, GPIO_Pin_14, GPIO_PinSource14 },  // csradio
+#endif
 	{ 0, NULL, 0 }
 };
 
 static const spi_data_t spi_config_list[] =
 {
 	{
-		// SPI 1 (to be used on Cerb40 boards)
+		// SPI 1 (to be used on Cerb40 boards, MINI-M4)
 		SPI1, GPIO_AF_SPI1, 0x00,
 
 		// RCC clocks
@@ -145,7 +151,7 @@ void hw_spi_init_cs_pio( void )
 void hw_spi_init_spi_pio( void )
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-    I2S_InitTypeDef  I2S_InitStructure;
+    //I2S_InitTypeDef  I2S_InitStructure;
 	SPI_InitTypeDef  SPI_InitStructure;
 
 	spi_data_t * spi_config;
@@ -192,13 +198,13 @@ void hw_spi_init_spi_pio( void )
 
 	// SPI configuration
 	SPI_StructInit( &SPI_InitStructure );
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft | SPI_NSSInternalSoft_Set;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+	SPI_InitStructure.SPI_Direction         = SPI_Direction_2Lines_FullDuplex;
+	SPI_InitStructure.SPI_Mode              = SPI_Mode_Master;
+	SPI_InitStructure.SPI_DataSize          = SPI_DataSize_8b;
+	SPI_InitStructure.SPI_CPOL              = SPI_CPOL_High;
+	SPI_InitStructure.SPI_CPHA              = SPI_CPHA_2Edge;
+	SPI_InitStructure.SPI_NSS               = SPI_NSS_Soft; //  | SPI_NSSInternalSoft_Set;
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
 
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 	SPI_InitStructure.SPI_CRCPolynomial = 7;
@@ -249,7 +255,7 @@ void hw_spi_init( void )
 	hw_spi_init_spi_pio();
 }
 
-static uint8_t hw_spi_send_byte(uint8_t byte)
+uint8_t hw_spi_send_byte(uint8_t byte)
 {
 	uint32_t cnt = 8192;
 	SPI_TypeDef* SPI_HW_PORT;
@@ -338,6 +344,10 @@ static uint32_t spi_drv_ioctl( uint32_t index, uint32_t param, void * value )
 
 			hw_spi_check_cs_pio( index, mode );
 			break;
+
+		case DEVICE_GET_RUNTIME_VALUE:
+		    *p_value = hw_spi_send_byte( ( uint8_t )( *p_value ) );
+		    break;
 	}
 
 	return 0;

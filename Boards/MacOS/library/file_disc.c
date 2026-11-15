@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////
 
 
-#define FILENAME_IMAGE			"/Users/marciocherobim/Projects/GIT/disc_005.vhd"
+#define FILENAME_IMAGE			"/home/marcio/Projects/GIT_Dev/disc_005.vhd"
 #define IMAGE_SIZE				(4096)
 
 //#define FILENAME_IMAGE		"C:\\Projects\\timaos_v40\\drive_003.vhd"

@@ -1,0 +1,35 @@
+CMakeFiles/make_kd_tima_v42_arm.dir/home/marcio/Projects/GIT_Dev/timaos_v42/Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c.o: \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_syscfg.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Device/stm32f4xx.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Include/core_cm4.h \
+ /usr/lib/gcc/arm-none-eabi/14.1.0/include/stdint.h \
+ /usr/arm-none-eabi/include/stdint.h \
+ /usr/arm-none-eabi/include/machine/_default_types.h \
+ /usr/arm-none-eabi/include/sys/features.h \
+ /usr/arm-none-eabi/include/_newlib_version.h \
+ /usr/arm-none-eabi/include/sys/_intsup.h \
+ /usr/arm-none-eabi/include/sys/_stdint.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Include/core_cmInstr.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Include/core_cmFunc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Include/core_cmSimd.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/CMSIS/Device/system_stm32f4xx.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/library/stm32f4xx_conf.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_adc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_crc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dbgmcu.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dma.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_exti.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_flash.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_i2c.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_iwdg.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_pwr.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rtc.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_sdio.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_spi.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_tim.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_usart.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_wwdg.h \
+ /home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm/../../../Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/inc/misc.h

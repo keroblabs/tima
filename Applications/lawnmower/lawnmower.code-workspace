@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Boards/Nucleo_446"
+		},
+		{
+			"path": "../../c_lib"
+		},
+		{
+			"path": "../../framework"
+		},
+		{
+			"path": "../../interface"
+		},
+		{
+			"path": "../../system"
+		}
+	],
+	"settings": {}
+}

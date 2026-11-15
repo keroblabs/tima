@@ -1,0 +1,61 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-a4c281f48c7396bcb1e6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "make_kd_tima_v42_arm",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "make_kd_tima_v42_arm::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-make_kd_tima_v42_arm-Debug-2cdfd9da80161b095626.json",
+					"name" : "make_kd_tima_v42_arm",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/build",
+		"source" : "/home/marcio/Projects/GIT_Dev/timaos_v42/Applications/lawnmower/make_kd_tima_v42_arm"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

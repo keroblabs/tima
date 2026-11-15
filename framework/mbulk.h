@@ -9,62 +9,51 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-typedef struct _mbulk_t_
+typedef struct _mbulk_buffer_t_
 {
-	uint16_t sender;
-	uint16_t target;
-	uint16_t message;
-	uint16_t size;
+	uint8_t * buffer;
 
-	uint8_t * data;
+	uint32_t max_size;
+	uint32_t curr_size;
+	uint32_t add_size;
 
-	struct _mbulk_t_ * p_next;
+	uint32_t users;
 
-} mbulk_t;
+	uint32_t mask;
 
-typedef struct _mbulk_pipe_t_
-{
-	mbulk_t * base_mbulk;
-	mbulk_t * last_mbulk;
-
-} mbulk_pipe_t;
-
-typedef struct _mbulk_data_t
-{
-	uint16_t my_id;
-	mbulk_t * curr_mbulk;
-	mbulk_t * rx_mbulk;
-
-	mbulk_pipe_t * pipe;
-
-	struct _mbulk_data_t * p_next;
-
-} mbulk_data_t;
-
+} bulk_buffer_t;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void mbulk_pipe_init( mbulk_pipe_t * pipe );
+bulk_buffer_t * bulk_buffer_create( uint32_t size );
 
-mbulk_data_t * mbulk_init( mbulk_data_t * pipe, uint16_t my_id );
+bulk_buffer_t * bulk_buffer_create_with_buffer( uint8_t * buffer, uint32_t size );
 
-void mbulk_destroy( mbulk_data_t * p_data );
+bulk_buffer_t * bulk_buffer_duplicate( bulk_buffer_t * bulk_buffer );
 
-uint8_t * mbulk_create( mbulk_data_t * p_data, uint32_t size );
+bulk_buffer_t * bulk_buffer_convert_from_buffer( uint8_t * buffer, uint32_t size );
 
-void mbulk_send( mbulk_data_t * p_data, uint16_t message, uint16_t dest );
+void bulk_buffer_create_with_buffer_ex( bulk_buffer_t * bulk_buffer, uint8_t * buffer, uint32_t size );
 
-uint8_t * mbulk_receive( mbulk_data_t * p_data );
-uint8_t * mbulk_receive_ex( mbulk_data_t * mbulk_info, uint16_t message );
+void bulk_buffer_destroy( bulk_buffer_t * bulk_buffer );
 
-uint16_t mbulk_get_sender( mbulk_data_t * p_data );
-uint16_t mbulk_get_message( mbulk_data_t * p_data );
-uint32_t mbulk_get_size( mbulk_data_t * p_data );
+void bulk_buffer_add_user( bulk_buffer_t * bulk_buffer );
 
-void mbulk_release( mbulk_data_t * p_data );
-void mbulk_cancel( mbulk_data_t * p_data );
+void bulk_buffer_set_add_size( bulk_buffer_t * bulk_buffer, uint32_t value );
+
+void bulk_buffer_add_data( bulk_buffer_t * bulk_buffer, uint8_t * data, uint32_t size );
+
+void bulk_buffer_extract_data( bulk_buffer_t * bulk_buffer, uint32_t offset, uint8_t * data, uint32_t size );
+
+uint8_t * bulk_buffer_pointer( bulk_buffer_t * bulk_buffer );
+
+uint8_t * bulk_buffer_pointer_at( bulk_buffer_t * bulk_buffer, uint32_t offset );
+
+uint32_t bulk_buffer_current_size( bulk_buffer_t * bulk_buffer );
+
+uint32_t bulk_buffer_max_size( bulk_buffer_t * bulk_buffer );
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

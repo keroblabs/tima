@@ -1,0 +1,94 @@
+##############################################################################################
+#
+# Rules to build simple S3C2440
+#
+##############################################################################################
+
+##############################################################################################
+# Start of main variables
+#
+
+BOARD_PATH = $(DEFAULT_PATH)/Boards/olimex_a20
+
+#GCCPATH = /Users/marciocherobim/Tools/gcc-4_7-2013q3/arm-none-eabi
+#TRGT    = /Users/marciocherobim/Tools/gcc-4_7-2013q3/bin/arm-none-eabi-
+#LIBDIR  = $(GCCPATH)/lib
+
+GCCPATH = /Volumes/xtools/armv8-rpi3-linux-gnueabihf/bin/armv8-rpi3-linux-gnueabihf-
+TRGT    = /Volumes/xtools/armv8-rpi3-linux-gnueabihf/bin/armv8-rpi3-linux-gnueabihf-
+LIBDIR  = /Volumes/xtools/armv8-rpi3-linux-gnueabihf/lib
+
+LD		= $(TRGT)gcc
+CC      = $(TRGT)gcc
+CP      = $(TRGT)objcopy
+AS      = $(TRGT)gcc -x assembler-with-cpp
+SIZE    = $(TRGT)size
+OBJCOPY = $(TRGT)objcopy
+OBJDUMP = $(TRGT)objdump
+BIN     = $(CP) -O ihex
+MAKE    = make
+CP      = cp
+
+#MCU     = arm926ej-s
+#THUMB   = 
+# -fPIC
+
+#ARCH    = ARM
+#MODEL   = IMX233
+
+#DEFS += -D$(ARCH)_$(MODEL) -D$(ARCH)
+
+#LDDEF   = imx233_script.ld
+
+# additional link commands
+#CPU_LD +=
+
+#
+# End of main variables
+##############################################################################################
+
+##############################################################################################
+# Start of define section
+#
+
+# List all default C defines here, like -D_DEBUG=1
+#DEFS += -DUSE_SECTIONS
+#DEFS += -DARM4_ASM
+#DEFS += -DARM5_ASM
+
+# List all default ASM defines here, like -D_DEBUG=1
+ADEFS +=
+
+#
+# End of define section
+##############################################################################################
+
+##############################################################################################
+# Start of include section
+#
+
+# List all default directories to look for include files here
+#CINCDIR += $(BOARD_PATH)
+#CINCDIR += $(BOARD_PATH)/include
+#CINCDIR += $(BOARD_PATH)/library
+
+# End of include section
+##############################################################################################
+
+##############################################################################################
+# Start of source section
+#
+
+SRC += $(BOARD_PATH)/library/ms_hw_timer.c
+SRC += $(BOARD_PATH)/library/printf_driver.c
+
+SRC += $(DEFAULT_DRV_PATH)/ms_timer.c
+
+#
+# End of source section
+##############################################################################################
+
+
+# *** EOF ***
+
+

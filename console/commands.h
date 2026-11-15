@@ -14,6 +14,7 @@ typedef struct _console_instance_t_
 	char command_buffer[128];
 	uint16_t command_pointer;
 
+	bool_t is_open;
 	bool_t echo_mode;
 	bool_t command_mode;
 	bool_t carriage_returned;

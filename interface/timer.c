@@ -28,6 +28,17 @@ void timer_SetRTC( const time_t time )
 	device_write_buffer( rtc_device_hdl, ( uint8_t * )&time, sizeof( time ) );
 }
 
+uint64_t timer_get_US( void )
+{
+    uint64_t val = 0;
+
+    if( ms_timer_device_hdl != NULL )
+    {
+        device_read_buffer( ms_timer_device_hdl, ( uint8_t * )&val, sizeof( val ) );
+    }
+    return val;
+}
+
 uint32_t timer_get_MS( void )
 {
     uint32_t val = 0;

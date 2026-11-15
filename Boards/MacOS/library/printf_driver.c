@@ -50,6 +50,7 @@ static uint32_t console_output( uint32_t index, uint8_t * text, uint32_t size )
 {
     DI();
 	printf( "%s", (char*)text );
+    fflush( stdout );
     EI();
     
     return size;
@@ -103,7 +104,7 @@ static void console_drv_close( uint32_t index )
 
 static bool_t validate( uint32_t index )
 {
-    if( index == 3 ) return TRUE;
+    if( index == 5 ) return TRUE;
     return FALSE;
 }
 

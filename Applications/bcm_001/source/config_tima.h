@@ -10,8 +10,11 @@
 #define DEV_SPI_EEPROM			"/dev/spi1"
 #define DEV_SPI_FLASH			"/dev/spi1"
 #define DEV_SPI_SDCARD			"/dev/spi1"
-#define DEV_SPI_GPIO			"/dev/spi2"
 #define DEV_SPI_24GHZ			"/dev/spi3"
+
+#define DEV_SPI_ADC             "/dev/spi1"
+#define DEV_SPI_GPIO            "/dev/spi2"
+#define DEV_SPI_RADIO           "/dev/spi3"
 
 ////////////////////////////////////////////////////////
 

@@ -102,10 +102,7 @@ void hw_adc_init( void )
     //GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 	/* ADC Common configuration */
-	ADC_CommonInitStructure.ADC_Mode 				= ADC_Mode_Independent;
-	ADC_CommonInitStructure.ADC_TwoSamplingDelay 	= ADC_TwoSamplingDelay_10Cycles;
-	ADC_CommonInitStructure.ADC_DMAAccessMode 		= ADC_DMAAccessMode_Disabled;  
-	ADC_CommonInitStructure.ADC_Prescaler 			= ADC_Prescaler_Div2; 
+	ADC_CommonStructInit(&ADC_CommonInitStructure);
 	ADC_CommonInit(&ADC_CommonInitStructure);
   
     /* ADC1 Configuration */
