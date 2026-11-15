@@ -13,8 +13,8 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `CLOSED` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `CLOSED` | Read-only mode does not prevent writes |
-| `TIMA-FWK-0004` | `REVIEW` | Reported available capacity disagrees with writable capacity |
-| `TIMA-FWK-0005` | `REVIEW` | Resize can invalidate cursors and truncate the stored size |
+| `TIMA-FWK-0004` | `CLOSED` | Reported available capacity disagrees with writable capacity |
+| `TIMA-FWK-0005` | `CLOSED` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `OPEN` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `OPEN` | Single-byte read cannot distinguish empty from a zero byte |
@@ -23,8 +23,8 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
-| `TIMA-FWK-0014` | `REVIEW` | Zero sizes and invalid backing storage are not rejected |
-| `TIMA-FWK-0015` | `REVIEW` | fill_size metadata is left uninitialized and unused |
+| `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
+| `TIMA-FWK-0015` | `CLOSED` | fill_size metadata is left uninitialized and unused |
 
 ## Issues
 
@@ -169,7 +169,7 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 ### TIMA-FWK-0004
 
 **ID:** `TIMA-FWK-0004`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Reported available capacity disagrees with writable capacity
 
 **Description**  
@@ -189,6 +189,11 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
 - **2026-11-15 — Commit:** Created implementation commit [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-15 — Project Review:** The project owner indicated the submitted changes were satisfactory and requested independent review and closure if accepted.
+- **2026-11-15 — Independent Code Review:** **Approved.** Independently reviewed the implementation and current buffer API. `_buffer_get_size_unlocked()` computes occupancy within the caller's existing critical section; `buffer_get_available_size()` returns `size - 1 - occupancy` (bounded below by zero) and `buffer_is_full()` compares occupancy with `size - 1`. `buffer_write()` still overwrites the oldest unread byte instead of rejecting writes. Reviewed tests for empty, partially occupied, full, overwrite, and two-byte allocated storage.
+- **2026-11-15 — Verification and Scope:** Host tests are reported as passing in the submitted ticket; they were not independently executed in this review. Hardware verification is not recorded. Invalid-descriptor behavior is handled separately by TIMA-FWK-0014.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` on accepted review; `RESOLVED` → `CLOSED` because the approved implementation commit(s) are already on the designated `phase-1-improvements` branch. Associated implementation commit review status changed to `APPROVED`.
+
 **Proposed Change**  
 Document the overwrite-oldest policy, define usable capacity as `size - 1`, return remaining no-overwrite capacity from `buffer_get_available_size()`, and define full as occupancy reaching that capacity. Keep `buffer_write()` accepting data while full and verify that it evicts the oldest unread byte. Cover the first, last, and overwrite boundary slots.
 
@@ -196,17 +201,17 @@ Document the overwrite-oldest policy, define usable capacity as `size - 1`, retu
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) | `UNREVIEWED` | Report circular-ring capacity excluding the reserved slot; align `is_full` with occupancy. |
+| `phase-1-improvements` | [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) | `APPROVED` | Report circular-ring capacity excluding the reserved slot; align `is_full` with occupancy. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Implementation commit [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) aligns capacity reporting and full detection with the circular buffer's `size - 1` usable slots while retaining overwrite-oldest writes. Independent static review verifies the expressions, protected occupancy calculation and boundary regression tests. The ticket documents passing native tests, which were not independently rerun; no hardware run is documented. The accepted implementation is already committed on `phase-1-improvements`. Related invalid-input checks are tracked in TIMA-FWK-0014.
 
 ---
 
 ### TIMA-FWK-0005
 
 **ID:** `TIMA-FWK-0005`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Resize can invalidate cursors and truncate the stored size
 
 **Description**  
@@ -234,6 +239,11 @@ Pending.
 - **2026-11-15 — Commit:** Created heap-path rework commit [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 - **2026-11-15 — Cross-reference:** TIMA-FWK-0015 later removed the unreferenced `fill_size` member; the `uint32_t` fields and API size policy from this ticket remain in effect.
 
+- **2026-11-15 — Project Review:** The project owner indicated the submitted changes were satisfactory and requested independent review and closure if accepted.
+- **2026-11-15 — Independent Code Review:** **Approved.** Independently reviewed both source commits, the current `buffer_data_t` declarations and the `heap_malloc()` → `_internal_malloc()` path. Buffer size, cursor, offset, bulk counts and size-result APIs now use `uint32_t`; the heap no longer truncates allocation requests to 16 bits, and it checks for overflow before 4-byte alignment. `buffer_resize()` restores a valid linearized ring and preserves FIFO order, keeping newest unread bytes on shrink; failed allocation leaves buffer ownership and cursors unchanged. Reviewed submitted tests for wrapped grow/shrink, 70,000-byte capacity, 65,540-byte read/write counts, and failed maximum-size creation/resize.
+- **2026-11-15 — Verification and Scope:** On-target board builds and hardware tests were not performed during this review; submitted native test passes were not independently rerun. Heap allocation, copying and freeing remain inside the interrupt-disabled region in `buffer_resize()`, explicitly tracked in TIMA-FWK-0006; no general real-time safety certification is implied. The buffer public structure/API changed, so application integration must rebuild affected callers.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` on accepted review; `RESOLVED` → `CLOSED` because the approved implementation commit(s) are already on the designated `phase-1-improvements` branch. Associated implementation commit review status changed to `APPROVED`.
+
 **Proposed Change**  
 Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk counts, size results, and the heap's internal allocation-size path. Resize preserves unread bytes in FIFO order; when shrinking, retain the newest unread bytes up to the new circular capacity and reset cursors to a valid linearized layout. If allocation fails, leave the original storage and indices intact. Reject allocator requests that overflow alignment arithmetic. Allocation remains protected as in the existing implementation; interrupt/heap timing is tracked by TIMA-FWK-0006.
 
@@ -241,11 +251,11 @@ Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) | `UNREVIEWED` | Widen buffer sizes to `uint32_t`; preserve valid unread data during resize. |
-| `phase-1-improvements` | [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) | `UNREVIEWED` | Remove the heap's 16-bit request truncation and test buffer allocation against the real heap. |
+| `phase-1-improvements` | [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) | `APPROVED` | Widen buffer sizes to `uint32_t`; preserve valid unread data during resize. |
+| `phase-1-improvements` | [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) | `APPROVED` | Remove the heap's 16-bit request truncation and test buffer allocation against the real heap. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed for the defined scope.** Commits [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) and [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) standardize buffer sizes and indices on `uint32_t`, preserve unread data and valid cursors across successful resize, and remove the heap allocator's internal 16-bit size narrowing with alignment-overflow rejection. The later TIMA-FWK-0015 change removes obsolete metadata. The submitted native suite reports passing wrapped-data, large-size and failure-path tests. Independent static review accepts the targeted behavior; tests were not independently rerun and target hardware has not been validated. The accepted commits are already on `phase-1-improvements`. TIMA-FWK-0006 remains OPEN for allocation/free operations and copy loops inside critical sections.
 
 ---
 
@@ -476,7 +486,7 @@ Pending.
 ### TIMA-FWK-0014
 
 **ID:** `TIMA-FWK-0014`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Zero sizes and invalid backing storage are not rejected
 
 **Description**  
@@ -497,6 +507,11 @@ Buffer creation and initialization allow configurations that cannot safely store
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing invalid-argument regressions. Resolution remains pending acceptance.
 - **2026-11-15 — Commit:** Created implementation commit [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-15 — Project Review:** The project owner indicated the submitted changes were satisfactory and requested independent review and closure if accepted.
+- **2026-11-15 — Independent Code Review:** **Approved.** Independently reviewed `_buffer_is_valid()`, initialization/creation/resize guards, documented invalid-argument behavior and test additions. Invalid initialization produces an inert descriptor; circular buffers require non-null storage and `size >= 2`; creation and resizing reject undersized requests; byte, size, pointer and bulk APIs handle tested null/invalid descriptors with documented results. Reviewed regression coverage for zero/one/minimum capacity, null pointers and maximum-size allocation failure.
+- **2026-11-15 — Verification and Scope:** `buffer_init()` relies on the caller to supply at least `size` accessible bytes and cannot prove physical backing allocation length; that precondition is documented. `buffer_write_buffer_ex()` retains an explicitly permitted raw-prefix source `pointer_in == size` case for legacy behavior, which is tracked separately under TIMA-FWK-0010. `_buffer_is_valid()` in some compound operations occurs outside a single critical section; concurrent access policy remains a separate ISR review matter. Submitted tests were not independently rerun and hardware testing is not recorded.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` on accepted review; `RESOLVED` → `CLOSED` because the approved implementation commit(s) are already on the designated `phase-1-improvements` branch. Associated implementation commit review status changed to `APPROVED`.
+
 **Proposed Change**  
 Require non-null storage and a size of at least two for valid buffers. Since `buffer_init()` has no status return, leave its descriptor inert on invalid configuration; reject invalid `buffer_create()` sizes with `NULL`. Make public operations tolerate null descriptors, invalid backing pointers, and null bulk arguments with documented no-op, zero, null-pointer, or false/empty results. Test sizes 0, 1, normal and maximum, plus invalid arguments.
 
@@ -504,17 +519,17 @@ Require non-null storage and a size of at least two for valid buffers. Since `bu
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) | `UNREVIEWED` | Reject invalid buffer sizes/storage and guard public operations against null or invalid data. |
+| `phase-1-improvements` | [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) | `APPROVED` | Reject invalid buffer sizes/storage and guard public operations against null or invalid data. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) establishes and documents the minimum two-byte circular backing store, inert invalid initialization, invalid-size rejection and consistent checked failure behavior across the reviewed public operations. Regression tests exercise null and undersized configurations, maximum-size allocation failure and the existing legacy raw-prefix source case. Independent static review confirms the focused safeguards; the submitted native test pass was not independently rerun and no hardware verification is recorded. The source commit is on `phase-1-improvements`. Other ownership and concurrent-reconfiguration concerns remain separate tickets.
 
 ---
 
 ### TIMA-FWK-0015
 
 **ID:** `TIMA-FWK-0015`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** fill_size metadata is left uninitialized and unused
 
 **Description**  
@@ -534,6 +549,11 @@ Pending.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
 - **2026-11-15 — Commit:** Created implementation commit [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-15 — Project Review:** The project owner indicated the submitted changes were satisfactory and requested independent review and closure if accepted.
+- **2026-11-15 — Independent Code Review:** **Approved.** Independently reviewed the removal diff and current `buffer_data_t` / `buffer_init()` source. The obsolete `fill_size` field and its initialization have been removed together, leaving fields that `buffer_init()` explicitly initializes. Reviewed the new regression that pre-fills a descriptor with nonzero bytes and checks every remaining declared member. The earlier submission records a repository reference search finding no consumers.
+- **2026-11-15 — Verification and Scope:** The public structure layout changes; external binary compatibility cannot be certified without rebuilding downstream users. The submitted native test pass was not independently rerun and there is no target-board build evidence. Removal does not alter the agreed `uint32_t` size policy.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` on accepted review; `RESOLVED` → `CLOSED` because the approved implementation commit(s) are already on the designated `phase-1-improvements` branch. Associated implementation commit review status changed to `APPROVED`.
+
 **Proposed Change**  
 Remove `fill_size` because no in-repository caller uses it and no reliable update contract exists. Record the public struct layout change and rebuild all in-repository users as part of Tima 6 API integration.
 
@@ -541,7 +561,7 @@ Remove `fill_size` because no in-repository caller uses it and no reliable updat
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) | `UNREVIEWED` | Remove unused `fill_size` field and verify remaining initialization. |
+| `phase-1-improvements` | [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) | `APPROVED` | Remove unused `fill_size` field and verify remaining initialization. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) removes the unused `fill_size` member and its initialization from the buffer API. Independent review confirms that the remaining fields are explicitly initialized and that the new regression covers the descriptor layout. The submitted record reports no in-repository consumers and passing native tests; the test suite was not independently rerun and downstream binary users must be rebuilt for the changed struct. Commit already present on `phase-1-improvements`.
