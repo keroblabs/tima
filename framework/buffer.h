@@ -16,8 +16,6 @@ typedef struct
     uint8_t user_count;
 
     uint32_t size;
-    uint32_t fill_size;
-
     uint8_t *buffer;
 
 } buffer_data_t;

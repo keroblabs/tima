@@ -24,7 +24,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `REVIEW` | Zero sizes and invalid backing storage are not rejected |
-| `TIMA-FWK-0015` | `OPEN` | fill_size metadata is left uninitialized and unused |
+| `TIMA-FWK-0015` | `REVIEW` | fill_size metadata is left uninitialized and unused |
 
 ## Issues
 
@@ -513,20 +513,27 @@ Pending.
 ### TIMA-FWK-0015
 
 **ID:** `TIMA-FWK-0015`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** fill_size metadata is left uninitialized and unused
 
 **Description**  
 `buffer_data_t` declares `fill_size`, but the current implementation does not initialize or maintain it, leaving dead or undefined metadata in the public structure.
 
 **Details**  
-**Confirmed by static review:** `framework/buffer.h` declares `uint16_t fill_size`, while `buffer_init()` initializes the other fields and omits `fill_size`. The reviewed `framework/buffer.c` does not read or update this field. If a caller accesses it after stack-based initialization, the value may be indeterminate; whether historical callers rely on the field is not yet established.
+**Finding at discovery, confirmed by static review:** `framework/buffer.h` declared `fill_size`, while `buffer_init()` omitted it and the framework did not read or update it. A caller reading it after stack-based initialization could observe an indeterminate value. Repository search found no consumer outside the declaration/initialization and regression test.
+
+**Current implementation:** Removed the unused `fill_size` member from `buffer_data_t` and removed its initialization. `buffer_init()` tests now verify that every remaining member is initialized.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** Repository search found no `fill_size` consumer. Remove the obsolete member instead of defining and maintaining new occupancy metadata. This changes the public `buffer_data_t` layout; in-repository users will be rebuilt, while downstream binary-layout dependencies cannot be assessed from this repository. Set status to `IN_PROGRESS`.
+- **2026-11-15 — Implementation:** Removed `fill_size` from `buffer_data_t` and `buffer_init()`. Added a test that pre-fills the descriptor with nonzero bytes and verifies every remaining member is initialized.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`, linking `system/heap.c`. The suite verifies valid and inert initialization states and confirms no source/test code depends on the removed member.
+- **2026-11-15 — Code Review:** Local search confirms there are no remaining `fill_size` references in C/header files; public struct consumers in this repository compile through the updated definition. Independent review and target-board validation have not occurred.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
 
 **Proposed Change**  
-Search callers for external use of `fill_size`. Remove the field if obsolete or define its precise meaning and initialize/maintain it consistently. Keep layout or ABI compatibility needs explicit during the Tima 6 API review.
+Remove `fill_size` because no in-repository caller uses it and no reliable update contract exists. Record the public struct layout change and rebuild all in-repository users as part of Tima 6 API integration.
 
 **Commits**
 

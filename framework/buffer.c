@@ -26,8 +26,6 @@ void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t si
     buffer_data->pointer_out = 0;
     buffer_data->mask = 0;
     buffer_data->user_count = 1;
-    buffer_data->fill_size = 0;
-
     if( ( buffer_ptr == NULL ) || ( size < 2 ) ) return;
 
     buffer_data->buffer = buffer_ptr;

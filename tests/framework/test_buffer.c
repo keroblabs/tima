@@ -321,7 +321,6 @@ static void test_invalid_initialization_leaves_an_inert_buffer(void)
     assert(buffer.size == 0);
     assert(buffer.pointer_in == 0);
     assert(buffer.pointer_out == 0);
-    assert(buffer.fill_size == 0);
     assert(buffer_read(&buffer) == 0);
     assert(buffer_write(&buffer, 0x71) == FALSE);
     assert(buffer_write_buffer(&buffer, storage, 1) == 0);
@@ -344,6 +343,22 @@ static void test_invalid_initialization_leaves_an_inert_buffer(void)
     assert(buffer.size == 0);
     assert(buffer_write(&buffer, 0x73) == FALSE);
     buffer_destroy(&buffer);
+}
+
+static void test_init_initializes_every_remaining_member(void)
+{
+    uint8_t storage[3] = { 0, 0, 0 };
+    buffer_data_t buffer;
+
+    memset(&buffer, 0xA5, sizeof(buffer));
+    buffer_init(&buffer, storage, sizeof(storage));
+
+    assert(buffer.buffer == storage);
+    assert(buffer.size == sizeof(storage));
+    assert(buffer.pointer_in == 0);
+    assert(buffer.pointer_out == 0);
+    assert(buffer.mask == 0);
+    assert(buffer.user_count == 1);
 }
 
 static void test_invalid_sizes_and_null_arguments_are_rejected(void)
@@ -410,5 +425,6 @@ int main(void)
     test_small_ring_has_one_byte_usable_capacity();
     test_invalid_initialization_leaves_an_inert_buffer();
     test_invalid_sizes_and_null_arguments_are_rejected();
+    test_init_initializes_every_remaining_member();
     return 0;
 }
