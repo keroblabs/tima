@@ -28,8 +28,6 @@ void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint16_t si
 
 buffer_data_t * buffer_create( uint16_t size );
 
-void buffer_set_read_only( buffer_data_t * buffer_data, bool_t state );
-
 void buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
 void buffer_reset( buffer_data_t * buffer_data );

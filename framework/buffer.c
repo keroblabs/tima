@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #define MASK_ON_HEAP                0x02
-#define MASK_READ_ONLY				0x04
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,12 +51,6 @@ void buffer_destroy( buffer_data_t * buffer_data )
     }
 
     EI();
-}
-
-void buffer_set_read_only( buffer_data_t * buffer_data, bool_t state )
-{
-    if( state == TRUE ) buffer_data->mask |= MASK_READ_ONLY;
-    else buffer_data->mask &= ~MASK_READ_ONLY;
 }
 
 void buffer_reset( buffer_data_t * buffer_data )

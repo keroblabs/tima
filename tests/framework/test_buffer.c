@@ -83,6 +83,30 @@ static void test_created_buffer_uses_circular_behavior(void)
     assert(critical_depth == 0);
 }
 
+static void test_direct_and_bulk_write_apis_remain_writable(void)
+{
+    uint8_t storage[6] = { 0, 0, 0, 0, 0, 0 };
+    uint8_t source[2] = { 0x51, 0x52 };
+    buffer_data_t buffer;
+    buffer_data_t input;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    buffer_init(&input, source, sizeof(source));
+    input.pointer_in = sizeof(source);
+
+    assert(buffer_write(&buffer, 0x50) == TRUE);
+    assert(buffer_write_buffer(&buffer, source, sizeof(source)) == 2);
+    assert(buffer_write_buffer_ex(&buffer, &input) == 2);
+
+    assert(buffer.pointer_in == 5);
+    assert(buffer.pointer_out == 0);
+    assert(storage[0] == 0x50);
+    assert(storage[1] == 0x51);
+    assert(storage[2] == 0x52);
+    assert(storage[3] == 0x51);
+    assert(storage[4] == 0x52);
+}
+
 static void test_wrapped_writes_preserve_outer_critical_section(void)
 {
     uint8_t storage[3] = { 0, 0, 0 };
@@ -111,6 +135,7 @@ int main(void)
 {
     test_circular_buffer_overwrites_oldest_entry();
     test_created_buffer_uses_circular_behavior();
+    test_direct_and_bulk_write_apis_remain_writable();
     test_wrapped_writes_preserve_outer_critical_section();
     return 0;
 }

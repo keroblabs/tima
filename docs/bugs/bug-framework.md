@@ -12,7 +12,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | --- | --- | --- |
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `REVIEW` | No-rollover flag fails when combined with other flags |
-| `TIMA-FWK-0003` | `OPEN` | Read-only mode does not prevent writes |
+| `TIMA-FWK-0003` | `IN_PROGRESS` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
@@ -117,20 +117,26 @@ Pending.
 ### TIMA-FWK-0003
 
 **ID:** `TIMA-FWK-0003`  
-**Status:** `OPEN`  
+**Status:** `IN_PROGRESS`<br>
 **Title:** Read-only mode does not prevent writes
 
 **Description**  
 `buffer_set_read_only(TRUE)` sets a flag, but the writing functions do not enforce it.
 
 **Details**  
-**Confirmed by static review:** `buffer_set_read_only()` toggles `MASK_READ_ONLY`. `buffer_write()` never tests this flag and always writes to the backing memory when its other conditions allow. `buffer_write_buffer()` and `buffer_write_buffer_ex()` ultimately use `buffer_write()` and inherit that behavior. No separate read-only semantics are documented in `buffer.h`.
+**Historical finding, confirmed by static review:** `buffer_set_read_only()` toggled `MASK_READ_ONLY`, but `buffer_write()` never tested the flag. `buffer_write_buffer()` and `buffer_write_buffer_ex()` delegated to `buffer_write()` and had no separate read-only behavior. No read-only contract was documented in `buffer.h`.
+
+**Current implementation:** The setter declaration and implementation and `MASK_READ_ONLY` have been removed from `framework/buffer.h` and `framework/buffer.c`. The remaining `mask` field is used for heap ownership only. Direct and bulk write tests verify the supported write APIs remain usable.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** The user decided to remove read-only mode. Remove the public setter and its flag; keep buffer write APIs writable without a read-only option.
+- **2026-11-15 — Status Change:** Moved from `OPEN` to `IN_PROGRESS` to remove the unused mode and verify direct and bulk write behavior.
+- **2026-11-15 — Implementation:** Removed the public setter, implementation, and read-only flag. Added coverage for `buffer_write()`, `buffer_write_buffer()`, and `buffer_write_buffer_ex()`.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; direct and bulk writes retained their expected byte order and cursor values.
 
 **Proposed Change**  
-Clarify what read-only means for owned and externally supplied storage. If it is intended to prevent writes through the buffer API, reject writes without modifying data or cursors and provide tests. If the flag is obsolete, remove it and its setter intentionally.
+Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API and implementation. Verify that direct, bulk, and buffer-to-buffer writes continue to work with the remaining buffer API.
 
 **Commits**
 
