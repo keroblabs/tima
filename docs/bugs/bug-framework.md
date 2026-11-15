@@ -12,7 +12,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | --- | --- | --- |
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `REVIEW` | No-rollover flag fails when combined with other flags |
-| `TIMA-FWK-0003` | `IN_PROGRESS` | Read-only mode does not prevent writes |
+| `TIMA-FWK-0003` | `REVIEW` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
@@ -117,11 +117,11 @@ Pending.
 ### TIMA-FWK-0003
 
 **ID:** `TIMA-FWK-0003`  
-**Status:** `IN_PROGRESS`<br>
+**Status:** `REVIEW`<br>
 **Title:** Read-only mode does not prevent writes
 
 **Description**  
-`buffer_set_read_only(TRUE)` sets a flag, but the writing functions do not enforce it.
+Historically, `buffer_set_read_only(TRUE)` set a flag that write APIs ignored, so it did not enforce read-only behavior.
 
 **Details**  
 **Historical finding, confirmed by static review:** `buffer_set_read_only()` toggled `MASK_READ_ONLY`, but `buffer_write()` never tested the flag. `buffer_write_buffer()` and `buffer_write_buffer_ex()` delegated to `buffer_write()` and had no separate read-only behavior. No read-only contract was documented in `buffer.h`.
@@ -134,6 +134,9 @@ Pending.
 - **2026-11-15 — Status Change:** Moved from `OPEN` to `IN_PROGRESS` to remove the unused mode and verify direct and bulk write behavior.
 - **2026-11-15 — Implementation:** Removed the public setter, implementation, and read-only flag. Added coverage for `buffer_write()`, `buffer_write_buffer()`, and `buffer_write_buffer_ex()`.
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; direct and bulk writes retained their expected byte order and cursor values.
+- **2026-11-15 — Code Review:** Local review confirms the read-only setter and flag are absent from maintained framework source and tests, and direct and bulk writes remain functional. Independent review and target hardware execution have not been performed.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-15 — Commit:** Created implementation commit `154ad57c45251393843b55893a5166bf5198694f` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
 **Proposed Change**  
 Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API and implementation. Verify that direct, bulk, and buffer-to-buffer writes continue to work with the remaining buffer API.
@@ -142,6 +145,7 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`154ad57`](https://github.com/keroblabs/tima/commit/154ad57c45251393843b55893a5166bf5198694f) | `UNREVIEWED` | Remove read-only mode and verify direct and bulk writes. |
 
 **Resolution Description**  
 Pending.
