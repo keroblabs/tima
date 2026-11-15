@@ -10,7 +10,7 @@ The summary is the current index; full issue records below are authoritative. Up
 
 | ID | Status | Title |
 | --- | --- | --- |
-| `TIMA-FWK-0001` | `REVIEW` | Full-buffer rejection exits with interrupts disabled |
+| `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `OPEN` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `OPEN` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
@@ -31,7 +31,7 @@ The summary is the current index; full issue records below are authoritative. Up
 ### TIMA-FWK-0001
 
 **ID:** `TIMA-FWK-0001`  
-**Status:** `REVIEW`<br>
+**Status:** `CLOSED`  
 **Title:** Full-buffer rejection exits with interrupts disabled
 
 **Description**  
@@ -54,6 +54,11 @@ The summary is the current index; full issue records below are authoritative. Up
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording the implementation and passing test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-15 — Commit:** Created implementation commit `e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
+- **2026-11-15 — External Review:** Project owner reviewed the submitted fix and recorded a Gerrit-style `+1` (positive review). This feedback is distinct from the independent review below and does not by itself mean code approval or closure.
+- **2026-11-15 — Independent Code Review:** Reviewed [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) against its parent and inspected `buffer_write()`, the test runner, host stubs, and `test_buffer.c`. **Approved** the focused correction: the function has one post-`DI()` exit via `EI()`, returns `FALSE` on the existing rejection condition, and does not modify bytes or cursors on rejection. The submitted tests cover ordinary and nested critical-section pairing. The reviewer verified the code and test logic but could not rerun the remote suite in this environment; the reported test pass comes from the submission. No on-target interrupt test has been recorded.
+- **2026-11-15 — Scope:** The remaining rollover-flag behavior and general interrupt-state/ISR contract are outside this fix and remain subject to their separate issues. This approval does not certify the whole buffer implementation as interrupt-safe.
+- **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` following accepted review, then `RESOLVED` → `CLOSED` because the approved implementation commit is already present on the designated `phase-1-improvements` branch. Commit review status updated to `APPROVED`.
+
 **Proposed Change**  
 Route the full-buffer rejection and successful write through one cleanup path so every call to `DI()` has a matching `EI()`. Preserve write rejection behavior and avoid changing the board interrupt API. Verify normal and nested critical-section use with native tests, then review on target boards as appropriate.
 
@@ -61,10 +66,10 @@ Route the full-buffer rejection and successful write through one cleanup path so
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) | `UNREVIEWED` | Balance the critical section after a full-buffer write rejection and add host tests. |
+| `phase-1-improvements` | [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) | `APPROVED` | Balance the critical section after a full-buffer write rejection and add host tests. |
 
 **Resolution Description**  
-Pending.
+**Fixed and approved.** The committed change [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) in `framework/buffer.c` replaces the premature return after `DI()` with a result variable and common `EI()` exit. Rejection retains `FALSE` return semantics without modifying buffer contents or indices. The implementation also adds `tests/framework/test_buffer.c`, host stubs, and `tests/framework/run_buffer_tests.sh` for normal, rejected, and nested critical-section cases. The submission reports its host tests passed with `cc -std=c99 -Wall -Wextra -Werror`; independent static review found the targeted path correctly balanced, but the test suite was not independently rerun and target-board behavior remains unverified. The project owner provided a Gerrit-style `+1`; independent code review approved the implementation. The fix is committed to the designated working branch, so this ticket is `CLOSED`. Other buffer/board interrupt issues remain open.
 
 ---
 
