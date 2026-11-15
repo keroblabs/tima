@@ -201,7 +201,7 @@ Pending.
 **Title:** Resize can invalidate cursors and truncate the stored size
 
 **Description**  
-`buffer_resize()` can replace storage without preserving valid cursor positions, and accepts a 32-bit size that is stored in a 16-bit field.
+`buffer_resize()` can replace storage without preserving valid cursor positions, and accepts a 32-bit size that is stored in a 16-bit field. For Tima 6.x, standardize all buffer sizes, capacities, cursor indices, offsets, and size-related API parameters and return values on `uint32_t`, eliminating mixed 16-bit/32-bit size handling. Review the affected functions and callers so the type change is consistent throughout the buffer API.
 
 **Details**  
 **Confirmed by static review:** `buffer_resize()` copies a raw prefix, frees the old block, and assigns `buffer_data->size = new_size` without adjusting `pointer_in` or `pointer_out`. Shrinking below an active cursor can make a later access out of bounds. For `new_size > UINT16_MAX`, the stored `uint16_t size` truncates even though allocation uses the wider value. It also does not linearize wrapped unread data or report failure to its caller. No runtime test was performed.
