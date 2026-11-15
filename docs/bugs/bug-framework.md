@@ -23,7 +23,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
-| `TIMA-FWK-0014` | `OPEN` | Zero sizes and invalid backing storage are not rejected |
+| `TIMA-FWK-0014` | `REVIEW` | Zero sizes and invalid backing storage are not rejected |
 | `TIMA-FWK-0015` | `OPEN` | fill_size metadata is left uninitialized and unused |
 
 ## Issues
@@ -475,20 +475,28 @@ Pending.
 ### TIMA-FWK-0014
 
 **ID:** `TIMA-FWK-0014`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Zero sizes and invalid backing storage are not rejected
 
 **Description**  
 Buffer creation and initialization allow configurations that cannot safely store a byte, and related APIs do not consistently validate their arguments.
 
 **Details**  
-**Confirmed by static review:** `buffer_init()` accepts a zero `size` or a `NULL` backing pointer with positive size; `buffer_write()` can then write to `buffer_data->buffer[pointer_in]` without checking backing storage or capacity. `buffer_create(0)` passes zero to the allocator, whose behavior is not part of the buffer contract. Several helpers dereference their descriptor without a null check (for example, `buffer_get_available_size()`), while others return gracefully. Whether callers are required to satisfy preconditions is undocumented.
+**Finding at discovery, confirmed by static review:** `buffer_init()` accepted a zero `size` or a `NULL` backing pointer with positive size; `buffer_write()` could then write through invalid storage. `buffer_create(0)` passed zero to the allocator, and several helpers dereferenced null descriptors.
+
+**Current implementation:** Valid buffers require non-null storage and `size >= 2`. Invalid `buffer_init()` inputs leave a zero-sized inert descriptor, `buffer_create()` rejects sizes below two, and `buffer_resize()` ignores sizes below two. Byte, size, and pointer operations validate storage/cursor invariants and handle null descriptors or bulk pointers with zero, `FALSE`, `NULL`, empty/not-full, or no-op results, as documented in `framework/buffer.h`. `buffer_init()` callers must provide at least `size` accessible bytes.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** At the user's direction, require a non-null backing pointer and a size of at least two bytes, which provides one usable circular-buffer slot plus the sentinel. Invalid `buffer_init()` configurations become inert descriptors; `buffer_create()` returns `NULL`; public data operations return their documented empty/failure result or no-op. Set status to `IN_PROGRESS`.
+- **2026-11-15 — Implementation:** Made invalid `buffer_init()` descriptors inert; rejected zero/one-byte create and resize requests; added null and backing-storage checks across public buffer operations; documented the minimum storage size and failure results.
+- **2026-11-15 — Test / Rework:** The first regression run caught `buffer_write_buffer_ex()` using the legacy raw-prefix convention where `pointer_in == size`. Adjusted source validation to allow that one-past-end length while requiring non-null storage and in-range `pointer_out`; logical circular-copy behavior remains tracked separately by TIMA-FWK-0010.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`, linking the real heap. Added zero, one-byte, minimum valid, `UINT32_MAX`, null descriptor, null backing, null bulk pointer, and invalid resize checks; the heap-backed maximum-size allocation failure leaves no allocation behind.
+- **2026-11-15 — Code Review:** Local review confirms invalid descriptors cannot reach byte access, public null arguments follow the documented result convention, and the existing source-prefix bulk-write behavior remains intact. Independent review and target-board execution have not occurred.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing invalid-argument regressions. Resolution remains pending acceptance.
 
 **Proposed Change**  
-Choose a consistent contract for zero capacity and invalid pointers: reject them at initialization/creation or make zero-length buffers explicitly safe. Document caller preconditions and error returns; enforce invariants at public entry points as appropriate. Test sizes 0, 1, normal and maximum, plus invalid arguments.
+Require non-null storage and a size of at least two for valid buffers. Since `buffer_init()` has no status return, leave its descriptor inert on invalid configuration; reject invalid `buffer_create()` sizes with `NULL`. Make public operations tolerate null descriptors, invalid backing pointers, and null bulk arguments with documented no-op, zero, null-pointer, or false/empty results. Test sizes 0, 1, normal and maximum, plus invalid arguments.
 
 **Commits**
 

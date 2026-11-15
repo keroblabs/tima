@@ -24,6 +24,13 @@ typedef struct
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+// Circular storage needs at least two bytes (one usable slot plus the sentinel).
+// Callers of buffer_init() must provide at least size accessible backing bytes.
+// Invalid initialization leaves an inert descriptor; buffer_create() returns NULL.
+// Data operations treat invalid buffers as empty: reads and size/count getters
+// return zero, writes return FALSE, pointer getters return NULL, and invalid
+// buffers are empty and not full. Null descriptors and nonzero bulk operations
+// with null data pointers return empty/failure results or no-op.
 void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t size );
 
 buffer_data_t * buffer_create( uint32_t size );

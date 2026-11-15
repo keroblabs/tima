@@ -6,19 +6,38 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+static bool_t _buffer_is_valid( buffer_data_t * buffer_data )
+{
+    return ( buffer_data != NULL ) &&
+           ( buffer_data->buffer != NULL ) &&
+           ( buffer_data->size >= 2 ) &&
+           ( buffer_data->pointer_in < buffer_data->size ) &&
+           ( buffer_data->pointer_out < buffer_data->size );
+}
+
 void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t size )
 {
+    if( buffer_data == NULL ) return;
+
     // init buffer
-    buffer_data->buffer = buffer_ptr;
-    buffer_data->size = size;
+    buffer_data->buffer = NULL;
+    buffer_data->size = 0;
     buffer_data->pointer_in = 0;
     buffer_data->pointer_out = 0;
-    buffer_data->mask           = 0;
-    buffer_data->user_count     = 1;
+    buffer_data->mask = 0;
+    buffer_data->user_count = 1;
+    buffer_data->fill_size = 0;
+
+    if( ( buffer_ptr == NULL ) || ( size < 2 ) ) return;
+
+    buffer_data->buffer = buffer_ptr;
+    buffer_data->size = size;
 }
 
 buffer_data_t * buffer_create( uint32_t size )
 {
+    if( size < 2 ) return NULL;
+
     buffer_data_t * buffer_data = ( buffer_data_t * )MMALLOC( sizeof( buffer_data_t ) );
     if( buffer_data == NULL )
     {
@@ -40,6 +59,8 @@ buffer_data_t * buffer_create( uint32_t size )
 
 void buffer_destroy( buffer_data_t * buffer_data )
 {
+	if( buffer_data == NULL ) return;
+
 	DI();
 
     if( buffer_data->user_count > 0 ) buffer_data->user_count--;
@@ -65,6 +86,8 @@ void buffer_reset( buffer_data_t * buffer_data )
 
 void buffer_set_buffer( buffer_data_t * buffer_data, uint8_t * buffer_ptr )
 {
+	if( ( buffer_data == NULL ) || ( buffer_ptr == NULL ) ) return;
+
 	DI();
     buffer_data->buffer = buffer_ptr;
     EI();
@@ -72,6 +95,8 @@ void buffer_set_buffer( buffer_data_t * buffer_data, uint8_t * buffer_ptr )
 
 void buffer_reset_read( buffer_data_t * buffer_data )
 {
+	if( buffer_data == NULL ) return;
+
 	DI();
     buffer_data->pointer_out = 0;
     EI();
@@ -79,16 +104,19 @@ void buffer_reset_read( buffer_data_t * buffer_data )
 
 void buffer_read_set_offset( buffer_data_t * buffer_data, uint32_t offset )
 {
+    if( !_buffer_is_valid( buffer_data ) ) return;
+
     buffer_data->pointer_out = MIN( offset, buffer_data->pointer_in );
 }
 
 uint32_t buffer_get_current_index( buffer_data_t * buffer_data )
 {
 	uint32_t ret;
+	if( buffer_data == NULL ) return 0;
 
 	DI();
 
-    ret =  buffer_data->pointer_out;
+    ret = _buffer_is_valid( buffer_data ) ? buffer_data->pointer_out : 0;
 
     EI();
 
@@ -98,10 +126,11 @@ uint32_t buffer_get_current_index( buffer_data_t * buffer_data )
 uint32_t buffer_get_max_index( buffer_data_t * buffer_data )
 {
 	uint32_t ret;
+	if( buffer_data == NULL ) return 0;
 
 	DI();
 
-    ret =  buffer_data->pointer_in;
+    ret = _buffer_is_valid( buffer_data ) ? buffer_data->pointer_in : 0;
 
     EI();
 
@@ -110,10 +139,15 @@ uint32_t buffer_get_max_index( buffer_data_t * buffer_data )
 
 void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
 {
-	if( ( buffer_data == NULL ) || ( new_size == 0 ) ) return;
+	if( ( buffer_data == NULL ) || ( new_size < 2 ) ) return;
 	if( !( buffer_data->mask & MASK_ON_HEAP ) ) return;
 
 	DI();
+	if( !_buffer_is_valid( buffer_data ) )
+	{
+	    EI();
+	    return;
+	}
 
     uint8_t * new_buffer = ( uint8_t * )MMALLOC( new_size );
     if( new_buffer != NULL )
@@ -165,6 +199,8 @@ void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
 
 void buffer_add_user( buffer_data_t * buffer_data )
 {
+	if( buffer_data == NULL ) return;
+
 	DI();
 
 	buffer_data->user_count++;
@@ -174,11 +210,15 @@ void buffer_add_user( buffer_data_t * buffer_data )
 
 const uint8_t * buffer_get_pointer_at( buffer_data_t * buffer_data, uint32_t offset )
 {
-	uint8_t * ret;
+	const uint8_t * ret = NULL;
+	if( buffer_data == NULL ) return NULL;
 
 	DI();
 
-    ret = &buffer_data->buffer[ MIN( offset, buffer_data->pointer_in ) ];
+    if( _buffer_is_valid( buffer_data ) )
+    {
+        ret = &buffer_data->buffer[ MIN( offset, buffer_data->pointer_in ) ];
+    }
 
     EI();
 
@@ -199,6 +239,12 @@ uint8_t buffer_read( buffer_data_t * buffer_data )
 	if( buffer_data == NULL ) return 0;
 
     DI();
+
+    if( !_buffer_is_valid( buffer_data ) )
+    {
+        EI();
+        return 0;
+    }
 
     // buffer is empty
 	if( buffer_data->pointer_in == buffer_data->pointer_out )
@@ -228,6 +274,12 @@ bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )
 
     DI();
 
+    if( !_buffer_is_valid( buffer_data ) )
+    {
+        EI();
+        return FALSE;
+    }
+
     // insert data into the circular buffer
 	buffer_data->buffer[ buffer_data->pointer_in ] = in_data;
 	buffer_data->pointer_in++;
@@ -245,6 +297,7 @@ bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )
 uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint32_t size )
 {
 	uint32_t counter;
+	if( ( size > 0 ) && ( in_data == NULL ) ) return 0;
 	
     //DI();
     
@@ -260,12 +313,18 @@ uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, ui
 
 uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input )
 {
+    if( ( buffer_input == NULL ) || ( buffer_input->buffer == NULL ) ||
+        ( buffer_input->size < 2 ) || ( buffer_input->pointer_in > buffer_input->size ) ||
+        ( buffer_input->pointer_out >= buffer_input->size ) ) return 0;
+
     return buffer_write_buffer( buffer_data, buffer_input->buffer, buffer_input->pointer_in );
 }
 
 uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size )
 {
 	uint32_t counter;
+	if( ( buffer_data == NULL ) || ( ( size > 0 ) && ( out_data == NULL ) ) ||
+	    !_buffer_is_valid( buffer_data ) ) return 0;
 	
     //DI();
     
@@ -301,7 +360,7 @@ uint32_t buffer_get_size( buffer_data_t * buffer_data )
 	if( buffer_data == NULL ) return 0;
 
     DI();
-    size = _buffer_get_size_unlocked( buffer_data );
+    size = _buffer_is_valid( buffer_data ) ? _buffer_get_size_unlocked( buffer_data ) : 0;
     EI();
 
     return( size );
@@ -310,10 +369,11 @@ uint32_t buffer_get_size( buffer_data_t * buffer_data )
 uint32_t buffer_get_available_size( buffer_data_t * buffer_data )
 {
     uint32_t available_size = 0;
+	if( buffer_data == NULL ) return 0;
 
     DI();
 
-    if( buffer_data->size > 0 )
+    if( _buffer_is_valid( buffer_data ) )
     {
         uint32_t max_size = buffer_data->size - 1;
         uint32_t current_size = _buffer_get_size_unlocked( buffer_data );
@@ -335,7 +395,7 @@ bool_t buffer_is_full( buffer_data_t * buffer_data )
 
     DI();
 
-    if( buffer_data->size > 0 )
+    if( _buffer_is_valid( buffer_data ) )
     {
         current_size = _buffer_get_size_unlocked( buffer_data );
         if( current_size >= ( buffer_data->size - 1 ) ) ret = TRUE;
@@ -354,7 +414,8 @@ bool_t buffer_is_empty( buffer_data_t * buffer_data )
 
     DI();
 
-	if( buffer_data->pointer_in == buffer_data->pointer_out ) ret = TRUE;
+	if( !_buffer_is_valid( buffer_data ) ||
+	    ( buffer_data->pointer_in == buffer_data->pointer_out ) ) ret = TRUE;
 
     EI();
     

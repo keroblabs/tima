@@ -308,6 +308,94 @@ static void test_small_ring_has_one_byte_usable_capacity(void)
     assert(buffer_is_full(&buffer) == FALSE);
 }
 
+static void test_invalid_initialization_leaves_an_inert_buffer(void)
+{
+    uint8_t storage[4] = { 0, 0, 0, 0 };
+    uint8_t output[2] = { 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(NULL, storage, sizeof(storage));
+
+    buffer_init(&buffer, NULL, sizeof(storage));
+    assert(buffer.buffer == NULL);
+    assert(buffer.size == 0);
+    assert(buffer.pointer_in == 0);
+    assert(buffer.pointer_out == 0);
+    assert(buffer.fill_size == 0);
+    assert(buffer_read(&buffer) == 0);
+    assert(buffer_write(&buffer, 0x71) == FALSE);
+    assert(buffer_write_buffer(&buffer, storage, 1) == 0);
+    assert(buffer_read_buffer(&buffer, output, sizeof(output)) == 0);
+    assert(buffer_get_size(&buffer) == 0);
+    assert(buffer_get_available_size(&buffer) == 0);
+    assert(buffer_get_current_index(&buffer) == 0);
+    assert(buffer_get_max_index(&buffer) == 0);
+    assert(buffer_get_pointer(&buffer) == NULL);
+    assert(buffer_is_empty(&buffer) == TRUE);
+    assert(buffer_is_full(&buffer) == FALSE);
+
+    buffer_init(&buffer, storage, 0);
+    assert(buffer.buffer == NULL);
+    assert(buffer.size == 0);
+    assert(buffer_write(&buffer, 0x72) == FALSE);
+
+    buffer_init(&buffer, storage, 1);
+    assert(buffer.buffer == NULL);
+    assert(buffer.size == 0);
+    assert(buffer_write(&buffer, 0x73) == FALSE);
+    buffer_destroy(&buffer);
+}
+
+static void test_invalid_sizes_and_null_arguments_are_rejected(void)
+{
+    uint8_t storage[4] = { 0, 0, 0, 0 };
+    uint8_t output[2] = { 0, 0 };
+    buffer_data_t buffer;
+    buffer_data_t *minimum_buffer;
+
+    assert(buffer_create(0) == NULL);
+    assert(buffer_create(1) == NULL);
+    assert(buffer_create(UINT32_MAX) == NULL);
+
+    minimum_buffer = buffer_create(2);
+    assert(minimum_buffer != NULL);
+    assert(minimum_buffer->size == 2);
+    assert(buffer_write(minimum_buffer, 0x75) == TRUE);
+    buffer_resize(minimum_buffer, 1);
+    assert(minimum_buffer->size == 2);
+    assert(buffer_read(minimum_buffer) == 0x75);
+    buffer_destroy(minimum_buffer);
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    buffer_reset(NULL);
+    buffer_set_buffer(NULL, storage);
+    buffer_set_buffer(&buffer, NULL);
+    assert(buffer.buffer == storage);
+    buffer_reset_read(NULL);
+    buffer_read_set_offset(NULL, 0);
+    assert(buffer_get_current_index(NULL) == 0);
+    assert(buffer_get_max_index(NULL) == 0);
+    buffer_resize(NULL, 4);
+    buffer_add_user(NULL);
+    buffer_destroy(NULL);
+    assert(buffer_get_pointer_at(NULL, 0) == NULL);
+    assert(buffer_get_pointer(NULL) == NULL);
+    assert(buffer_read(NULL) == 0);
+    assert(buffer_write(NULL, 0x74) == FALSE);
+    assert(buffer_write_buffer(NULL, storage, 1) == 0);
+    assert(buffer_write_buffer(&buffer, NULL, 1) == 0);
+    assert(buffer_write_buffer(&buffer, NULL, 0) == 0);
+    assert(buffer_write_buffer_ex(NULL, &buffer) == 0);
+    assert(buffer_write_buffer_ex(&buffer, NULL) == 0);
+    assert(buffer_read_buffer(NULL, output, 1) == 0);
+    assert(buffer_read_buffer(&buffer, NULL, 1) == 0);
+    assert(buffer_read_buffer(&buffer, NULL, 0) == 0);
+    assert(buffer_get_size(NULL) == 0);
+    assert(buffer_get_available_size(NULL) == 0);
+    assert(buffer_is_full(NULL) == FALSE);
+    assert(buffer_is_empty(NULL) == TRUE);
+}
+
 int main(void)
 {
     heap_init(&test_heap, test_heap_memory.data, sizeof(test_heap_memory.data));
@@ -320,5 +408,7 @@ int main(void)
     test_max_size_allocation_fails_without_truncation_or_leak();
     test_available_capacity_matches_overwrite_ring();
     test_small_ring_has_one_byte_usable_capacity();
+    test_invalid_initialization_leaves_an_inert_buffer();
+    test_invalid_sizes_and_null_arguments_are_rejected();
     return 0;
 }
