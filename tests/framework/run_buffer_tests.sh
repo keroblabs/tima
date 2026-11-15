@@ -8,7 +8,9 @@ trap 'rm -f "$test_binary"' EXIT HUP INT TERM
 cc -std=c99 -Wall -Wextra -Werror \
     -I"$repo_root/tests/framework/stubs" \
     -I"$repo_root/framework" \
+    -I"$repo_root/system" \
     "$repo_root/framework/buffer.c" \
+    "$repo_root/system/heap.c" \
     "$repo_root/tests/framework/test_buffer.c" \
     -o "$test_binary"
 "$test_binary"

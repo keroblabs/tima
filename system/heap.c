@@ -114,7 +114,7 @@ static INLINE heap_header_t * _get_header( void * p_mem )
    return( p );
 }
 
-static heap_header_t * _internal_malloc( uint16_t size )
+static heap_header_t * _internal_malloc( uint32_t size )
 {
     heap_header_t * p;
     heap_header_t * p_new;
@@ -123,6 +123,8 @@ static heap_header_t * _internal_malloc( uint16_t size )
     int counter = 100;
 
     p_mem = NULL;
+
+    if( size > ( UINT32_MAX - 3U ) ) return NULL;
 
     // 32bit allignment
     size = ( size + 3 )& ~3;

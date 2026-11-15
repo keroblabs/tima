@@ -3,9 +3,29 @@
 
 #include "buffer.h"
 
+typedef void (*heap_handler_t)(uint8_t cause);
+typedef struct _heap_t
+{
+    uint8_t *memory;
+    uint32_t size;
+    uint32_t used;
+    heap_handler_t error_hdl;
+} heap_t;
+
+void heap_init(heap_t *heap_data, uint8_t *buffer, uint32_t size);
+uint32_t heap_in_use(heap_t *heap_data);
+void *heap_malloc(heap_t *heap_data, uint32_t size);
+void heap_free(heap_t *heap_data, void *ptr);
+
 static unsigned int critical_depth;
 static unsigned int disable_calls;
 static unsigned int enable_calls;
+static heap_t test_heap;
+static union
+{
+    uint32_t alignment;
+    uint8_t data[192 * 1024];
+} test_heap_memory;
 
 void test_disable_irq(void)
 {
@@ -22,12 +42,15 @@ void test_enable_irq(void)
 
 void *test_malloc(uint32_t size)
 {
-    return malloc(size);
+    return heap_malloc(&test_heap, size);
 }
 
 void test_free(void *ptr)
 {
-    free(ptr);
+    if(ptr != NULL)
+    {
+        heap_free(&test_heap, ptr);
+    }
 }
 
 static void reset_irq_counts(void)
@@ -204,6 +227,33 @@ static void test_buffer_sizes_and_bulk_counts_exceed_uint16(void)
     free(source);
 }
 
+static void test_max_size_allocation_fails_without_truncation_or_leak(void)
+{
+    uint32_t heap_usage_before = heap_in_use(&test_heap);
+    buffer_data_t *buffer;
+    uint8_t *original_storage;
+
+    assert(buffer_create(UINT32_MAX) == NULL);
+    assert(heap_in_use(&test_heap) == heap_usage_before);
+
+    buffer = buffer_create(4);
+    assert(buffer != NULL);
+    assert(buffer_write(buffer, 0x61) == TRUE);
+    assert(buffer_write(buffer, 0x62) == TRUE);
+    original_storage = buffer->buffer;
+    heap_usage_before = heap_in_use(&test_heap);
+
+    buffer_resize(buffer, UINT32_MAX);
+
+    assert(buffer->buffer == original_storage);
+    assert(buffer->size == 4);
+    assert(buffer_get_size(buffer) == 2);
+    assert(heap_in_use(&test_heap) == heap_usage_before);
+    assert(buffer_read(buffer) == 0x61);
+    assert(buffer_read(buffer) == 0x62);
+    buffer_destroy(buffer);
+}
+
 static void test_available_capacity_matches_overwrite_ring(void)
 {
     uint8_t storage[4] = { 0, 0, 0, 0 };
@@ -260,12 +310,14 @@ static void test_small_ring_has_one_byte_usable_capacity(void)
 
 int main(void)
 {
+    heap_init(&test_heap, test_heap_memory.data, sizeof(test_heap_memory.data));
     test_circular_buffer_overwrites_oldest_entry();
     test_created_buffer_uses_circular_behavior();
     test_direct_and_bulk_write_apis_remain_writable();
     test_wrapped_writes_preserve_outer_critical_section();
     test_resize_preserves_newest_unread_wrapped_bytes();
     test_buffer_sizes_and_bulk_counts_exceed_uint16();
+    test_max_size_allocation_fails_without_truncation_or_leak();
     test_available_capacity_matches_overwrite_ring();
     test_small_ring_has_one_byte_usable_capacity();
     return 0;
