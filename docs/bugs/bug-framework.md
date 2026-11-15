@@ -215,6 +215,7 @@ Pending.
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Added grow/shrink tests for wrapped unread data and a 70,000-byte buffer test that writes, resizes, and reads 65,540 bytes while checking wide cursor and count values. No target-board build or hardware test was run.
 - **2026-11-15 — Code Review:** Local review confirms the buffer API, its struct size fields, the Nucleo capacity member, and affected read callers consistently use 32-bit sizes. Resize cursor positions remain valid after grow and shrink. Independent review and target-board validation have not occurred.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
+- **2026-11-15 — Commit:** Created implementation commit [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk counts, and size results. Resize preserves unread bytes in FIFO order; when shrinking, retain the newest unread bytes up to the new circular capacity and reset cursors to a valid linearized layout. If allocation fails, leave the original storage and indices intact. Allocation remains protected as in the existing implementation; interrupt/heap timing is tracked by TIMA-FWK-0006.
@@ -223,6 +224,7 @@ Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) | `UNREVIEWED` | Widen buffer sizes to `uint32_t`; preserve valid unread data during resize. |
 
 **Resolution Description**  
 Pending.
