@@ -231,6 +231,7 @@ Pending.
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror` while linking `system/heap.c`. The 70,000-byte create/write/resize/read regression passed; `UINT32_MAX` create and resize requests fail cleanly, leave no leaked allocation, and preserve the original buffer contents after resize failure.
 - **2026-11-15 — Code Review:** Local review confirms no 16-bit allocation-size intermediary remains in the project heap path, alignment addition cannot wrap, and failed resize allocation preserves storage and cursors. Independent review and target-board execution have not occurred.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after rework and heap-backed regression evidence. Resolution remains pending acceptance.
+- **2026-11-15 — Commit:** Created heap-path rework commit [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk counts, size results, and the heap's internal allocation-size path. Resize preserves unread bytes in FIFO order; when shrinking, retain the newest unread bytes up to the new circular capacity and reset cursors to a valid linearized layout. If allocation fails, leave the original storage and indices intact. Reject allocator requests that overflow alignment arithmetic. Allocation remains protected as in the existing implementation; interrupt/heap timing is tracked by TIMA-FWK-0006.
@@ -240,6 +241,7 @@ Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
 | `phase-1-improvements` | [`0fb2a1f`](https://github.com/keroblabs/tima/commit/0fb2a1f0f4601d11072f8f26380461e8ad3c0218) | `UNREVIEWED` | Widen buffer sizes to `uint32_t`; preserve valid unread data during resize. |
+| `phase-1-improvements` | [`d280517`](https://github.com/keroblabs/tima/commit/d2805174fc1c7b4a8e6c6a5d2c1036fd60fcc268) | `UNREVIEWED` | Remove the heap's 16-bit request truncation and test buffer allocation against the real heap. |
 
 **Resolution Description**  
 Pending.
