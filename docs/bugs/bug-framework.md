@@ -187,6 +187,7 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Added checks for the empty, intermediate, full, overwrite, and two-slot ring boundaries, including `buffer_write()` retaining its overwrite-oldest behavior.
 - **2026-11-15 — Code Review:** Local review confirms the reported available capacity and full status follow the same occupancy and `size - 1` capacity definition, while writes retain the established overwrite-oldest behavior. Independent review and target-board validation have not occurred.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
+- **2026-11-15 — Commit:** Created implementation commit [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Document the overwrite-oldest policy, define usable capacity as `size - 1`, return remaining no-overwrite capacity from `buffer_get_available_size()`, and define full as occupancy reaching that capacity. Keep `buffer_write()` accepting data while full and verify that it evicts the oldest unread byte. Cover the first, last, and overwrite boundary slots.
@@ -195,6 +196,7 @@ Document the overwrite-oldest policy, define usable capacity as `size - 1`, retu
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`f8ac6e7`](https://github.com/keroblabs/tima/commit/f8ac6e7a91454e209fe0be0e1573ae5e4cebc6b3) | `UNREVIEWED` | Report circular-ring capacity excluding the reserved slot; align `is_full` with occupancy. |
 
 **Resolution Description**  
 Pending.
