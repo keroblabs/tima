@@ -13,7 +13,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
 | `TIMA-FWK-0002` | `CLOSED` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `CLOSED` | Read-only mode does not prevent writes |
-| `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
+| `TIMA-FWK-0004` | `REVIEW` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `REVIEW` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `OPEN` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `OPEN` | Replacing storage breaks heap ownership and buffer invariants |
@@ -169,20 +169,27 @@ Remove `buffer_set_read_only()` and `MASK_READ_ONLY` from the public buffer API 
 ### TIMA-FWK-0004
 
 **ID:** `TIMA-FWK-0004`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Reported available capacity disagrees with writable capacity
 
 **Description**  
-`buffer_get_available_size()` and `buffer_is_full()` do not consistently describe how many bytes `buffer_write()` can accept, particularly at the final slot and in no-rollover mode.
+`buffer_get_available_size()` and `buffer_is_full()` must report the remaining no-overwrite capacity of the overwrite-oldest circular buffer. The current available-size result counts the reserved sentinel slot as usable.
 
 **Details**  
-**Confirmed by static review:** In normal circular mode, an empty ring of size `N` has a maximum unread occupancy of `N-1` because advancing `pointer_in` onto `pointer_out` discards the oldest element. However `buffer_get_available_size()` returns `N - buffer_get_size()` (reports `N` free slots when empty). In the linear no-rollover branch, `buffer_write()` rejects at `pointer_in == size - 1` rather than after the final slot; `buffer_is_full()` uses circular pointer relations regardless of mode. Expected usable capacity and overwrite policy are not documented.
+**Finding at discovery, confirmed by static review:** The circular buffer reserves one slot to distinguish empty from full. A buffer of allocated size `N` holds at most `N-1` unread bytes; writes continue when full and discard the oldest unread byte. `buffer_get_available_size()` returned `N - buffer_get_size()`, overstating remaining no-overwrite capacity by one. The discovery note about the linear no-rollover branch became obsolete when TIMA-FWK-0002 removed that mode.
+
+**Current implementation:** `buffer_get_available_size()` reports `max(0, size - 1 - current_size)` and `buffer_is_full()` reports whether occupancy has reached `size - 1`, using a shared occupancy calculation under the existing critical-section contract. `buffer_write()` continues to accept data while full and discard the oldest unread byte, as documented in `framework/buffer.h`.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** At the user's direction, apply the existing overwrite-oldest circular policy consistently: usable capacity is `size - 1`, available size is remaining no-overwrite capacity, and full means the next write will evict the oldest unread byte. `buffer_write()` continues to accept valid bytes while full and overwrites the oldest. Set status to `IN_PROGRESS`.
+- **2026-11-15 — Implementation:** Added one protected occupancy calculation shared by size, available-size, and full queries. Available size now excludes the reserved sentinel slot; full means all `size - 1` unread slots are occupied. Documented that writes still succeed when full by evicting the oldest byte.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Added checks for the empty, intermediate, full, overwrite, and two-slot ring boundaries, including `buffer_write()` retaining its overwrite-oldest behavior.
+- **2026-11-15 — Code Review:** Local review confirms the reported available capacity and full status follow the same occupancy and `size - 1` capacity definition, while writes retain the established overwrite-oldest behavior. Independent review and target-board validation have not occurred.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native regression evidence. Resolution remains pending acceptance.
 
 **Proposed Change**  
-Specify whether each mode uses an overwrite-oldest ring, a reject-on-full ring, or linear storage. Define usable capacity and full semantics for each mode; align `buffer_write()`, `buffer_is_full()`, and `buffer_get_available_size()` and test boundary sizes and final-slot behavior. This decision depends on the no-rollover contract in TIMA-FWK-0002.
+Document the overwrite-oldest policy, define usable capacity as `size - 1`, return remaining no-overwrite capacity from `buffer_get_available_size()`, and define full as occupancy reaching that capacity. Keep `buffer_write()` accepting data while full and verify that it evicts the oldest unread byte. Cover the first, last, and overwrite boundary slots.
 
 **Commits**
 

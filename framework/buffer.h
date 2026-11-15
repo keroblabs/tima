@@ -49,6 +49,9 @@ uint8_t buffer_read( buffer_data_t * buffer_data );
 
 bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data );
 
+// Circular storage reserves one slot: usable capacity is size - 1. Writes continue
+// when full and overwrite the oldest unread byte; available size reports space
+// before that overwrite occurs.
 uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint32_t size );
 uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input );
 uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size );

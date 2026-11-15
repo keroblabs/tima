@@ -204,6 +204,60 @@ static void test_buffer_sizes_and_bulk_counts_exceed_uint16(void)
     free(source);
 }
 
+static void test_available_capacity_matches_overwrite_ring(void)
+{
+    uint8_t storage[4] = { 0, 0, 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+
+    assert(buffer_get_size(&buffer) == 0);
+    assert(buffer_get_available_size(&buffer) == 3);
+    assert(buffer_is_full(&buffer) == FALSE);
+
+    assert(buffer_write(&buffer, 0x11) == TRUE);
+    assert(buffer_get_size(&buffer) == 1);
+    assert(buffer_get_available_size(&buffer) == 2);
+    assert(buffer_is_full(&buffer) == FALSE);
+
+    assert(buffer_write(&buffer, 0x22) == TRUE);
+    assert(buffer_get_size(&buffer) == 2);
+    assert(buffer_get_available_size(&buffer) == 1);
+    assert(buffer_is_full(&buffer) == FALSE);
+
+    assert(buffer_write(&buffer, 0x33) == TRUE);
+    assert(buffer_get_size(&buffer) == 3);
+    assert(buffer_get_available_size(&buffer) == 0);
+    assert(buffer_is_full(&buffer) == TRUE);
+
+    assert(buffer_write(&buffer, 0x44) == TRUE);
+    assert(buffer_get_size(&buffer) == 3);
+    assert(buffer_get_available_size(&buffer) == 0);
+    assert(buffer_is_full(&buffer) == TRUE);
+    assert(buffer_read(&buffer) == 0x22);
+    assert(buffer_read(&buffer) == 0x33);
+    assert(buffer_read(&buffer) == 0x44);
+}
+
+static void test_small_ring_has_one_byte_usable_capacity(void)
+{
+    uint8_t storage[2] = { 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    assert(buffer_get_available_size(&buffer) == 1);
+    assert(buffer_is_full(&buffer) == FALSE);
+
+    assert(buffer_write(&buffer, 0x51) == TRUE);
+    assert(buffer_get_available_size(&buffer) == 0);
+    assert(buffer_is_full(&buffer) == TRUE);
+    assert(buffer_write(&buffer, 0x52) == TRUE);
+    assert(buffer_get_size(&buffer) == 1);
+    assert(buffer_read(&buffer) == 0x52);
+    assert(buffer_get_available_size(&buffer) == 1);
+    assert(buffer_is_full(&buffer) == FALSE);
+}
+
 int main(void)
 {
     test_circular_buffer_overwrites_oldest_entry();
@@ -212,5 +266,7 @@ int main(void)
     test_wrapped_writes_preserve_outer_critical_section();
     test_resize_preserves_newest_unread_wrapped_bytes();
     test_buffer_sizes_and_bulk_counts_exceed_uint16();
+    test_available_capacity_matches_overwrite_ring();
+    test_small_ring_has_one_byte_usable_capacity();
     return 0;
 }
