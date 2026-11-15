@@ -28,7 +28,6 @@ Boards/Nucleo_446/STM32F4xx_StdPeriph_Driver/src/*.o
 
 c_lib/*.o
 data/
-docs/
 framework/*.o
 graphics/*.o
 interface/*.o
