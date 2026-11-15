@@ -494,6 +494,7 @@ Buffer creation and initialization allow configurations that cannot safely store
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`, linking the real heap. Added zero, one-byte, minimum valid, `UINT32_MAX`, null descriptor, null backing, null bulk pointer, and invalid resize checks; the heap-backed maximum-size allocation failure leaves no allocation behind.
 - **2026-11-15 — Code Review:** Local review confirms invalid descriptors cannot reach byte access, public null arguments follow the documented result convention, and the existing source-prefix bulk-write behavior remains intact. Independent review and target-board execution have not occurred.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing invalid-argument regressions. Resolution remains pending acceptance.
+- **2026-11-15 — Commit:** Created implementation commit [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Require non-null storage and a size of at least two for valid buffers. Since `buffer_init()` has no status return, leave its descriptor inert on invalid configuration; reject invalid `buffer_create()` sizes with `NULL`. Make public operations tolerate null descriptors, invalid backing pointers, and null bulk arguments with documented no-op, zero, null-pointer, or false/empty results. Test sizes 0, 1, normal and maximum, plus invalid arguments.
@@ -502,6 +503,7 @@ Require non-null storage and a size of at least two for valid buffers. Since `bu
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`ac40283`](https://github.com/keroblabs/tima/commit/ac402830f1468ab00797ee224960ec5998c2e9b1) | `UNREVIEWED` | Reject invalid buffer sizes/storage and guard public operations against null or invalid data. |
 
 **Resolution Description**  
 Pending.
