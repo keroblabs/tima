@@ -2,7 +2,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#define MASK_NO_ROLL_OVER           0x01
 #define MASK_ON_HEAP                0x02
 #define MASK_READ_ONLY				0x04
 
@@ -36,7 +35,6 @@ buffer_data_t * buffer_create( uint16_t size )
 
     buffer_init( buffer_data, buffer_ptr, size );
     buffer_data->mask |= MASK_ON_HEAP;
-    buffer_data->mask |= MASK_NO_ROLL_OVER;
 
     return buffer_data;
 }
@@ -54,12 +52,6 @@ void buffer_destroy( buffer_data_t * buffer_data )
     }
 
     EI();
-}
-
-void buffer_set_no_roll_over( buffer_data_t * buffer_data, bool_t state )
-{
-    if( state == TRUE ) buffer_data->mask |= MASK_NO_ROLL_OVER;
-    else buffer_data->mask &= ~MASK_NO_ROLL_OVER;
 }
 
 void buffer_set_read_only( buffer_data_t * buffer_data, bool_t state )
@@ -191,7 +183,7 @@ uint8_t buffer_read( buffer_data_t * buffer_data )
 
     // move out-pointer
 	buffer_data->pointer_out++;
-	if( !( buffer_data->mask == MASK_NO_ROLL_OVER ) && ( buffer_data->pointer_out == buffer_data->size ) )
+	if( buffer_data->pointer_out == buffer_data->size )
 	{
 	    buffer_data->pointer_out = 0;
 	}
@@ -205,32 +197,20 @@ bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )
 {	
 	if( buffer_data == NULL ) return FALSE;
 
-    bool_t result = TRUE;
-
     DI();
 
-    if( ( buffer_data->mask == MASK_NO_ROLL_OVER ) && ( buffer_data->pointer_in == ( buffer_data->size - 1 ) ) )
-    {
-        result = FALSE;
-    }
-    else
-    {
-        // insert data into the buffer
-	    buffer_data->buffer[ buffer_data->pointer_in ] = in_data;
-	    buffer_data->pointer_in++;
+    // insert data into the circular buffer
+	buffer_data->buffer[ buffer_data->pointer_in ] = in_data;
+	buffer_data->pointer_in++;
 
-        // update pointers and control overflow
-	    if( !( buffer_data->mask == MASK_NO_ROLL_OVER ) )
-	    {
-	        if( buffer_data->pointer_in == buffer_data->size ) buffer_data->pointer_in = 0;
-	        if( buffer_data->pointer_in == buffer_data->pointer_out ) buffer_data->pointer_out++;
-	        if( buffer_data->pointer_out == buffer_data->size ) buffer_data->pointer_out = 0;
-	    }
-    }
+    // update pointers and discard the oldest entry on overflow
+	if( buffer_data->pointer_in == buffer_data->size ) buffer_data->pointer_in = 0;
+	if( buffer_data->pointer_in == buffer_data->pointer_out ) buffer_data->pointer_out++;
+	if( buffer_data->pointer_out == buffer_data->size ) buffer_data->pointer_out = 0;
 
     EI();
 
-    return result;
+    return TRUE;
 }
 
 uint16_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint16_t size )

@@ -2,7 +2,7 @@
 set -eu
 
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-test_binary=$(mktemp "${TMPDIR:-/tmp}/tima-fwk-0001.XXXXXX")
+test_binary=$(mktemp "${TMPDIR:-/tmp}/tima-fwk-buffer.XXXXXX")
 trap 'rm -f "$test_binary"' EXIT HUP INT TERM
 
 cc -std=c99 -Wall -Wextra -Werror \

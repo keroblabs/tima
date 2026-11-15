@@ -37,54 +37,80 @@ static void reset_irq_counts(void)
     enable_calls = 0;
 }
 
-static void test_full_rejection_balances_critical_section(void)
-{
-    uint8_t storage[3] = { 0xAA, 0xBB, 0xCC };
-    buffer_data_t buffer;
-
-    buffer_init(&buffer, storage, sizeof(storage));
-    buffer_set_no_roll_over(&buffer, TRUE);
-    reset_irq_counts();
-
-    assert(buffer_write(&buffer, 0x11) == TRUE);
-    assert(buffer_write(&buffer, 0x22) == TRUE);
-    assert(buffer_write(&buffer, 0x33) == FALSE);
-
-    assert(critical_depth == 0);
-    assert(disable_calls == 3);
-    assert(enable_calls == 3);
-    assert(buffer.pointer_in == 2);
-    assert(buffer.pointer_out == 0);
-    assert(storage[0] == 0x11);
-    assert(storage[1] == 0x22);
-    assert(storage[2] == 0xCC);
-}
-
-static void test_full_rejection_preserves_outer_critical_section(void)
+static void test_circular_buffer_overwrites_oldest_entry(void)
 {
     uint8_t storage[3] = { 0, 0, 0 };
     buffer_data_t buffer;
 
     buffer_init(&buffer, storage, sizeof(storage));
-    buffer_set_no_roll_over(&buffer, TRUE);
+    reset_irq_counts();
+
+    assert(buffer_write(&buffer, 0x11) == TRUE);
+    assert(buffer_write(&buffer, 0x22) == TRUE);
+    assert(buffer_write(&buffer, 0x33) == TRUE);
+    assert(buffer_write(&buffer, 0x44) == TRUE);
+
+    assert(critical_depth == 0);
+    assert(disable_calls == 4);
+    assert(enable_calls == 4);
+    assert(buffer.pointer_in == 1);
+    assert(buffer.pointer_out == 2);
+    assert(storage[0] == 0x44);
+    assert(storage[1] == 0x22);
+    assert(storage[2] == 0x33);
+
+    assert(buffer_get_size(&buffer) == 2);
+    assert(buffer_read(&buffer) == 0x33);
+    assert(buffer_read(&buffer) == 0x44);
+    assert(buffer_is_empty(&buffer) == TRUE);
+}
+
+static void test_created_buffer_uses_circular_behavior(void)
+{
+    buffer_data_t *buffer = buffer_create(3);
+
+    assert(buffer != NULL);
+    assert(buffer_write(buffer, 0x11) == TRUE);
+    assert(buffer_write(buffer, 0x22) == TRUE);
+    assert(buffer_write(buffer, 0x33) == TRUE);
+    assert(buffer->pointer_in == 0);
+    assert(buffer->pointer_out == 1);
+    assert(buffer_read(buffer) == 0x22);
+    assert(buffer_read(buffer) == 0x33);
+    assert(buffer_is_empty(buffer) == TRUE);
+
+    buffer_destroy(buffer);
+    assert(critical_depth == 0);
+}
+
+static void test_wrapped_writes_preserve_outer_critical_section(void)
+{
+    uint8_t storage[3] = { 0, 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
     reset_irq_counts();
 
     test_disable_irq();
     assert(buffer_write(&buffer, 0x11) == TRUE);
     assert(buffer_write(&buffer, 0x22) == TRUE);
-    assert(buffer_write(&buffer, 0x33) == FALSE);
+    assert(buffer_write(&buffer, 0x33) == TRUE);
+    assert(buffer_write(&buffer, 0x44) == TRUE);
 
     assert(critical_depth == 1);
-    assert(disable_calls == 4);
-    assert(enable_calls == 3);
+    assert(disable_calls == 5);
+    assert(enable_calls == 4);
     test_enable_irq();
     assert(critical_depth == 0);
-    assert(enable_calls == 4);
+    assert(enable_calls == 5);
+    assert(buffer.pointer_in == 1);
+    assert(buffer.pointer_out == 2);
 }
 
 int main(void)
 {
-    test_full_rejection_balances_critical_section();
-    test_full_rejection_preserves_outer_critical_section();
+    test_circular_buffer_overwrites_oldest_entry();
+    test_created_buffer_uses_circular_behavior();
+    test_wrapped_writes_preserve_outer_critical_section();
     return 0;
 }

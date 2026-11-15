@@ -11,7 +11,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | ID | Status | Title |
 | --- | --- | --- |
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
-| `TIMA-FWK-0002` | `OPEN` | No-rollover flag fails when combined with other flags |
+| `TIMA-FWK-0002` | `IN_PROGRESS` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `OPEN` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
@@ -38,11 +38,11 @@ The summary is the current index; full issue records below are authoritative. Up
 `buffer_write()` may return `FALSE` after entering a critical section without calling `EI()`. On affected boards, this can leave interrupt masking active after a normal write failure.
 
 **Details**  
-**Confirmed by static review:** `framework/buffer.c`, `buffer_write()`: `DI()` precedes a `MASK_NO_ROLL_OVER` / `pointer_in == size - 1` check whose failure branch returns immediately. The successful path calls `EI()`, but the rejection path does not. The path is reachable for a `buffer_init()` instance followed by `buffer_set_no_roll_over(TRUE)` (assuming a valid positive size). This is an interrupt-state balance defect irrespective of the broader board-specific interrupt implementation. The exact device-level consequence also depends on the board's `DI`/`EI` implementation.
+**Historical finding, confirmed by static review:** In the original implementation, `framework/buffer.c`, `buffer_write()` called `DI()` before a `MASK_NO_ROLL_OVER` / `pointer_in == size - 1` check whose failure branch returned immediately. The successful path called `EI()`, but the rejection path did not. This was reachable for a `buffer_init()` instance followed by `buffer_set_no_roll_over(TRUE)` (assuming a valid positive size). The exact device-level consequence depended on the board's `DI`/`EI` implementation.
 
 **Confirmed during investigation:** `Boards/Nucleo_446/library/cpu_driver.c` implements nested `DI()`/`EI()` calls with an interrupt counter. The missing `EI()` leaves that counter elevated, so later matching enables cannot restore the expected state. The repository does not provide a portable interrupt-state save/restore primitive for all board ports. The focused correction therefore balances the critical section through one cleanup path and does not change the existing board-level contract.
 
-**Verification scope:** `tests/framework/test_buffer.c` exercises successful writes, full-buffer rejection, unchanged data/cursors on rejection, and nested critical-section balance with a host-side `DI`/`EI` model. It does not execute on target hardware.
+**Current implementation after TIMA-FWK-0002:** The no-rollover mode and its full-buffer rejection branch have been removed. The former early return can no longer occur; valid writes use circular-buffer behavior. The host tests now verify wraparound writes and nested critical-section balance. They do not execute on target hardware.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
@@ -53,6 +53,7 @@ The summary is the current index; full issue records below are authoritative. Up
 - **2026-11-15 — Code Review:** Local review confirms both post-`DI()` outcomes reach one `EI()`, and rejection leaves the backing bytes and cursors unchanged. Hardware execution and independent review have not been performed; the change is ready for review.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording the implementation and passing test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-15 — Commit:** Created implementation commit `e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
+- **2026-11-15 — Rework:** The no-rollover rejection path was removed as part of TIMA-FWK-0002. The current shared buffer tests cover circular writes and critical-section balance; the earlier rejection-specific test evidence applies to commit `e9bf1ae`, before that mode was removed.
 
 - **2026-11-15 — External Review:** Project owner reviewed the submitted fix and recorded a Gerrit-style `+1` (positive review). This feedback is distinct from the independent review below and does not by itself mean code approval or closure.
 - **2026-11-15 — Independent Code Review:** Reviewed [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) against its parent and inspected `buffer_write()`, the test runner, host stubs, and `test_buffer.c`. **Approved** the focused correction: the function has one post-`DI()` exit via `EI()`, returns `FALSE` on the existing rejection condition, and does not modify bytes or cursors on rejection. The submitted tests cover ordinary and nested critical-section pairing. The reviewer verified the code and test logic but could not rerun the remote suite in this environment; the reported test pass comes from the submission. No on-target interrupt test has been recorded.
@@ -60,7 +61,7 @@ The summary is the current index; full issue records below are authoritative. Up
 - **2026-11-15 — Status Change:** `REVIEW` → `RESOLVED` following accepted review, then `RESOLVED` → `CLOSED` because the approved implementation commit is already present on the designated `phase-1-improvements` branch. Commit review status updated to `APPROVED`.
 
 **Proposed Change**  
-Route the full-buffer rejection and successful write through one cleanup path so every call to `DI()` has a matching `EI()`. Preserve write rejection behavior and avoid changing the board interrupt API. Verify normal and nested critical-section use with native tests, then review on target boards as appropriate.
+The initial focused fix routed the old rejection and success paths through one cleanup path. Since TIMA-FWK-0002 removed the non-rolling mode, that rejection path no longer exists. Review the removal and current circular-write critical-section behavior together before resolving this issue.
 
 **Commits**
 
@@ -76,20 +77,26 @@ Route the full-buffer rejection and successful write through one cleanup path so
 ### TIMA-FWK-0002
 
 **ID:** `TIMA-FWK-0002`  
-**Status:** `OPEN`  
+**Status:** `IN_PROGRESS`
 **Title:** No-rollover flag fails when combined with other flags
 
 **Description**  
 The no-rollover behavior depends on equality with an entire bit mask, rather than testing the no-rollover bit, so unrelated mode flags can silently disable it.
 
 **Details**  
-**Confirmed by static review:** `buffer_read()` and `buffer_write()` compare `buffer_data->mask == MASK_NO_ROLL_OVER` (or negate that expression). `buffer_create()` sets both `MASK_ON_HEAP` and `MASK_NO_ROLL_OVER`; the resulting mask does not equal `MASK_NO_ROLL_OVER`, and the created buffer follows the rollover path. Enabling read-only likewise changes equality outcomes. This code may represent an unfinished experimental mode rather than an approved contract.
+**Historical finding, confirmed by static review:** `buffer_read()` and `buffer_write()` compared `buffer_data->mask == MASK_NO_ROLL_OVER` (or negated that expression). `buffer_create()` set both `MASK_ON_HEAP` and `MASK_NO_ROLL_OVER`; the combined mask did not equal the no-rollover bit, so created buffers followed the rollover path. The flags mixed behavior with ownership state.
+
+**Decision and implementation:** The no-rollover feature has been removed. All buffers now use circular behavior: writes wrap and discard the oldest unread byte on overflow. `buffer_set_no_roll_over()`, its flag, and the mode-specific read/write branches have been removed from `framework/buffer.h` and `framework/buffer.c`. Tests in `tests/framework/test_buffer.c` cover stack- and heap-created buffers, writes across the end of storage, overwrite order, and critical-section balance.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-15 — Decision:** The user decided to remove no-rollover mode. All buffers will use circular behavior, including heap-created buffers. The API setter, flag, and separate linear-mode branches are in scope for removal.
+- **2026-11-15 — Status Change:** Moved from `OPEN` to `IN_PROGRESS` to implement the agreed removal and verify circular-buffer behavior.
+- **2026-11-15 — Implementation:** Removed the no-rollover setter, flag, and mode-specific read/write logic. Updated the host tests to cover wraparound, overwrite order, and nested critical-section behavior. The previous TIMA-FWK-0001 rejection path is no longer present.
+- **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; stack- and heap-created circular buffers, oldest-entry overwrite, read order, and ordinary/nested critical-section balance passed.
 
 **Proposed Change**  
-First decide whether a non-rolling linear mode remains part of the Tima 6 API. If retained, test individual bits with bitwise operations, specify its cursor/capacity invariants, and cover combinations of heap-owned, read-only, and no-rollover flags. If removed, remove the mode consistently rather than leaving a partial flag.
+Remove the non-rolling mode consistently: delete its public setter and flag, make read and write paths unconditionally circular, and ensure heap ownership remains independent of buffer behavior. Verify wraparound, overwrite order, and critical-section balance with native tests.
 
 **Commits**
 
