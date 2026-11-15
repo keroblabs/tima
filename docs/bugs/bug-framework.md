@@ -52,6 +52,7 @@ The summary is the current index; full issue records below are authoritative. Up
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed. It compiles the buffer implementation and host-side tests with `cc -std=c99 -Wall -Wextra -Werror`; both ordinary and nested critical-section cases passed.
 - **2026-11-15 — Code Review:** Local review confirms both post-`DI()` outcomes reach one `EI()`, and rejection leaves the backing bytes and cursors unchanged. Hardware execution and independent review have not been performed; the change is ready for review.
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording the implementation and passing test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-15 — Commit:** Created implementation commit `e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
 **Proposed Change**  
 Route the full-buffer rejection and successful write through one cleanup path so every call to `DI()` has a matching `EI()`. Preserve write rejection behavior and avoid changing the board interrupt API. Verify normal and nested critical-section use with native tests, then review on target boards as appropriate.
@@ -60,6 +61,7 @@ Route the full-buffer rejection and successful write through one cleanup path so
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) | `UNREVIEWED` | Balance the critical section after a full-buffer write rejection and add host tests. |
 
 **Resolution Description**  
 Pending.
