@@ -11,7 +11,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | ID | Status | Title |
 | --- | --- | --- |
 | `TIMA-FWK-0001` | `CLOSED` | Full-buffer rejection exits with interrupts disabled |
-| `TIMA-FWK-0002` | `IN_PROGRESS` | No-rollover flag fails when combined with other flags |
+| `TIMA-FWK-0002` | `REVIEW` | No-rollover flag fails when combined with other flags |
 | `TIMA-FWK-0003` | `OPEN` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `OPEN` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `OPEN` | Resize can invalidate cursors and truncate the stored size |
@@ -54,6 +54,7 @@ The summary is the current index; full issue records below are authoritative. Up
 - **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording the implementation and passing test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-15 — Commit:** Created implementation commit `e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 - **2026-11-15 — Rework:** The no-rollover rejection path was removed as part of TIMA-FWK-0002. The current shared buffer tests cover circular writes and critical-section balance; the earlier rejection-specific test evidence applies to commit `e9bf1ae`, before that mode was removed.
+- **2026-11-15 — Related Commit:** TIMA-FWK-0002 implementation commit `cf4083c4f16e8d04cf9c0a77d62ab082a46de255` removes the former rejection path. It is tracked here because that deletion also removes the condition described by this issue; the commit is `UNREVIEWED`.
 
 - **2026-11-15 — External Review:** Project owner reviewed the submitted fix and recorded a Gerrit-style `+1` (positive review). This feedback is distinct from the independent review below and does not by itself mean code approval or closure.
 - **2026-11-15 — Independent Code Review:** Reviewed [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) against its parent and inspected `buffer_write()`, the test runner, host stubs, and `test_buffer.c`. **Approved** the focused correction: the function has one post-`DI()` exit via `EI()`, returns `FALSE` on the existing rejection condition, and does not modify bytes or cursors on rejection. The submitted tests cover ordinary and nested critical-section pairing. The reviewer verified the code and test logic but could not rerun the remote suite in this environment; the reported test pass comes from the submission. No on-target interrupt test has been recorded.
@@ -68,6 +69,7 @@ The initial focused fix routed the old rejection and success paths through one c
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
 | `phase-1-improvements` | [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) | `APPROVED` | Balance the critical section after a full-buffer write rejection and add host tests. |
+| `phase-1-improvements` | [`cf4083c`](https://github.com/keroblabs/tima/commit/cf4083c4f16e8d04cf9c0a77d62ab082a46de255) | `UNREVIEWED` | Remove the no-rollover rejection path and verify circular writes. |
 
 **Resolution Description**  
 **Fixed and approved.** The committed change [`e9bf1ae`](https://github.com/keroblabs/tima/commit/e9bf1ae8acc0276b566b1242d2c92dbe4e0fc62b) in `framework/buffer.c` replaces the premature return after `DI()` with a result variable and common `EI()` exit. Rejection retains `FALSE` return semantics without modifying buffer contents or indices. The implementation also adds `tests/framework/test_buffer.c`, host stubs, and `tests/framework/run_buffer_tests.sh` for normal, rejected, and nested critical-section cases. The submission reports its host tests passed with `cc -std=c99 -Wall -Wextra -Werror`; independent static review found the targeted path correctly balanced, but the test suite was not independently rerun and target-board behavior remains unverified. The project owner provided a Gerrit-style `+1`; independent code review approved the implementation. The fix is committed to the designated working branch, so this ticket is `CLOSED`. Other buffer/board interrupt issues remain open.
@@ -77,7 +79,7 @@ The initial focused fix routed the old rejection and success paths through one c
 ### TIMA-FWK-0002
 
 **ID:** `TIMA-FWK-0002`  
-**Status:** `IN_PROGRESS`
+**Status:** `REVIEW`<br>
 **Title:** No-rollover flag fails when combined with other flags
 
 **Description**  
@@ -94,6 +96,9 @@ The no-rollover behavior depends on equality with an entire bit mask, rather tha
 - **2026-11-15 — Status Change:** Moved from `OPEN` to `IN_PROGRESS` to implement the agreed removal and verify circular-buffer behavior.
 - **2026-11-15 — Implementation:** Removed the no-rollover setter, flag, and mode-specific read/write logic. Updated the host tests to cover wraparound, overwrite order, and nested critical-section behavior. The previous TIMA-FWK-0001 rejection path is no longer present.
 - **2026-11-15 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; stack- and heap-created circular buffers, oldest-entry overwrite, read order, and ordinary/nested critical-section balance passed.
+- **2026-11-15 — Code Review:** Local review confirms the no-rollover API and flag are absent from maintained framework source and tests, and every valid write follows the circular path. The host suite passes; target hardware and independent review have not been performed.
+- **2026-11-15 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and passing native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-15 — Commit:** Created implementation commit `cf4083c4f16e8d04cf9c0a77d62ab082a46de255` on `phase-1-improvements`. Its review status is `UNREVIEWED`; no independent review has occurred.
 
 **Proposed Change**  
 Remove the non-rolling mode consistently: delete its public setter and flag, make read and write paths unconditionally circular, and ensure heap ownership remains independent of buffer behavior. Verify wraparound, overwrite order, and critical-section balance with native tests.
@@ -102,6 +107,7 @@ Remove the non-rolling mode consistently: delete its public setter and flag, mak
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`cf4083c`](https://github.com/keroblabs/tima/commit/cf4083c4f16e8d04cf9c0a77d62ab082a46de255) | `UNREVIEWED` | Remove no-rollover mode and verify circular-buffer behavior. |
 
 **Resolution Description**  
 Pending.
