@@ -436,6 +436,7 @@ Pending.
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. The new partially consumed/wrapped source case verifies FIFO bytes and source cursor preservation; empty and self-copy cases also pass.
 - **2026-11-16 — Local Code Review:** Verified the source unread count/order calculation, unchanged source indices, per-byte destination writes, and rejection of empty, invalid, self, and identical-storage inputs. Independent review and target-board testing have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's unread bytes in FIFO order. Preserve the source cursor, require a stable source and non-overlapping storage, and retain partial/non-atomic destination writes. Test empty, partially consumed, wrapped, and self-copy cases.
@@ -444,6 +445,7 @@ Implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's unr
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) | `UNREVIEWED` | Copy unread source bytes in FIFO order without consuming them. |
 
 **Resolution Description**  
 Pending.
