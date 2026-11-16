@@ -347,23 +347,16 @@ uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * bu
 
 uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size )
 {
-	uint32_t counter;
-	if( ( buffer_data == NULL ) || ( ( size > 0 ) && ( out_data == NULL ) ) ||
-	    !_buffer_is_valid( buffer_data ) ) return 0;
-	
-    //DI();
-    
-	for( counter = 0; counter < size; counter++ )
-	{
-		// buffer is empty
-		if( buffer_data->pointer_in == buffer_data->pointer_out ) break;
-	
-		out_data[ counter ] = buffer_read( buffer_data );
-	}
-	
-    //EI();
-    
-	return counter;
+    uint32_t counter;
+
+    if( ( size > 0 ) && ( out_data == NULL ) ) return 0;
+
+    for( counter = 0; counter < size; counter++ )
+    {
+        if( buffer_try_read( buffer_data, &out_data[ counter ] ) == FALSE ) break;
+    }
+
+    return counter;
 }
 
 static uint32_t _buffer_get_size_unlocked( buffer_data_t * buffer_data )

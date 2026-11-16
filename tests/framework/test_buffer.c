@@ -20,6 +20,9 @@ void heap_free(heap_t *heap_data, void *ptr);
 static unsigned int critical_depth;
 static unsigned int disable_calls;
 static unsigned int enable_calls;
+static bool_t consume_on_next_irq_disable;
+static buffer_data_t *interleaved_read_buffer;
+static uint8_t interleaved_read_value;
 static heap_t test_heap;
 static union
 {
@@ -29,6 +32,13 @@ static union
 
 void test_disable_irq(void)
 {
+    if(consume_on_next_irq_disable)
+    {
+        consume_on_next_irq_disable = FALSE;
+        assert(interleaved_read_buffer != NULL);
+        interleaved_read_value = buffer_read(interleaved_read_buffer);
+    }
+
     critical_depth++;
     disable_calls++;
 }
@@ -112,6 +122,54 @@ static void test_try_read_distinguishes_empty_from_zero_byte(void)
     assert(buffer_write(&buffer, 0x00) == TRUE);
     assert(buffer_read(&buffer) == 0x00);
     assert(buffer_is_empty(&buffer) == TRUE);
+}
+
+static void test_bulk_read_returns_partial_count_and_preserves_zero_bytes(void)
+{
+    uint8_t storage[4] = { 0, 0, 0, 0 };
+    uint8_t input[2] = { 0x00, 0x22 };
+    uint8_t output[4] = { 0xA5, 0xA5, 0xA5, 0xA5 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    assert(buffer_write_buffer(&buffer, input, sizeof(input)) == sizeof(input));
+
+    reset_irq_counts();
+    assert(buffer_read_buffer(&buffer, output, sizeof(output)) == sizeof(input));
+    assert(output[0] == 0x00);
+    assert(output[1] == 0x22);
+    assert(output[2] == 0xA5);
+    assert(output[3] == 0xA5);
+    assert(critical_depth == 0);
+    assert(disable_calls == 3);
+    assert(enable_calls == 3);
+    assert(buffer_is_empty(&buffer) == TRUE);
+}
+
+static void test_bulk_read_handles_an_interleaved_consumer(void)
+{
+    uint8_t storage[3] = { 0, 0, 0 };
+    uint8_t output = 0xA5;
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    assert(buffer_write(&buffer, 0x31) == TRUE);
+    reset_irq_counts();
+
+    interleaved_read_buffer = &buffer;
+    interleaved_read_value = 0xFF;
+    consume_on_next_irq_disable = TRUE;
+
+    assert(buffer_read_buffer(&buffer, &output, 1) == 0);
+    assert(consume_on_next_irq_disable == FALSE);
+    assert(interleaved_read_value == 0x31);
+    assert(output == 0xA5);
+    assert(critical_depth == 0);
+    assert(disable_calls == 2);
+    assert(enable_calls == 2);
+    assert(buffer_is_empty(&buffer) == TRUE);
+
+    interleaved_read_buffer = NULL;
 }
 
 static void test_created_buffer_uses_circular_behavior(void)
@@ -448,6 +506,8 @@ int main(void)
     heap_init(&test_heap, test_heap_memory.data, sizeof(test_heap_memory.data));
     test_circular_buffer_overwrites_oldest_entry();
     test_try_read_distinguishes_empty_from_zero_byte();
+    test_bulk_read_returns_partial_count_and_preserves_zero_bytes();
+    test_bulk_read_handles_an_interleaved_consumer();
     test_created_buffer_uses_circular_behavior();
     test_direct_and_bulk_write_apis_remain_writable();
     test_wrapped_writes_preserve_outer_critical_section();

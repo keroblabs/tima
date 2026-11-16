@@ -18,7 +18,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0006` | `CLOSED` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `CLOSED` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `REVIEW` | Single-byte read cannot distinguish empty from a zero byte |
-| `TIMA-FWK-0009` | `OPEN` | Bulk read checks emptiness outside its protected operation |
+| `TIMA-FWK-0009` | `REVIEW` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `OPEN` | Copy-from-buffer ignores unread range and circular order |
 | `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
@@ -379,20 +379,27 @@ Pending.
 ### TIMA-FWK-0009
 
 **ID:** `TIMA-FWK-0009`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Bulk read checks emptiness outside its protected operation
 
 **Description**  
 `buffer_read_buffer()` performs its empty check without holding a consistent state snapshot and then calls a second read operation, leaving a concurrency window.
 
 **Details**  
-**Confirmed by static review:** `buffer_read_buffer()` directly checks `buffer_data->pointer_in == buffer_data->pointer_out` outside `DI()` / `EI()`, then calls `buffer_read()` separately for each byte. **Concurrency impact requires confirmation:** with only one reader and one ISR producer this may be acceptable as a documented non-atomic operation; with concurrent consumers, reset, resize, or cursor adjustment, the check can become stale and a zero-valued empty result can be copied as data. Bulk writes are likewise implemented as individually protected bytes, not an atomic batch.
+**At discovery, confirmed by static review:** `buffer_read_buffer()` directly checked `buffer_data->pointer_in == buffer_data->pointer_out` outside `DI()` / `EI()`, then called `buffer_read()` separately for each byte. With concurrent consumers, the check could become stale and a zero-valued empty result could be copied as data. Bulk writes were likewise implemented as individually protected bytes, not an atomic batch.
+
+**Current implementation:** `buffer_read_buffer()` now calls `buffer_try_read()` for each output byte, so the empty check, byte fetch, and cursor advance are one protected operation. Bulk reads and writes are explicitly documented as partial, non-atomic batches; other buffer operations may interleave between bytes, avoiding a long interrupt-disabled transfer.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's request to fix this issue, define bulk operations as partial and non-atomic: each byte is protected individually, and concurrent operations may interleave. This preserves ISR responsiveness; callers needing batch-level atomicity must provide external synchronization. `buffer_read_buffer()` will use the status-bearing single-byte operation from TIMA-FWK-0008. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Removed the bulk reader's unprotected validity/empty checks and routed each byte through `buffer_try_read()`. Documented partial/non-atomic semantics for bulk reads and writes. Added a deterministic host interleaving case where another consumer takes the last byte before the read critical section begins.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Partial counts, zero-byte data, unchanged output beyond the returned count, balanced per-byte critical sections, and an interleaved consumer were verified.
+- **2026-11-16 — Local Code Review:** Confirmed the emptiness check and consumption are now indivisible for each byte; the batch remains intentionally non-atomic and does not hold interrupts disabled for the full transfer. Independent review and target-board ISR testing have not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Define supported producer/consumer patterns and whether bulk operations must be atomic, partial, or explicitly non-atomic. Remove unsynchronized assumptions, use a status-bearing byte read or protect combined checks and transfers as appropriate, and add ISR-interleaving tests. Avoid prolonged interrupt masking for large transfers.
+Define bulk reads and writes as partial, non-atomic operations with per-byte critical sections. Use the status-bearing `buffer_try_read()` operation for each byte so empty detection and consumption are atomic, and avoid prolonged interrupt masking for large transfers. Callers requiring batch-level atomicity must provide external synchronization.
 
 **Commits**
 
