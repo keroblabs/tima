@@ -57,19 +57,33 @@ buffer_data_t * buffer_create( uint32_t size )
 
 void buffer_destroy( buffer_data_t * buffer_data )
 {
-	if( buffer_data == NULL ) return;
+    uint8_t * buffer_to_free = NULL;
+    bool_t free_buffer_data = FALSE;
 
-	DI();
+    if( buffer_data == NULL ) return;
+
+    DI();
 
     if( buffer_data->user_count > 0 ) buffer_data->user_count--;
 
     if( ( buffer_data->mask & MASK_ON_HEAP ) && ( buffer_data->user_count == 0 ) )
     {
-        MFREE( buffer_data->buffer );
-        MFREE( buffer_data );
+        buffer_to_free = buffer_data->buffer;
+        buffer_data->buffer = NULL;
+        buffer_data->size = 0;
+        buffer_data->pointer_in = 0;
+        buffer_data->pointer_out = 0;
+        buffer_data->mask = 0;
+        free_buffer_data = TRUE;
     }
 
     EI();
+
+    if( free_buffer_data )
+    {
+        if( buffer_to_free != NULL ) MFREE( buffer_to_free );
+        MFREE( buffer_data );
+    }
 }
 
 void buffer_reset( buffer_data_t * buffer_data )
@@ -137,62 +151,79 @@ uint32_t buffer_get_max_index( buffer_data_t * buffer_data )
 
 void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
 {
-	if( ( buffer_data == NULL ) || ( new_size < 2 ) ) return;
-	if( !( buffer_data->mask & MASK_ON_HEAP ) ) return;
+    uint8_t * old_buffer;
+    uint8_t * new_buffer;
+    uint32_t old_size;
+    uint32_t pointer_in;
+    uint32_t pointer_out;
+    uint32_t unread_size;
+    uint32_t copy_size;
+    uint32_t source_index;
 
-	DI();
-	if( !_buffer_is_valid( buffer_data ) )
-	{
-	    EI();
-	    return;
-	}
+    if( ( buffer_data == NULL ) || ( new_size < 2 ) ) return;
 
-    uint8_t * new_buffer = ( uint8_t * )MMALLOC( new_size );
-    if( new_buffer != NULL )
+    DI();
+    if( !_buffer_is_valid( buffer_data ) || !( buffer_data->mask & MASK_ON_HEAP ) )
     {
-        uint32_t old_size = buffer_data->size;
-        uint32_t unread_size = 0;
-        uint32_t copy_size;
-        uint32_t source_index;
-
-        if( ( old_size > 0 ) && ( buffer_data->buffer != NULL ) )
-        {
-            if( buffer_data->pointer_in >= buffer_data->pointer_out )
-            {
-                unread_size = buffer_data->pointer_in - buffer_data->pointer_out;
-            }
-            else
-            {
-                unread_size = ( old_size - buffer_data->pointer_out ) + buffer_data->pointer_in;
-            }
-        }
-
-        copy_size = MIN( unread_size, new_size - 1 );
-        source_index = buffer_data->pointer_out;
-
-        // On shrink, retain the newest unread bytes, matching overwrite-oldest writes.
-        for( uint32_t skip = unread_size - copy_size; skip > 0; skip-- )
-        {
-            source_index++;
-            if( source_index == old_size ) source_index = 0;
-        }
-
-        for( uint32_t index = 0; index < copy_size; index++ )
-        {
-            new_buffer[ index ] = buffer_data->buffer[ source_index ];
-            source_index++;
-            if( source_index == old_size ) source_index = 0;
-        }
-
-        MFREE( buffer_data->buffer );
-
-        buffer_data->buffer = new_buffer;
-        buffer_data->size   = new_size;
-        buffer_data->pointer_out = 0;
-        buffer_data->pointer_in = copy_size;
+        EI();
+        return;
     }
 
+    old_buffer = buffer_data->buffer;
+    old_size = buffer_data->size;
+    pointer_in = buffer_data->pointer_in;
+    pointer_out = buffer_data->pointer_out;
     EI();
+
+    new_buffer = ( uint8_t * )MMALLOC( new_size );
+    if( new_buffer == NULL ) return;
+
+    if( pointer_in >= pointer_out )
+    {
+        unread_size = pointer_in - pointer_out;
+    }
+    else
+    {
+        unread_size = ( old_size - pointer_out ) + pointer_in;
+    }
+
+    copy_size = MIN( unread_size, new_size - 1 );
+    source_index = pointer_out;
+
+    // On shrink, retain the newest unread bytes, matching overwrite-oldest writes.
+    for( uint32_t skip = unread_size - copy_size; skip > 0; skip-- )
+    {
+        source_index++;
+        if( source_index == old_size ) source_index = 0;
+    }
+
+    for( uint32_t index = 0; index < copy_size; index++ )
+    {
+        new_buffer[ index ] = old_buffer[ source_index ];
+        source_index++;
+        if( source_index == old_size ) source_index = 0;
+    }
+
+    DI();
+    if( !_buffer_is_valid( buffer_data ) ||
+        !( buffer_data->mask & MASK_ON_HEAP ) ||
+        ( buffer_data->buffer != old_buffer ) ||
+        ( buffer_data->size != old_size ) ||
+        ( buffer_data->pointer_in != pointer_in ) ||
+        ( buffer_data->pointer_out != pointer_out ) )
+    {
+        EI();
+        MFREE( new_buffer );
+        return;
+    }
+
+    buffer_data->buffer = new_buffer;
+    buffer_data->size = new_size;
+    buffer_data->pointer_out = 0;
+    buffer_data->pointer_in = copy_size;
+    EI();
+
+    MFREE( old_buffer );
 }
 
 void buffer_add_user( buffer_data_t * buffer_data )

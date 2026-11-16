@@ -33,6 +33,11 @@ void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t si
 
 buffer_data_t * buffer_create( uint32_t size );
 
+// Buffer lifecycle operations may use the heap and are not ISR-safe. Call them
+// from task context. buffer_resize() and final buffer_destroy() require
+// exclusive access to the buffer. Callers must also stop using pointers
+// returned by buffer_get_pointer[_at]() before resizing or destroying the
+// final reference.
 void buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
 void buffer_reset( buffer_data_t * buffer_data );

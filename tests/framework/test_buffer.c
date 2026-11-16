@@ -42,6 +42,7 @@ void test_enable_irq(void)
 
 void *test_malloc(uint32_t size)
 {
+    assert(critical_depth == 0);
     return heap_malloc(&test_heap, size);
 }
 
@@ -49,6 +50,7 @@ void test_free(void *ptr)
 {
     if(ptr != NULL)
     {
+        assert(critical_depth == 0);
         heap_free(&test_heap, ptr);
     }
 }
@@ -169,14 +171,22 @@ static void test_resize_preserves_newest_unread_wrapped_bytes(void)
     assert(buffer_write(buffer, 6) == TRUE);
     assert(buffer_get_size(buffer) == 4);
 
+    reset_irq_counts();
     buffer_resize(buffer, 7);
+    assert(critical_depth == 0);
+    assert(disable_calls == 2);
+    assert(enable_calls == 2);
 
     assert(buffer->size == 7);
     assert(buffer->pointer_out == 0);
     assert(buffer->pointer_in == 4);
     assert(buffer_get_size(buffer) == 4);
 
+    reset_irq_counts();
     buffer_resize(buffer, 3);
+    assert(critical_depth == 0);
+    assert(disable_calls == 2);
+    assert(enable_calls == 2);
 
     assert(buffer->size == 3);
     assert(buffer->pointer_out == 0);
