@@ -540,6 +540,7 @@ The `user_count` field is only eight bits, and `buffer_add_user()` increments it
 - **2026-11-16 — Test:** An initial standalone `fsm.c` syntax check mixed the buffer test stub headers with `system/types.h` and failed on conflicting macro definitions and existing FSM warnings. A retry using system headers passed as a syntax-only check with existing unused-parameter and implicit-declaration warnings suppressed; no FSM link or runtime test was performed.
 - **2026-11-16 — Local Code Review:** Verified the count remains capped, failure is observable, and FSM clone failure does not leave an uncounted buffer reference or leak its event allocation. Independent review has not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Document the `uint8_t` reference-count ceiling (`UINT8_MAX`), make `buffer_add_user()` return an observable failure rather than wrap, and ensure callers such as `fsm_clone_event()` release allocations when reference acquisition fails. Preserve the existing guarded decrement in `buffer_destroy()` and test successful increments, overflow, null input, and reference-release behavior.
@@ -548,6 +549,7 @@ Document the `uint8_t` reference-count ceiling (`UINT8_MAX`), make `buffer_add_u
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) | `UNREVIEWED` | Make buffer reference increments checked and handle FSM acquisition failure. |
 
 **Resolution Description**  
 Pending.
