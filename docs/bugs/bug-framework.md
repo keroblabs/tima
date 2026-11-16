@@ -2,7 +2,8 @@
 
 Scope: Reusable framework components and their APIs, including interrupt safety, storage ownership, correctness, and portability.  
 ID prefix: `TIMA-FWK`  
-Methodology: [bug-tracking-methodology.md](bug-tracking-methodology.md)
+Methodology: [bug-tracking-methodology.md](bug-tracking-methodology.md)  
+Next volume: [bug-framework-02.md](bug-framework-02.md)
 
 The summary is the current index; full issue records below are authoritative. Update both the summary and ticket when status or title changes. Keep Notes as a dated, append-only engineering history and track implementation commits and their review statuses in each ticket. Proposed changes are subject to review; an `OPEN` issue is not an approved implementation request.
 
