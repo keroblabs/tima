@@ -45,6 +45,7 @@ void buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
 void buffer_reset( buffer_data_t * buffer_data );
 void buffer_reset_read( buffer_data_t * buffer_data );
+// Clamps offset to the current write index and updates the read cursor safely.
 void buffer_read_set_offset( buffer_data_t * buffer_data, uint32_t offset );
 
 uint32_t buffer_get_current_index( buffer_data_t * buffer_data );

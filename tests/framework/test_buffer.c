@@ -124,6 +124,35 @@ static void test_try_read_distinguishes_empty_from_zero_byte(void)
     assert(buffer_is_empty(&buffer) == TRUE);
 }
 
+static void test_read_offset_setter_is_protected_and_clamped(void)
+{
+    uint8_t storage[5] = { 0, 0, 0, 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    assert(buffer_write(&buffer, 0x11) == TRUE);
+    assert(buffer_write(&buffer, 0x22) == TRUE);
+    assert(buffer_write(&buffer, 0x33) == TRUE);
+
+    reset_irq_counts();
+    test_disable_irq();
+    buffer_read_set_offset(&buffer, 2);
+    assert(critical_depth == 1);
+    assert(disable_calls == 2);
+    assert(enable_calls == 1);
+    test_enable_irq();
+    assert(critical_depth == 0);
+    assert(enable_calls == 2);
+    assert(buffer.pointer_out == 2);
+
+    reset_irq_counts();
+    buffer_read_set_offset(&buffer, UINT32_MAX);
+    assert(buffer.pointer_out == buffer.pointer_in);
+    assert(critical_depth == 0);
+    assert(disable_calls == 1);
+    assert(enable_calls == 1);
+}
+
 static void test_bulk_read_returns_partial_count_and_preserves_zero_bytes(void)
 {
     uint8_t storage[4] = { 0, 0, 0, 0 };
@@ -555,6 +584,7 @@ int main(void)
     heap_init(&test_heap, test_heap_memory.data, sizeof(test_heap_memory.data));
     test_circular_buffer_overwrites_oldest_entry();
     test_try_read_distinguishes_empty_from_zero_byte();
+    test_read_offset_setter_is_protected_and_clamped();
     test_bulk_read_returns_partial_count_and_preserves_zero_bytes();
     test_bulk_read_handles_an_interleaved_consumer();
     test_created_buffer_uses_circular_behavior();

@@ -107,9 +107,16 @@ void buffer_reset_read( buffer_data_t * buffer_data )
 
 void buffer_read_set_offset( buffer_data_t * buffer_data, uint32_t offset )
 {
-    if( !_buffer_is_valid( buffer_data ) ) return;
+    if( buffer_data == NULL ) return;
 
-    buffer_data->pointer_out = MIN( offset, buffer_data->pointer_in );
+    DI();
+
+    if( _buffer_is_valid( buffer_data ) )
+    {
+        buffer_data->pointer_out = MIN( offset, buffer_data->pointer_in );
+    }
+
+    EI();
 }
 
 uint32_t buffer_get_current_index( buffer_data_t * buffer_data )

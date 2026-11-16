@@ -20,7 +20,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0008` | `REVIEW` | Single-byte read cannot distinguish empty from a zero byte |
 | `TIMA-FWK-0009` | `REVIEW` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `REVIEW` | Copy-from-buffer ignores unread range and circular order |
-| `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
+| `TIMA-FWK-0011` | `REVIEW` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
@@ -455,20 +455,27 @@ Pending.
 ### TIMA-FWK-0011
 
 **ID:** `TIMA-FWK-0011`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Mode and offset setters bypass the critical-section contract
 
 **Description**  
 Several mutating APIs modify state that may be shared with an ISR without using the same protection as read/write operations.
 
 **Details**  
-**Confirmed by static review:** `buffer_set_no_roll_over()` and `buffer_set_read_only()` modify `mask` without `DI()` / `EI()`. `buffer_read_set_offset()` assigns to the 16-bit `pointer_out` without protection, whereas `buffer_reset_read()` and most index getters protect their accesses. Whether a given deployment calls these setters concurrently with an ISR is unknown; the inconsistency undermines a general interrupt-safe API guarantee.
+**At discovery, confirmed by static review:** `buffer_set_no_roll_over()` and `buffer_set_read_only()` modified `mask` without `DI()` / `EI()`. `buffer_read_set_offset()` assigned to `pointer_out` without protection, whereas `buffer_reset_read()` and most index getters protected their accesses. The earlier reference to a 16-bit cursor predates TIMA-FWK-0005, which standardized it to `uint32_t`.
+
+**Current implementation:** The no-rollover and read-only setters were removed under TIMA-FWK-0002 and TIMA-FWK-0003. `buffer_read_set_offset()` is the remaining supported setter in this finding; it validates the descriptor and updates the cursor under one balanced critical section, preserving its existing clamp-to-write-index behavior.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's request to fix this issue, preserve the current `buffer_read_set_offset()` clamp semantics while protecting its validation and cursor update with a balanced `DI()` / `EI()` pair. The two mode setters in the discovery record have already been removed under TIMA-FWK-0002 and TIMA-FWK-0003; no replacement mode setter is needed. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Moved the offset setter's descriptor validation and `pointer_out` update into a critical section. Documented its clamp behavior and added nested-critical and upper-bound regression coverage.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. The setter preserved an outer critical section, balanced its own disable/enable pair, and clamped an oversized offset to `pointer_in`.
+- **2026-11-16 — Local Code Review:** Confirmed the null check remains outside the critical section, invalid descriptors do not mutate state, and valid validation/update operations are protected together. Independent review and target-board testing have not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Define whether configuration/cursor mutations are initialization-only or safe during active use. If concurrent use is allowed, protect state transitions using the agreed interrupt-state-preserving primitive and validate cursor range. Document any calls explicitly forbidden in interrupt context.
+Keep the removed no-rollover/read-only modes absent. Protect `buffer_read_set_offset()` validation and cursor mutation with the repository's balanced `DI()` / `EI()` convention, preserve its existing clamp-to-write-index behavior, and document the lifecycle/interrupt-context contract.
 
 **Commits**
 
