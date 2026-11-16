@@ -25,7 +25,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0013` | `CLOSED` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
 | `TIMA-FWK-0015` | `CLOSED` | fill_size metadata is left uninitialized and unused |
-| `TIMA-FWK-0016` | `OPEN` | FSM handlers and dispatcher disagree on signal ownership |
+| `TIMA-FWK-0016` | `OPEN` | Remove legacy FSM implementation from the framework |
 
 ## Issues
 
@@ -671,19 +671,24 @@ Remove `fill_size` because no in-repository caller uses it and no reliable updat
 
 **ID:** `TIMA-FWK-0016`  
 **Status:** `OPEN`  
-**Title:** FSM handlers and dispatcher disagree on signal ownership
+**Title:** Remove legacy FSM implementation from the framework
 
 **Description**  
-The FSM signal dispatch loop unconditionally destroys a signal after invoking its handler, even when a built-in handler has already destroyed the signal or placed it into a saved-signal queue. This risks double-free, use-after-free, and queue corruption.
+The legacy finite-state-machine implementation in `framework/fsm.c` and `framework/fsm.h` is to be retired and removed from the Tima codebase. A more specialized library for complex FSM handling is available to the project owner and will be introduced separately at a later stage; retaining and repairing the old implementation is no longer the intended direction.
 
 **Details**  
-**Confirmed by static review, runtime not reproduced:** In `framework/fsm.c`, `fsm_process_signal()` calls `handler( current_process->p_data, signal )` and then `fsm_delete_signal( &signal->list_node )`. `fsm_ignore_event()` itself calls `fsm_delete_signal( &signal->list_node )`, so a default invalid-event handler can free the same signal twice. `fsm_save_event()` adds `signal->list_node` to `current_process->saved_events_list`, but the dispatcher then destroys the queued signal; a later saved-event dequeue could access freed storage. `fsm_delete_signal()` also calls `buffer_destroy(signal->buffer)` if present, so the problem can cause double reference release. This is a pre-existing FSM event-ownership issue revealed while reviewing the TIMA-FWK-0013 integration; it is **not caused by** the checked `buffer_add_user()` change. Actual runtime failures, precise call-path reachability, and user-handler ownership conventions still need investigation.
+**Decision:** Remove `framework/fsm.c` and `framework/fsm.h` from the maintained codebase rather than invest in correcting the old FSM event lifecycle or redesigning its API. The replacement FSM library is **not part of this ticket** and must not be presumed to be integrated, available in the current tree, or API-compatible yet.
+
+**Impact to assess before removal:** Find and document maintained `#include "fsm.h"` references, legacy `fsm_*` API consumers, build manifests and project configuration entries that compile or link `fsm.c`, and any test or example dependencies. Remove obsolete build references and adjust or explicitly retire code that cannot be built without the legacy FSM. Do not silently claim the whole repository builds if removal leaves legacy consumers unresolved. Generated build outputs are not a reason to retain the old module; decide whether to regenerate or exclude them according to the repository's artifact policy.
+
+**Historical finding retained for traceability:** Static review previously found that `fsm_process_signal()` deleted events after invoking their handlers even though `fsm_ignore_event()` also deleted signals and `fsm_save_event()` placed signals in a saved queue. This risked double-free or dangling saved-event pointers. These defects were not reproduced in runtime tests; they motivated the original ticket but **will not be fixed in the retiring implementation**. The decision to remove the module supersedes the original repair proposal.
 
 **Notes**
-- **2026-11-16 — Discovery:** Independent review of TIMA-FWK-0013's `fsm_clone_event()` caller found the conflicting deletion/queueing paths in `framework/fsm.c`. The concern is evidenced by the current source but has not been exercised in an FSM runtime test. Recorded as a separate OPEN issue rather than expanding the scope of the approved reference-counter fix; no remedy is approved yet.
+- **2026-11-16 — Discovery:** Independent review of TIMA-FWK-0013's `fsm_clone_event()` caller found the conflicting deletion/queueing paths in `framework/fsm.c`. The concern was evidenced by source inspection but not exercised in an FSM runtime test. The initial ticket sought an event-ownership investigation and fix.
+- **2026-11-16 — Direction Change:** The user confirmed that the legacy `fsm.c`/`fsm.h` implementation should be removed. A separate, more specialized library for complex FSM handling will be introduced later. Re-scoped this same OPEN ticket from repairing FSM event ownership to retiring the obsolete FSM module; preserved the original finding above for engineering history. No source removal or integration of the future library is claimed by this documentation change.
 
 **Proposed Change**  
-Investigate and define explicit event ownership across FSM dispatcher, built-in handlers, saved-event queue and user handlers. Ensure each event is released exactly once or deliberately transferred, with tests for invalid events, saved events, state changes and buffer reference counts. Consider whether handler return status or a dispatcher-managed ownership model is more appropriate; decide after triage.
+Remove `framework/fsm.c` and `framework/fsm.h` from the working branch. Audit and clean their references in maintained source files, tests, examples, and build configurations so that the removal and any resulting unsupported legacy components are explicit. Verify with the relevant available builds/static checks and report platforms or targets that cannot be tested. Do not implement a replacement FSM, shim, or migration to the future specialized library in this ticket; that introduction will be planned and reviewed separately.
 
 **Commits**
 
