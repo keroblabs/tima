@@ -252,31 +252,27 @@ const uint8_t * buffer_get_pointer( buffer_data_t * buffer_data )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-uint8_t buffer_read( buffer_data_t * buffer_data )
+bool_t buffer_try_read( buffer_data_t * buffer_data, uint8_t * out_data )
 {
-	uint8_t ret_value = 0;
-
-	if( buffer_data == NULL ) return 0;
+	if( ( buffer_data == NULL ) || ( out_data == NULL ) ) return FALSE;
 
     DI();
 
     if( !_buffer_is_valid( buffer_data ) )
     {
         EI();
-        return 0;
+        return FALSE;
     }
 
     // buffer is empty
 	if( buffer_data->pointer_in == buffer_data->pointer_out )
     {
         EI();
-        return( 0 );
+        return FALSE;
     }
 
-    // get byte from buffer
-	ret_value = buffer_data->buffer[ buffer_data->pointer_out ];
+    *out_data = buffer_data->buffer[ buffer_data->pointer_out ];
 
-    // move out-pointer
 	buffer_data->pointer_out++;
 	if( buffer_data->pointer_out == buffer_data->size )
 	{
@@ -284,8 +280,17 @@ uint8_t buffer_read( buffer_data_t * buffer_data )
 	}
     
     EI();
-    
-	return( ret_value );
+
+    return TRUE;
+}
+
+uint8_t buffer_read( buffer_data_t * buffer_data )
+{
+    uint8_t ret_value = 0;
+
+    ( void )buffer_try_read( buffer_data, &ret_value );
+
+    return ret_value;
 }
 
 bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data )

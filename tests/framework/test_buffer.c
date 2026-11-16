@@ -90,6 +90,30 @@ static void test_circular_buffer_overwrites_oldest_entry(void)
     assert(buffer_is_empty(&buffer) == TRUE);
 }
 
+static void test_try_read_distinguishes_empty_from_zero_byte(void)
+{
+    uint8_t storage[3] = { 0, 0, 0 };
+    buffer_data_t buffer;
+    uint8_t value = 0xA5;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+
+    assert(buffer_try_read(NULL, &value) == FALSE);
+    assert(value == 0xA5);
+    assert(buffer_try_read(&buffer, NULL) == FALSE);
+    assert(buffer_try_read(&buffer, &value) == FALSE);
+    assert(value == 0xA5);
+
+    assert(buffer_write(&buffer, 0x00) == TRUE);
+    assert(buffer_try_read(&buffer, &value) == TRUE);
+    assert(value == 0x00);
+    assert(buffer_is_empty(&buffer) == TRUE);
+
+    assert(buffer_write(&buffer, 0x00) == TRUE);
+    assert(buffer_read(&buffer) == 0x00);
+    assert(buffer_is_empty(&buffer) == TRUE);
+}
+
 static void test_created_buffer_uses_circular_behavior(void)
 {
     buffer_data_t *buffer = buffer_create(3);
@@ -423,6 +447,7 @@ int main(void)
 {
     heap_init(&test_heap, test_heap_memory.data, sizeof(test_heap_memory.data));
     test_circular_buffer_overwrites_oldest_entry();
+    test_try_read_distinguishes_empty_from_zero_byte();
     test_created_buffer_uses_circular_behavior();
     test_direct_and_bulk_write_apis_remain_writable();
     test_wrapped_writes_preserve_outer_critical_section();

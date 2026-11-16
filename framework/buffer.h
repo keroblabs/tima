@@ -57,6 +57,11 @@ const uint8_t * buffer_get_pointer( buffer_data_t * buffer_data );
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Returns TRUE and consumes one byte, including 0x00. Returns FALSE for an
+// empty/invalid buffer or null arguments, leaving out_data unchanged.
+bool_t buffer_try_read( buffer_data_t * buffer_data, uint8_t * out_data );
+
+// Compatibility helper: returns 0 for both an empty buffer and a stored 0x00.
 uint8_t buffer_read( buffer_data_t * buffer_data );
 
 bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data );

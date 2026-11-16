@@ -17,7 +17,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0005` | `CLOSED` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `CLOSED` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `CLOSED` | Replacing storage breaks heap ownership and buffer invariants |
-| `TIMA-FWK-0008` | `OPEN` | Single-byte read cannot distinguish empty from a zero byte |
+| `TIMA-FWK-0008` | `REVIEW` | Single-byte read cannot distinguish empty from a zero byte |
 | `TIMA-FWK-0009` | `OPEN` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `OPEN` | Copy-from-buffer ignores unread range and circular order |
 | `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
@@ -342,20 +342,27 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 ### TIMA-FWK-0008
 
 **ID:** `TIMA-FWK-0008`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Single-byte read cannot distinguish empty from a zero byte
 
 **Description**  
 `buffer_read()` returns a `uint8_t` value of zero when empty, which is also a legitimate byte from the buffer.
 
 **Details**  
-**Confirmed by static review:** `buffer_read()` returns `0` both when `buffer_data == NULL` or `pointer_in == pointer_out`, and when the stored byte actually equals `0x00`. A caller that checks `buffer_is_empty()` first does so in a separate operation; the status and read are not one atomic result. This ambiguity affects consumers of arbitrary binary data. Existing callers and compatibility expectations still need review.
+**At discovery, confirmed by static review:** `buffer_read()` returned `0` both when `buffer_data == NULL` or the buffer was empty, and when the stored byte actually equaled `0x00`. A caller that checked `buffer_is_empty()` first did so in a separate operation; the status and read were not one atomic result. This ambiguity affected consumers of arbitrary binary data.
+
+**Current implementation:** Added `buffer_try_read(buffer_data, out_data)`, which atomically consumes one byte and reports success separately from its value. It returns `TRUE` for a stored zero and `FALSE` for empty/invalid buffers or null arguments without modifying the output. `buffer_read()` remains as a compatibility wrapper with its original zero-on-empty behavior.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's request to fix this issue, add a status-bearing `buffer_try_read()` operation and retain `buffer_read()` unchanged as a compatibility helper. The new operation will test emptiness and consume the byte within one critical section. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Added `buffer_try_read()` to the public API and made `buffer_read()` delegate to it, preserving the legacy return value while providing an unambiguous alternative. Added native cases for empty, invalid/null arguments, a stored zero byte, and legacy behavior.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; the zero byte is reported as a successful read and the empty failure leaves the output unchanged.
+- **2026-11-16 — Local Code Review:** Verified the status check, byte fetch, and cursor advance occur under one balanced critical section; the compatibility wrapper retains zero-on-empty behavior. Independent review and target-board testing have not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Consider an explicit-status API such as a `try_read(buffer, &value)` operation, with distinct empty/invalid outcomes and a well-defined interrupt-safety contract. Review callers before deciding whether to keep `buffer_read()` as a compatibility helper.
+Add an explicit-status `buffer_try_read(buffer, &value)` operation with an atomic empty check and read. Retain `buffer_read()` as a compatibility helper and document that it still cannot distinguish empty from a stored zero.
 
 **Commits**
 
