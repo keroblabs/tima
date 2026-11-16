@@ -96,15 +96,6 @@ void buffer_reset( buffer_data_t * buffer_data )
     EI();
 }
 
-void buffer_set_buffer( buffer_data_t * buffer_data, uint8_t * buffer_ptr )
-{
-	if( ( buffer_data == NULL ) || ( buffer_ptr == NULL ) ) return;
-
-	DI();
-    buffer_data->buffer = buffer_ptr;
-    EI();
-}
-
 void buffer_reset_read( buffer_data_t * buffer_data )
 {
 	if( buffer_data == NULL ) return;

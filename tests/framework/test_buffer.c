@@ -393,8 +393,6 @@ static void test_invalid_sizes_and_null_arguments_are_rejected(void)
 
     buffer_init(&buffer, storage, sizeof(storage));
     buffer_reset(NULL);
-    buffer_set_buffer(NULL, storage);
-    buffer_set_buffer(&buffer, NULL);
     assert(buffer.buffer == storage);
     buffer_reset_read(NULL);
     buffer_read_set_offset(NULL, 0);

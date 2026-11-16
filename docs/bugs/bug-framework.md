@@ -16,7 +16,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0004` | `CLOSED` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `CLOSED` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `REVIEW` | Allocation and deallocation occur while interrupts are disabled |
-| `TIMA-FWK-0007` | `OPEN` | Replacing storage breaks heap ownership and buffer invariants |
+| `TIMA-FWK-0007` | `REVIEW` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `OPEN` | Single-byte read cannot distinguish empty from a zero byte |
 | `TIMA-FWK-0009` | `OPEN` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `OPEN` | Copy-from-buffer ignores unread range and circular order |
@@ -299,20 +299,27 @@ Pending.
 ### TIMA-FWK-0007
 
 **ID:** `TIMA-FWK-0007`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Replacing storage breaks heap ownership and buffer invariants
 
 **Description**  
-`buffer_set_buffer()` replaces the backing pointer without reconciling ownership, existing cursors, or the buffer's capacity.
+The public `buffer_set_buffer()` API allowed replacement of the backing pointer without reconciling ownership, existing cursors, or buffer capacity, risking leaks and invalid frees.
 
 **Details**  
-**Confirmed by static review:** `buffer_set_buffer()` assigns `buffer_data->buffer = buffer_ptr` under `DI()` / `EI()`, leaving `MASK_ON_HEAP`, `size`, `pointer_in`, and `pointer_out` unchanged. If invoked on a `buffer_create()` instance, it loses the original allocated pointer, and a later `buffer_destroy()` attempts to free the replacement pointer even if that pointer is externally owned. This presents a leak and potential invalid-free path.
+**At discovery, confirmed by static review:** `buffer_set_buffer()` assigned `buffer_data->buffer = buffer_ptr` under `DI()` / `EI()`, leaving `MASK_ON_HEAP`, `size`, `pointer_in`, and `pointer_out` unchanged. On a `buffer_create()` instance, it lost the original allocated pointer, and a later `buffer_destroy()` attempted to free the replacement pointer even if that pointer was externally owned. This presented a leak and potential invalid-free path.
+
+**Decision and current behavior:** Remove the public setter rather than inventing implicit ownership-transfer or capacity semantics. Repository search found no production call sites; the only non-documentation references were its declaration, definition, and two null-argument test calls. `buffer_init()` and `buffer_create()` now establish the backing pointer and ownership, which callers must not reassign directly; a heap-created descriptor must not be reinitialized with `buffer_init()`. This is an intentional public API removal. External callers that used the setter must migrate; the repository contains no such production caller to update.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's direction, remove `buffer_set_buffer()` instead of adding ownership-transfer and capacity arguments. Repository search found no production callers, so there is no in-repository migration; the header will document that storage and ownership are fixed by initialization/creation and that heap-created descriptors must not be reinitialized. This is an intentional, source-breaking API removal. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Removed the setter's declaration and definition, removed the tests that invoked it, and documented the fixed-storage and ownership contract in `framework/buffer.h`. The ticket's Details and Proposed Change record why removal was selected and the lack of production callers.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; all maintained framework tests compile and run without the removed API.
+- **2026-11-16 — Local Code Review:** Confirmed the supported API no longer contains a storage-rebind operation, while `buffer_init()` and `buffer_create()` retain their borrowed/heap-owned storage behavior. Independent review has not occurred.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Define whether rebinding storage is a supported operation. If retained, require explicit ownership and capacity handling, preserve or reset cursor invariants, and ensure old owned storage is safely released; otherwise remove or restrict the API. Test owned-to-borrowed and borrowed-to-owned transitions.
+Remove `buffer_set_buffer()` from the public header and implementation. Storage is fixed by `buffer_init()` for caller-owned buffers or `buffer_create()` for heap-owned buffers; do not directly replace the public struct's backing pointer or reinitialize a heap-created descriptor. This intentionally removes the unsupported API rather than introducing a new ownership-transfer/capacity contract.
 
 **Commits**
 
@@ -446,10 +453,11 @@ Pending.
 `buffer_get_pointer()` and `buffer_get_pointer_at()` return borrowed pointers whose storage may be replaced or freed immediately after the function releases its critical section.
 
 **Details**  
-**Confirmed by static review:** `buffer_get_pointer_at()` calculates a pointer inside `DI()` / `EI()` and returns it after `EI()`. Other APIs can rebind (`buffer_set_buffer()`), resize, or destroy the backing allocation. In circular mode, the offset is clamped against `pointer_in` rather than checked against logical unread data, so it is not a reliable logical data-view API. **Actual use-after-free requires a concurrent lifetime/rebind scenario or caller misuse and has not been reproduced.**
+**At discovery, confirmed by static review:** `buffer_get_pointer_at()` calculates a pointer inside `DI()` / `EI()` and returns it after `EI()`. The former `buffer_set_buffer()` API could rebind storage; `buffer_resize()` and final destruction can also replace or release it. The setter was removed under TIMA-FWK-0007, but pointers can still be invalidated by resize or destruction. In circular mode, the offset is clamped against `pointer_in` rather than checked against logical unread data, so it is not a reliable logical data-view API. **Actual use-after-free requires concurrent use during resize/final destruction or unsupported direct mutation of public storage fields; it has not been reproduced.**
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Related Change:** `buffer_set_buffer()` was removed under TIMA-FWK-0007 at the user's direction because its ownership and capacity semantics were unsafe. The supported rebind path is gone; pointer lifetime across resize/final destruction and offset semantics remain open.
 
 **Proposed Change**  
 Specify whether returned pointers refer to stable externally owned storage, require caller-managed lifetime protection, or should be replaced by safe access/copy operations. Clarify offset meaning in circular versus linear mode; test invalid offsets and reconfiguration scenarios. Coordinate with TIMA-FWK-0005 and TIMA-FWK-0007.

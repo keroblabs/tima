@@ -23,6 +23,9 @@ typedef struct
 //////////////////////////////////////////////////////////////////////////////////////
 
 // Circular storage needs at least two bytes (one usable slot plus the sentinel).
+// Backing storage and ownership are fixed by buffer_init() or buffer_create();
+// changing buffer_data->buffer directly is unsupported. Do not reinitialize
+// a heap-created descriptor with buffer_init().
 // Callers of buffer_init() must provide at least size accessible backing bytes.
 // Invalid initialization leaves an inert descriptor; buffer_create() returns NULL.
 // Data operations treat invalid buffers as empty: reads and size/count getters
@@ -47,7 +50,6 @@ void buffer_read_set_offset( buffer_data_t * buffer_data, uint32_t offset );
 uint32_t buffer_get_current_index( buffer_data_t * buffer_data );
 uint32_t buffer_get_max_index( buffer_data_t * buffer_data );
 
-void buffer_set_buffer( buffer_data_t * buffer_data, uint8_t * buffer_ptr );
 void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size );
 
 const uint8_t * buffer_get_pointer_at( buffer_data_t * buffer_data, uint32_t offset );
