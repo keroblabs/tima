@@ -72,6 +72,9 @@ bool_t buffer_write( buffer_data_t * buffer_data, uint8_t in_data );
 // Bulk reads and writes are partial, non-atomic batches: each byte is processed
 // separately, and concurrent buffer operations may interleave between bytes.
 uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, uint32_t size );
+// Copies unread source bytes in FIFO order without consuming the source. The
+// source cursor/storage must remain stable during the call; source and
+// destination storage must not overlap. The transfer is partial/non-atomic.
 uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input );
 uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size );
 uint32_t buffer_get_size( buffer_data_t * buffer_data );

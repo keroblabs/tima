@@ -338,11 +338,51 @@ uint32_t buffer_write_buffer( buffer_data_t * buffer_data, uint8_t * in_data, ui
 
 uint32_t buffer_write_buffer_ex( buffer_data_t * buffer_data, buffer_data_t * buffer_input )
 {
-    if( ( buffer_input == NULL ) || ( buffer_input->buffer == NULL ) ||
-        ( buffer_input->size < 2 ) || ( buffer_input->pointer_in > buffer_input->size ) ||
-        ( buffer_input->pointer_out >= buffer_input->size ) ) return 0;
+    uint8_t * source_buffer;
+    uint32_t source_size;
+    uint32_t source_index;
+    uint32_t source_count;
+    uint32_t pointer_in;
+    uint32_t pointer_out;
+    uint32_t counter;
 
-    return buffer_write_buffer( buffer_data, buffer_input->buffer, buffer_input->pointer_in );
+    if( ( buffer_data == NULL ) || ( buffer_input == NULL ) ||
+        ( buffer_data == buffer_input ) ) return 0;
+
+    DI();
+    if( !_buffer_is_valid( buffer_data ) || !_buffer_is_valid( buffer_input ) ||
+        ( buffer_data->buffer == buffer_input->buffer ) )
+    {
+        EI();
+        return 0;
+    }
+
+    source_buffer = buffer_input->buffer;
+    source_size = buffer_input->size;
+    pointer_in = buffer_input->pointer_in;
+    pointer_out = buffer_input->pointer_out;
+
+    if( pointer_in >= pointer_out )
+    {
+        source_count = pointer_in - pointer_out;
+    }
+    else
+    {
+        source_count = ( source_size - pointer_out ) + pointer_in;
+    }
+
+    EI();
+
+    source_index = pointer_out;
+    for( counter = 0; counter < source_count; counter++ )
+    {
+        if( buffer_write( buffer_data, source_buffer[ source_index ] ) == FALSE ) break;
+
+        source_index++;
+        if( source_index == source_size ) source_index = 0;
+    }
+
+    return counter;
 }
 
 uint32_t buffer_read_buffer( buffer_data_t * buffer_data, uint8_t * out_data, uint32_t size )

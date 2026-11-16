@@ -193,17 +193,18 @@ static void test_created_buffer_uses_circular_behavior(void)
 static void test_direct_and_bulk_write_apis_remain_writable(void)
 {
     uint8_t storage[6] = { 0, 0, 0, 0, 0, 0 };
-    uint8_t source[2] = { 0x51, 0x52 };
+    uint8_t source[3] = { 0x51, 0x52, 0x00 };
+    const uint32_t source_count = 2;
     buffer_data_t buffer;
     buffer_data_t input;
 
     buffer_init(&buffer, storage, sizeof(storage));
     buffer_init(&input, source, sizeof(source));
-    input.pointer_in = sizeof(source);
+    input.pointer_in = source_count;
 
     assert(buffer_write(&buffer, 0x50) == TRUE);
-    assert(buffer_write_buffer(&buffer, source, sizeof(source)) == 2);
-    assert(buffer_write_buffer_ex(&buffer, &input) == 2);
+    assert(buffer_write_buffer(&buffer, source, source_count) == source_count);
+    assert(buffer_write_buffer_ex(&buffer, &input) == source_count);
 
     assert(buffer.pointer_in == 5);
     assert(buffer.pointer_out == 0);
@@ -212,6 +213,54 @@ static void test_direct_and_bulk_write_apis_remain_writable(void)
     assert(storage[2] == 0x52);
     assert(storage[3] == 0x51);
     assert(storage[4] == 0x52);
+}
+
+static void test_buffer_copy_uses_unread_wrapped_bytes_without_consuming_source(void)
+{
+    uint8_t source_storage[5] = { 0, 0, 0, 0, 0 };
+    uint8_t destination_storage[6] = { 0, 0, 0, 0, 0, 0 };
+    uint8_t initial_data[4] = { 1, 2, 3, 4 };
+    uint8_t wrapped_data[3] = { 5, 6, 7 };
+    uint8_t expected[4] = { 4, 5, 6, 7 };
+    uint8_t destination_output[4] = { 0, 0, 0, 0 };
+    uint8_t source_output[4] = { 0, 0, 0, 0 };
+    buffer_data_t source;
+    buffer_data_t destination;
+
+    buffer_init(&source, source_storage, sizeof(source_storage));
+    buffer_init(&destination, destination_storage, sizeof(destination_storage));
+
+    assert(buffer_write_buffer(&source, initial_data, sizeof(initial_data)) == sizeof(initial_data));
+    assert(buffer_read(&source) == 1);
+    assert(buffer_read(&source) == 2);
+    assert(buffer_read(&source) == 3);
+    assert(buffer_write_buffer(&source, wrapped_data, sizeof(wrapped_data)) == sizeof(wrapped_data));
+    assert(buffer_get_size(&source) == sizeof(expected));
+
+    assert(buffer_write_buffer_ex(&destination, &source) == sizeof(expected));
+    assert(buffer_read_buffer(&destination, destination_output, sizeof(destination_output)) == sizeof(expected));
+    assert(memcmp(destination_output, expected, sizeof(expected)) == 0);
+
+    assert(buffer_get_size(&source) == sizeof(expected));
+    assert(buffer_read_buffer(&source, source_output, sizeof(source_output)) == sizeof(expected));
+    assert(memcmp(source_output, expected, sizeof(expected)) == 0);
+}
+
+static void test_buffer_copy_handles_empty_and_self_source(void)
+{
+    uint8_t storage[4] = { 0, 0, 0, 0 };
+    buffer_data_t source;
+    buffer_data_t destination;
+
+    buffer_init(&source, storage, sizeof(storage));
+    buffer_init(&destination, storage, sizeof(storage));
+    assert(buffer_write_buffer_ex(&destination, &source) == 0);
+
+    assert(buffer_write(&source, 0x41) == TRUE);
+    assert(buffer_write_buffer_ex(&destination, &source) == 0);
+    assert(buffer_write_buffer_ex(&source, &source) == 0);
+    assert(buffer_get_size(&source) == 1);
+    assert(buffer_read(&source) == 0x41);
 }
 
 static void test_wrapped_writes_preserve_outer_critical_section(void)
@@ -510,6 +559,8 @@ int main(void)
     test_bulk_read_handles_an_interleaved_consumer();
     test_created_buffer_uses_circular_behavior();
     test_direct_and_bulk_write_apis_remain_writable();
+    test_buffer_copy_uses_unread_wrapped_bytes_without_consuming_source();
+    test_buffer_copy_handles_empty_and_self_source();
     test_wrapped_writes_preserve_outer_critical_section();
     test_resize_preserves_newest_unread_wrapped_bytes();
     test_buffer_sizes_and_bulk_counts_exceed_uint16();

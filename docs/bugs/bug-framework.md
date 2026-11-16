@@ -19,7 +19,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0007` | `CLOSED` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `REVIEW` | Single-byte read cannot distinguish empty from a zero byte |
 | `TIMA-FWK-0009` | `REVIEW` | Bulk read checks emptiness outside its protected operation |
-| `TIMA-FWK-0010` | `OPEN` | Copy-from-buffer ignores unread range and circular order |
+| `TIMA-FWK-0010` | `REVIEW` | Copy-from-buffer ignores unread range and circular order |
 | `TIMA-FWK-0011` | `OPEN` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
@@ -416,20 +416,29 @@ Pending.
 ### TIMA-FWK-0010
 
 **ID:** `TIMA-FWK-0010`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Copy-from-buffer ignores unread range and circular order
 
 **Description**  
 `buffer_write_buffer_ex()` copies the raw prefix of the source allocation rather than identifying the source buffer's logical readable contents.
 
 **Details**  
-**Confirmed by static review:** `buffer_write_buffer_ex(dst, src)` calls `buffer_write_buffer(dst, src->buffer, src->pointer_in)`. It ignores `src->pointer_out` and any wrapped unread interval, so the bytes copied do not generally correspond to data available for reading from a circular buffer. **Intended behavior is unverified:** the helper may have been designed for a narrower linear-storage use case, but `buffer.h` does not describe one.
+**At discovery, confirmed by static review:** `buffer_write_buffer_ex(dst, src)` called `buffer_write_buffer(dst, src->buffer, src->pointer_in)`. It ignored `src->pointer_out` and any wrapped unread interval, so the bytes copied did not generally correspond to data available for reading from a circular buffer.
+
+**Decision and current behavior:** Copy the source's logical unread bytes in FIFO order without consuming them. Preserving the source cursor follows the previous implementation, which did not advance it; no non-test call sites were identified. The operation snapshots the source storage and cursor metadata under a short critical section, then writes bytes individually to the destination. Source cursor/storage must remain stable during the call, the storage regions must not overlap, and destination writes remain partial/non-atomic as specified by TIMA-FWK-0009.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's request to fix this issue, implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's logical unread range in FIFO order. Keeping the source cursor unchanged preserves the old helper's non-consuming behavior; this logical interpretation is chosen because the helper accepts a `buffer_data_t` and the bug is specifically the ignored unread range. Source stability and non-overlapping storage are required, while destination writes follow TIMA-FWK-0009's partial/non-atomic contract. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Replaced the raw-prefix copy with a protected source metadata snapshot and a wrap-aware FIFO loop. The helper now rejects self-copy and identical backing pointers, does not consume the source, and writes destination bytes through `buffer_write()`. Documented the copy and synchronization contract.
+- **2026-11-16 — Test:** The first `tests/framework/run_buffer_tests.sh` run failed in an existing test because its source descriptor used `pointer_in == size`, which violates the circular-buffer cursor invariant. The failure exposed that the fixture relied on the former raw-prefix interpretation.
+- **2026-11-16 — Rework:** Changed the existing fixture to represent the same two bytes in a valid three-byte circular buffer. No implementation change was needed; the fixture now follows the documented invariant `pointer_in < size`.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. The new partially consumed/wrapped source case verifies FIFO bytes and source cursor preservation; empty and self-copy cases also pass.
+- **2026-11-16 — Local Code Review:** Verified the source unread count/order calculation, unchanged source indices, per-byte destination writes, and rejection of empty, invalid, self, and identical-storage inputs. Independent review and target-board testing have not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Determine the original API contract and caller expectations. Either implement copying in logical read order with explicit copy/consume semantics, or rename/restrict the helper to an intentionally raw-prefix operation. Test empty, partially consumed, and wrapped buffers.
+Implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's unread bytes in FIFO order. Preserve the source cursor, require a stable source and non-overlapping storage, and retain partial/non-atomic destination writes. Test empty, partially consumed, wrapped, and self-copy cases.
 
 **Commits**
 
