@@ -511,6 +511,7 @@ The former `buffer_get_pointer()` and `buffer_get_pointer_at()` APIs returned bo
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; all maintained framework tests compile without the removed API.
 - **2026-11-16 — Local Code Review:** Confirmed the source and public header no longer expose either pointer getter and the repository has no production call sites. Independent review and target-board testing have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Remove `buffer_get_pointer()` and `buffer_get_pointer_at()` from the public header and implementation. They cannot guarantee storage lifetime across resize or destruction, and no production repository caller uses them. Treat the removal as an intentional source-breaking API change; callers should use byte/bulk read operations and not access the backing field directly. No replacement raw-pointer API is proposed.
@@ -519,6 +520,7 @@ Remove `buffer_get_pointer()` and `buffer_get_pointer_at()` from the public head
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) | `UNREVIEWED` | Remove the raw storage pointer getters and document the API break. |
 
 **Resolution Description**  
 Pending.
