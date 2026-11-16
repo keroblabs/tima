@@ -360,6 +360,7 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; the zero byte is reported as a successful read and the empty failure leaves the output unchanged.
 - **2026-11-16 — Local Code Review:** Verified the status check, byte fetch, and cursor advance occur under one balanced critical section; the compatibility wrapper retains zero-on-empty behavior. Independent review and target-board testing have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Add an explicit-status `buffer_try_read(buffer, &value)` operation with an atomic empty check and read. Retain `buffer_read()` as a compatibility helper and document that it still cannot distinguish empty from a stored zero.
@@ -368,6 +369,7 @@ Add an explicit-status `buffer_try_read(buffer, &value)` operation with an atomi
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) | `UNREVIEWED` | Add status-bearing single-byte read while preserving the legacy wrapper. |
 
 **Resolution Description**  
 Pending.
