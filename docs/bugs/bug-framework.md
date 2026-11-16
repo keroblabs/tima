@@ -397,6 +397,7 @@ Pending.
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Partial counts, zero-byte data, unchanged output beyond the returned count, balanced per-byte critical sections, and an interleaved consumer were verified.
 - **2026-11-16 — Local Code Review:** Confirmed the emptiness check and consumption are now indivisible for each byte; the batch remains intentionally non-atomic and does not hold interrupts disabled for the full transfer. Independent review and target-board ISR testing have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Define bulk reads and writes as partial, non-atomic operations with per-byte critical sections. Use the status-bearing `buffer_try_read()` operation for each byte so empty detection and consumption are atomic, and avoid prolonged interrupt masking for large transfers. Callers requiring batch-level atomicity must provide external synchronization.
@@ -405,6 +406,7 @@ Define bulk reads and writes as partial, non-atomic operations with per-byte cri
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) | `UNREVIEWED` | Read bulk data through the status-bearing byte operation; document partial batches. |
 
 **Resolution Description**  
 Pending.
