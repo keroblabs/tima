@@ -17,14 +17,15 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0005` | `CLOSED` | Resize can invalidate cursors and truncate the stored size |
 | `TIMA-FWK-0006` | `CLOSED` | Allocation and deallocation occur while interrupts are disabled |
 | `TIMA-FWK-0007` | `CLOSED` | Replacing storage breaks heap ownership and buffer invariants |
-| `TIMA-FWK-0008` | `REVIEW` | Single-byte read cannot distinguish empty from a zero byte |
-| `TIMA-FWK-0009` | `REVIEW` | Bulk read checks emptiness outside its protected operation |
-| `TIMA-FWK-0010` | `REVIEW` | Copy-from-buffer ignores unread range and circular order |
-| `TIMA-FWK-0011` | `REVIEW` | Mode and offset setters bypass the critical-section contract |
-| `TIMA-FWK-0012` | `REVIEW` | Returned storage pointers have no stable lifetime guarantee |
-| `TIMA-FWK-0013` | `REVIEW` | Reference counter can overflow and misrepresent ownership |
+| `TIMA-FWK-0008` | `CLOSED` | Single-byte read cannot distinguish empty from a zero byte |
+| `TIMA-FWK-0009` | `CLOSED` | Bulk read checks emptiness outside its protected operation |
+| `TIMA-FWK-0010` | `CLOSED` | Copy-from-buffer ignores unread range and circular order |
+| `TIMA-FWK-0011` | `CLOSED` | Mode and offset setters bypass the critical-section contract |
+| `TIMA-FWK-0012` | `CLOSED` | Returned storage pointers have no stable lifetime guarantee |
+| `TIMA-FWK-0013` | `CLOSED` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
 | `TIMA-FWK-0015` | `CLOSED` | fill_size metadata is left uninitialized and unused |
+| `TIMA-FWK-0016` | `OPEN` | FSM handlers and dispatcher disagree on signal ownership |
 
 ## Issues
 
@@ -342,7 +343,7 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 ### TIMA-FWK-0008
 
 **ID:** `TIMA-FWK-0008`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Single-byte read cannot distinguish empty from a zero byte
 
 **Description**  
@@ -362,6 +363,9 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed `buffer_try_read()` tests validity and emptiness, copies a byte (including `0x00`), and advances the read cursor within one balanced critical section. Failure leaves output untouched, while `buffer_read()` keeps its documented zero-on-empty compatibility behavior. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `591973d` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Add an explicit-status `buffer_try_read(buffer, &value)` operation with an atomic empty check and read. Retain `buffer_read()` as a compatibility helper and document that it still cannot distinguish empty from a stored zero.
 
@@ -369,17 +373,17 @@ Add an explicit-status `buffer_try_read(buffer, &value)` operation with an atomi
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) | `UNREVIEWED` | Add status-bearing single-byte read while preserving the legacy wrapper. |
+| `phase-1-improvements` | [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) | `APPROVED` | Add status-bearing single-byte read while preserving the legacy wrapper. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Adds an unambiguous status-bearing byte read through `buffer_try_read()` while preserving `buffer_read()` compatibility. Independent static review of the implementation and zero-byte/empty/null regression tests accepts the change. Submitted native suite passed; tests were not independently rerun and no target-board testing was performed. Accepted implementation: [`591973d`](https://github.com/keroblabs/tima/commit/591973d8a6dcd0b86f3b492b85b14d38b85cfeaa) on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0009
 
 **ID:** `TIMA-FWK-0009`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Bulk read checks emptiness outside its protected operation
 
 **Description**  
@@ -399,6 +403,9 @@ Pending.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed `buffer_read_buffer()` calls `buffer_try_read()` per byte, so empty detection and consumption occur together. The partial/non-atomic batch contract is documented, and test source checks partial counts, zero-valued bytes, preserved output tail, and an interleaved consumer. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `60ebc41` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Define bulk reads and writes as partial, non-atomic operations with per-byte critical sections. Use the status-bearing `buffer_try_read()` operation for each byte so empty detection and consumption are atomic, and avoid prolonged interrupt masking for large transfers. Callers requiring batch-level atomicity must provide external synchronization.
 
@@ -406,17 +413,17 @@ Define bulk reads and writes as partial, non-atomic operations with per-byte cri
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) | `UNREVIEWED` | Read bulk data through the status-bearing byte operation; document partial batches. |
+| `phase-1-improvements` | [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) | `APPROVED` | Read bulk data through the status-bearing byte operation; document partial batches. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Eliminates the unprotected bulk-reader pre-check and its stale-state/phantom-zero hazard by using a protected status-bearing read per byte. Batch-level atomicity is explicitly not promised; callers requiring it must synchronize externally. Independent static review accepts the implementation and inspected native regressions. Submitted native tests passed but were not independently rerun; on-target ISR testing remains unperformed. Accepted implementation: [`60ebc41`](https://github.com/keroblabs/tima/commit/60ebc4113e16135b08686e2d6eaa7260f24c48d8) on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0010
 
 **ID:** `TIMA-FWK-0010`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Copy-from-buffer ignores unread range and circular order
 
 **Description**  
@@ -438,6 +445,9 @@ Pending.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed protected source metadata snapshot, wrap-aware unread-count and FIFO copying, non-consuming source semantics, per-byte destination writes, and rejection of self-copy or identical storage. Existing fixture was correctly updated to maintain `pointer_in < size`. Source stability and non-overlap remain documented caller preconditions. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `a30c6ce` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's unread bytes in FIFO order. Preserve the source cursor, require a stable source and non-overlapping storage, and retain partial/non-atomic destination writes. Test empty, partially consumed, wrapped, and self-copy cases.
 
@@ -445,17 +455,17 @@ Implement `buffer_write_buffer_ex()` as a non-consuming copy of the source's unr
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) | `UNREVIEWED` | Copy unread source bytes in FIFO order without consuming them. |
+| `phase-1-improvements` | [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) | `APPROVED` | Copy unread source bytes in FIFO order without consuming them. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Replaces raw-prefix copying with a FIFO-ordered, wrap-aware copy of the logical unread source range without consuming it. Independent static review accepts the arithmetic and test cases for wrapped, partially consumed, empty and self-source behavior; destination batches remain partial/non-atomic. Source lifetime/stability and non-overlapping regions are explicit preconditions rather than runtime-verified guarantees. Submitted native tests passed but were not independently rerun; no target-board tests were performed. Accepted implementation: [`a30c6ce`](https://github.com/keroblabs/tima/commit/a30c6cefd55e3900457202e492db2e1737eeef46) on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0011
 
 **ID:** `TIMA-FWK-0011`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Mode and offset setters bypass the critical-section contract
 
 **Description**  
@@ -475,6 +485,9 @@ Several mutating APIs modify state that may be shared with an ISR without using 
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed `buffer_read_set_offset()` now checks a null descriptor before `DI()`, validates and updates `pointer_out` inside a balanced critical section, and retains the previously agreed clamp-to-write-index behavior. Earlier mode setters were already removed. Inspected nested-mask and upper-bound test assertions. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `84204e6` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Keep the removed no-rollover/read-only modes absent. Protect `buffer_read_set_offset()` validation and cursor mutation with the repository's balanced `DI()` / `EI()` convention, preserve its existing clamp-to-write-index behavior, and document the lifecycle/interrupt-context contract.
 
@@ -482,17 +495,17 @@ Keep the removed no-rollover/read-only modes absent. Protect `buffer_read_set_of
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) | `UNREVIEWED` | Protect offset validation and cursor update with a critical section. |
+| `phase-1-improvements` | [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) | `APPROVED` | Protect offset validation and cursor update with a critical section. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Protects the remaining read-offset setter's validation and cursor mutation with a balanced interrupt critical section, preserving its specified clamp semantics. No-rollover and read-only setters were removed under earlier tickets and remain absent. Independent static review accepts this focused change; submitted native tests passed but were not independently rerun, and target-board interrupt checks were not performed. Accepted implementation: [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0012
 
 **ID:** `TIMA-FWK-0012`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Returned storage pointers have no stable lifetime guarantee
 
 **Description**  
@@ -513,6 +526,9 @@ The former `buffer_get_pointer()` and `buffer_get_pointer_at()` APIs returned bo
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed the two pointer-returning APIs are absent from `buffer.c` and `buffer.h`, obsolete tests were removed, and the header directs users toward byte/bulk reads. This is an intentional source-breaking change. The submitted record reports no maintained production callers; legacy generated assembly listings may retain stale symbol names. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `eb6cbbe` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Remove `buffer_get_pointer()` and `buffer_get_pointer_at()` from the public header and implementation. They cannot guarantee storage lifetime across resize or destruction, and no production repository caller uses them. Treat the removal as an intentional source-breaking API change; callers should use byte/bulk read operations and not access the backing field directly. No replacement raw-pointer API is proposed.
 
@@ -520,17 +536,17 @@ Remove `buffer_get_pointer()` and `buffer_get_pointer_at()` from the public head
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) | `UNREVIEWED` | Remove the raw storage pointer getters and document the API break. |
+| `phase-1-improvements` | [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) | `APPROVED` | Remove the raw storage pointer getters and document the API break. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Removes `buffer_get_pointer()` and `buffer_get_pointer_at()` because a borrowed pointer cannot remain valid across resize/final destruction. Independent static review confirms the public APIs and implementations were eliminated and API guidance updated. Removal is intentionally source-breaking; external downstream users require migration/rebuild. Submitted native tests passed but were not independently rerun, and no target-board build was performed. Accepted implementation: [`eb6cbbe`](https://github.com/keroblabs/tima/commit/eb6cbbed49ce8efbc2781b95acf68848b6b38247) on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0013
 
 **ID:** `TIMA-FWK-0013`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Reference counter can overflow and misrepresent ownership
 
 **Description**  
@@ -551,6 +567,9 @@ The `user_count` field is only eight bits, and `buffer_add_user()` increments it
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** Confirmed `buffer_add_user()` returns FALSE at null/`UINT8_MAX` without wrap, retains balanced masking, and returns TRUE on increment. `fsm_clone_event()` allocates first, then acquires a buffer reference; on failure it frees the unreturned clone. Inspected native reference-count tests and FSM change. Separate pre-existing FSM dispatch/handler event-ownership hazards were identified and are tracked independently as TIMA-FWK-0016; they do not change this narrow review verdict. The repository's native test pass is documented, but tests were not independently rerun or performed on hardware. Commit `8f679b6` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted independent review; `RESOLVED` → `CLOSED` because the accepted implementation commit is already on `phase-1-improvements`.
+
 **Proposed Change**  
 Document the `uint8_t` reference-count ceiling (`UINT8_MAX`), make `buffer_add_user()` return an observable failure rather than wrap, and ensure callers such as `fsm_clone_event()` release allocations when reference acquisition fails. Preserve the existing guarded decrement in `buffer_destroy()` and test successful increments, overflow, null input, and reference-release behavior.
 
@@ -558,10 +577,10 @@ Document the `uint8_t` reference-count ceiling (`UINT8_MAX`), make `buffer_add_u
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) | `UNREVIEWED` | Make buffer reference increments checked and handle FSM acquisition failure. |
+| `phase-1-improvements` | [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) | `APPROVED` | Make buffer reference increments checked and handle FSM acquisition failure. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Prevents `uint8_t` reference-counter overflow and makes reference acquisition failure observable, with an allocation-first, failure-cleanup update to `fsm_clone_event()`. Independent static review accepts the focused API and caller change. The repository records passing native buffer tests and a syntax-only FSM check with warning suppression, not FSM link/runtime tests; neither was independently rerun. Pre-existing FSM event-ownership concerns are separately recorded under TIMA-FWK-0016, outside this fix. Accepted implementation: [`8f679b6`](https://github.com/keroblabs/tima/commit/8f679b6d9679702b339be6f16cee918c392264cf) on `phase-1-improvements`.
 
 ---
 
@@ -647,3 +666,29 @@ Remove `fill_size` because no in-repository caller uses it and no reliable updat
 
 **Resolution Description**  
 **Approved and closed.** [`72664c8`](https://github.com/keroblabs/tima/commit/72664c87175b89c7d8cf573cfea0eaf6d8880775) removes the unused `fill_size` member and its initialization from the buffer API. Independent review confirms that the remaining fields are explicitly initialized and that the new regression covers the descriptor layout. The submitted record reports no in-repository consumers and passing native tests; the test suite was not independently rerun and downstream binary users must be rebuilt for the changed struct. Commit already present on `phase-1-improvements`.
+
+### TIMA-FWK-0016
+
+**ID:** `TIMA-FWK-0016`  
+**Status:** `OPEN`  
+**Title:** FSM handlers and dispatcher disagree on signal ownership
+
+**Description**  
+The FSM signal dispatch loop unconditionally destroys a signal after invoking its handler, even when a built-in handler has already destroyed the signal or placed it into a saved-signal queue. This risks double-free, use-after-free, and queue corruption.
+
+**Details**  
+**Confirmed by static review, runtime not reproduced:** In `framework/fsm.c`, `fsm_process_signal()` calls `handler( current_process->p_data, signal )` and then `fsm_delete_signal( &signal->list_node )`. `fsm_ignore_event()` itself calls `fsm_delete_signal( &signal->list_node )`, so a default invalid-event handler can free the same signal twice. `fsm_save_event()` adds `signal->list_node` to `current_process->saved_events_list`, but the dispatcher then destroys the queued signal; a later saved-event dequeue could access freed storage. `fsm_delete_signal()` also calls `buffer_destroy(signal->buffer)` if present, so the problem can cause double reference release. This is a pre-existing FSM event-ownership issue revealed while reviewing the TIMA-FWK-0013 integration; it is **not caused by** the checked `buffer_add_user()` change. Actual runtime failures, precise call-path reachability, and user-handler ownership conventions still need investigation.
+
+**Notes**
+- **2026-11-16 — Discovery:** Independent review of TIMA-FWK-0013's `fsm_clone_event()` caller found the conflicting deletion/queueing paths in `framework/fsm.c`. The concern is evidenced by the current source but has not been exercised in an FSM runtime test. Recorded as a separate OPEN issue rather than expanding the scope of the approved reference-counter fix; no remedy is approved yet.
+
+**Proposed Change**  
+Investigate and define explicit event ownership across FSM dispatcher, built-in handlers, saved-event queue and user handlers. Ensure each event is released exactly once or deliberately transferred, with tests for invalid events, saved events, state changes and buffer reference counts. Consider whether handler return status or a dispatcher-managed ownership model is more appropriate; decide after triage.
+
+**Commits**
+
+| Branch | Commit (short hash) | Review Status | Description |
+| --- | --- | --- | --- |
+
+**Resolution Description**  
+Pending.
