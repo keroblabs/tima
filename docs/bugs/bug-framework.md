@@ -280,6 +280,7 @@ Buffer lifecycle operations call the heap allocator inside critical sections, in
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Test allocator hooks assert allocations and frees occur with interrupts enabled; wrapped grow/shrink cases also verify FIFO data and exactly two balanced critical sections per resize.
 - **2026-11-16 — Local Code Review:** The resize path preserves the prior ring ordering and failure behavior, and all heap calls now follow `EI()`. The source and host test were reviewed locally; independent review and on-target timing/ISR tests have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Define which buffer APIs are callable from interrupt context. Keep allocation, deallocation, and resize copying outside interrupt-disabled regions. Buffer lifecycle APIs are task-context-only, and resize requires exclusive access so its source storage and cursor snapshot remain stable while copying. Use short critical sections to snapshot and commit metadata, detach owned storage before release, and free old or unused allocations after leaving the critical section. Broader allocator reentrancy and ISR-safety remain a separate board/heap review; do not treat masking interrupts as a general solution for dynamic allocation.
@@ -288,6 +289,7 @@ Define which buffer APIs are callable from interrupt context. Keep allocation, d
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) | `UNREVIEWED` | Move heap work and resize copying outside interrupt-disabled sections. |
 
 **Resolution Description**  
 Pending.
