@@ -1,6 +1,4 @@
 #include "pool.h"
-#include "exception.h"
-#include "arch.h"
 
 void pool_create(pool_data_t * pool_data, uint32_t element_size, void * buffer, uint32_t buffer_size)
 {
