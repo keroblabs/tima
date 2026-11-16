@@ -317,6 +317,7 @@ The public `buffer_set_buffer()` API allowed replacement of the backing pointer 
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; all maintained framework tests compile and run without the removed API.
 - **2026-11-16 — Local Code Review:** Confirmed the supported API no longer contains a storage-rebind operation, while `buffer_init()` and `buffer_create()` retain their borrowed/heap-owned storage behavior. Independent review has not occurred.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Remove `buffer_set_buffer()` from the public header and implementation. Storage is fixed by `buffer_init()` for caller-owned buffers or `buffer_create()` for heap-owned buffers; do not directly replace the public struct's backing pointer or reinitialize a heap-created descriptor. This intentionally removes the unsupported API rather than introducing a new ownership-transfer/capacity contract.
@@ -325,6 +326,7 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) | `UNREVIEWED` | Remove the public storage-rebinding API and document fixed ownership. |
 
 **Resolution Description**  
 Pending.
