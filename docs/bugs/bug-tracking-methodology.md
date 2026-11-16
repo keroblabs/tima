@@ -12,6 +12,7 @@ This document defines how we identify, describe, discuss, fix, review, and close
 - **Preserve history.** Historical snapshots and reference branches remain unchanged; fixes and improvements belong on an explicitly designated working branch. Never rewrite a preserved baseline as part of issue resolution.
 - **One issue, one identifiable concern.** Related issues may be linked, but distinct causes or acceptance criteria should not be hidden in a single ticket.
 - **Keep records consistent.** Every category file has the same header, summary, and ticket structure.
+- **Keep issue files manageable.** A single category file may contain no more than 16 tickets; continue a category in another numbered file without changing IDs or discarding history.
 - **Record decisions and rework.** Notes form a chronological, append-only engineering history, including discarded proposals, review feedback, and reopened issues.
 - **Distinguish evidence from hypotheses.** A suspected defect is permissible, but must be labelled as unverified until confirmed by analysis or tests.
 - **Track implementation commits.** Each issue retains a commit list with branch, short hash, review status, and concise change description.
@@ -19,7 +20,9 @@ This document defines how we identify, describe, discuss, fix, review, and close
 
 ## 2. Files and issue ownership
 
-Each file under `docs/bugs/` covers one logical subsystem or engineering area, not necessarily one source directory.
+Each file under `docs/bugs/` covers one logical subsystem or engineering area, or one numbered volume of that area, not necessarily one source directory. **Limit each individual issue file to 16 tickets**, including closed, deferred, and resolved entries. This applies to both the summary rows and complete issue records.
+
+When the current file reaches 16 tickets, keep it intact and create a sequentially numbered companion file for the next issue in the same category. For example, after `bug-framework.md` contains `TIMA-FWK-0001` through `TIMA-FWK-0016`, create `bug-framework-02.md` for `TIMA-FWK-0017` onward (up to `TIMA-FWK-0032`), followed by `bug-framework-03.md` for `TIMA-FWK-0033` onward. All volumes retain the same area prefix, follow the same required file structure, and contain only their own tickets and summary rows. Cross-link adjacent volumes for navigation when present. Do not split or relocate existing tickets solely to make space.
 
 Example category files (illustrative; this table is not a work plan or list of files to create):
 
@@ -29,13 +32,13 @@ Example category files (illustrative; this table is not a work plan or list of f
 | `framework.md` | Reusable framework functions and data structures, such as buffers and pipes | `TIMA-FWK` |
 | `system.md` | System lifecycle, registration, and kernel services | `TIMA-SYS` |
 
-Add, rename, or reorganize category files according to the project's needs, maintaining unique ID prefixes and preserving existing issue IDs. Place each issue where its **primary corrective responsibility** lies; cross-reference other affected files or tickets in Details or Notes. Do not duplicate the same issue in two files.
+Add, rename, or reorganize category areas according to the project's needs, maintaining a unique ID prefix per **area** (shared by its numbered volumes) and preserving existing issue IDs. Place each issue where its **primary corrective responsibility** lies; cross-reference other affected files or tickets in Details or Notes. Do not duplicate the same issue in two files.
 
 ## 3. Issue identification
 
 IDs have the form `TIMA-<AREA>-NNNN`, for example `TIMA-FWK-0001` and `TIMA-BRD-0001`.
 
-- Numbers start at `0001` and increase within each category file.
+- Numbers start at `0001` and increase across the **entire category area**, including all numbered volumes; opening a new file does not reset numbering.
 - An ID is permanent. Never reuse, renumber, or recycle it, even if the issue is rejected, moved, or closed.
 - The ID remains stable if the title, description, or owning category changes; leave a cross-reference in the old file if an issue must move.
 - Commit messages, review notes, tests, and related tickets should reference the ID.
@@ -64,6 +67,8 @@ Every category file uses exactly this top-level order:
 1. **Header:** title, scope, ID prefix, and a brief pointer to this methodology. Include a short statement that the summary is the current index and the issue records below are authoritative.
 2. **Summary:** a Markdown table with exactly three columns — `ID`, `Status`, and `Title`. Each issue occupies one row, with a short, single-line title. Sort by issue ID. The table is updated whenever status or title changes.
 3. **Issues:** complete tickets, in ascending ID order. Do not create an issue entry without a corresponding summary row, or vice versa.
+
+Each individual issue file must contain **at most 16 tickets** and **at most 16 corresponding summary rows**. When it is full, create the next numbered volume under Section 2; retain the historical issues in their original file.
 
 Do not use the summary to hold technical explanations or discussions. Those belong in the corresponding ticket.
 
@@ -196,6 +201,7 @@ If a test later exposes a regression, reopen the original issue when it concerns
 
 - Any change to status or title must be reflected in both the summary row and the ticket fields in the same edit.
 - Each issue has one authoritative record; links between issues express dependency, duplication, or shared investigation.
+- Never exceed 16 issues in one file, and do not restart ticket numbering in a new volume. Keep category prefixes unique per area, not per file.
 - Do not batch unrelated defects into one ticket just because they occur in the same file.
 - Keep defect corrections separate from discretionary API redesign when their acceptance criteria differ.
 - Keep the Commits table consistent with the code review history. Never delete a superseded commit entry or claim that a different SHA has inherited its approval.
