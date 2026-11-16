@@ -473,6 +473,7 @@ Several mutating APIs modify state that may be shared with an ISR without using 
 - **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. The setter preserved an outer critical section, balanced its own disable/enable pair, and clamped an oversized offset to `pointer_in`.
 - **2026-11-16 — Local Code Review:** Confirmed the null check remains outside the critical section, invalid descriptors do not mutate state, and valid validation/update operations are protected together. Independent review and target-board testing have not been performed.
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
+- **2026-11-16 — Commit:** Created implementation commit [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
 **Proposed Change**  
 Keep the removed no-rollover/read-only modes absent. Protect `buffer_read_set_offset()` validation and cursor mutation with the repository's balanced `DI()` / `EI()` convention, preserve its existing clamp-to-write-index behavior, and document the lifecycle/interrupt-context contract.
@@ -481,6 +482,7 @@ Keep the removed no-rollover/read-only modes absent. Protect `buffer_read_set_of
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
+| `phase-1-improvements` | [`84204e6`](https://github.com/keroblabs/tima/commit/84204e6eae69046c880b227f39fd29fcc9fd942c) | `UNREVIEWED` | Protect offset validation and cursor update with a critical section. |
 
 **Resolution Description**  
 Pending.
