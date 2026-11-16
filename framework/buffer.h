@@ -41,7 +41,8 @@ buffer_data_t * buffer_create( uint32_t size );
 // exclusive access to the buffer. Callers must also stop using pointers
 // returned by buffer_get_pointer[_at]() before resizing or destroying the
 // final reference.
-void buffer_add_user( buffer_data_t * buffer_data );
+// Adds a reference unless the descriptor is null or user_count is UINT8_MAX.
+bool_t buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
 void buffer_reset( buffer_data_t * buffer_data );
 void buffer_reset_read( buffer_data_t * buffer_data );

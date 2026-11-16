@@ -153,6 +153,48 @@ static void test_read_offset_setter_is_protected_and_clamped(void)
     assert(enable_calls == 1);
 }
 
+static void test_buffer_user_count_rejects_overflow(void)
+{
+    uint8_t storage[2] = { 0, 0 };
+    buffer_data_t buffer;
+
+    buffer_init(&buffer, storage, sizeof(storage));
+    assert(buffer.user_count == 1);
+
+    reset_irq_counts();
+    assert(buffer_add_user(&buffer) == TRUE);
+    assert(buffer.user_count == 2);
+    assert(critical_depth == 0);
+    assert(disable_calls == 1);
+    assert(enable_calls == 1);
+
+    buffer.user_count = UINT8_MAX;
+    reset_irq_counts();
+    assert(buffer_add_user(&buffer) == FALSE);
+    assert(buffer.user_count == UINT8_MAX);
+    assert(critical_depth == 0);
+    assert(disable_calls == 1);
+    assert(enable_calls == 1);
+    assert(buffer_add_user(NULL) == FALSE);
+}
+
+static void test_buffer_user_references_release_in_order(void)
+{
+    uint32_t heap_usage_before = heap_in_use(&test_heap);
+    buffer_data_t *buffer = buffer_create(4);
+
+    assert(buffer != NULL);
+    assert(buffer_add_user(buffer) == TRUE);
+    assert(buffer->user_count == 2);
+
+    buffer_destroy(buffer);
+    assert(buffer->user_count == 1);
+    assert(heap_in_use(&test_heap) > heap_usage_before);
+
+    buffer_destroy(buffer);
+    assert(heap_in_use(&test_heap) == heap_usage_before);
+}
+
 static void test_bulk_read_returns_partial_count_and_preserves_zero_bytes(void)
 {
     uint8_t storage[4] = { 0, 0, 0, 0 };
@@ -559,7 +601,7 @@ static void test_invalid_sizes_and_null_arguments_are_rejected(void)
     assert(buffer_get_current_index(NULL) == 0);
     assert(buffer_get_max_index(NULL) == 0);
     buffer_resize(NULL, 4);
-    buffer_add_user(NULL);
+    assert(buffer_add_user(NULL) == FALSE);
     buffer_destroy(NULL);
     assert(buffer_get_pointer_at(NULL, 0) == NULL);
     assert(buffer_get_pointer(NULL) == NULL);
@@ -585,6 +627,8 @@ int main(void)
     test_circular_buffer_overwrites_oldest_entry();
     test_try_read_distinguishes_empty_from_zero_byte();
     test_read_offset_setter_is_protected_and_clamped();
+    test_buffer_user_count_rejects_overflow();
+    test_buffer_user_references_release_in_order();
     test_bulk_read_returns_partial_count_and_preserves_zero_bytes();
     test_bulk_read_handles_an_interleaved_consumer();
     test_created_buffer_uses_circular_behavior();

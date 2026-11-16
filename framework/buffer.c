@@ -224,15 +224,23 @@ void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size )
     MFREE( old_buffer );
 }
 
-void buffer_add_user( buffer_data_t * buffer_data )
+bool_t buffer_add_user( buffer_data_t * buffer_data )
 {
-	if( buffer_data == NULL ) return;
+    if( buffer_data == NULL ) return FALSE;
 
-	DI();
+    DI();
 
-	buffer_data->user_count++;
+    if( buffer_data->user_count == UINT8_MAX )
+    {
+        EI();
+        return FALSE;
+    }
 
-	EI();
+    buffer_data->user_count++;
+
+    EI();
+
+    return TRUE;
 }
 
 const uint8_t * buffer_get_pointer_at( buffer_data_t * buffer_data, uint32_t offset )

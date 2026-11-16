@@ -232,8 +232,16 @@ fsm_signal_t * fsm_build_event( uint32_t signal_id, buffer_data_t * buffer )
 
 fsm_signal_t * fsm_clone_event( fsm_signal_t * event )
 {
-	buffer_add_user( event->buffer );
-	return fsm_build_event( event->id, event->buffer );
+    fsm_signal_t * clone = fsm_build_event( event->id, event->buffer );
+    if( clone == NULL ) return NULL;
+
+    if( ( event->buffer != NULL ) && ( buffer_add_user( event->buffer ) == FALSE ) )
+    {
+        MFREE( clone );
+        return NULL;
+    }
+
+    return clone;
 }
 
 void fsm_send_event( fsm_signal_t * signal, uint32_t destination_pid )

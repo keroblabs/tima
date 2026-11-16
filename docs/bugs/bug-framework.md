@@ -22,7 +22,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0010` | `REVIEW` | Copy-from-buffer ignores unread range and circular order |
 | `TIMA-FWK-0011` | `REVIEW` | Mode and offset setters bypass the critical-section contract |
 | `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
-| `TIMA-FWK-0013` | `OPEN` | Reference counter can overflow and misrepresent ownership |
+| `TIMA-FWK-0013` | `REVIEW` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
 | `TIMA-FWK-0015` | `CLOSED` | fill_size metadata is left uninitialized and unused |
 
@@ -521,20 +521,28 @@ Pending.
 ### TIMA-FWK-0013
 
 **ID:** `TIMA-FWK-0013`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Reference counter can overflow and misrepresent ownership
 
 **Description**  
 The `user_count` field is only eight bits, and `buffer_add_user()` increments it without an overflow check, potentially causing premature release or incorrect lifecycle behavior.
 
 **Details**  
-**Confirmed by static review:** `buffer_data_t.user_count` is `uint8_t`; `buffer_init()` sets it to 1; `buffer_add_user()` increments it unconditionally; `buffer_destroy()` decrements only when greater than zero, and frees an owned buffer when it becomes zero. The count wraps after 255 additions. Actual applications may use much smaller counts, but the API has no declared limit or overflow failure result.
+**At discovery, confirmed by static review:** `buffer_data_t.user_count` is `uint8_t`; `buffer_init()` sets it to 1; `buffer_add_user()` incremented it unconditionally; `buffer_destroy()` decremented only when greater than zero and freed an owned buffer when it became zero. The count could wrap after 255 additions.
+
+**Current implementation:** The 8-bit limit is explicit. `buffer_add_user()` now returns `FALSE` without changing the count when passed `NULL` or when `user_count == UINT8_MAX`; otherwise it increments under a critical section and returns `TRUE`. `fsm_clone_event()` allocates the clone before acquiring a reference, checks the result, and frees the unreturned clone if acquisition fails, so allocation or reference failure does not leak or miscount an owned buffer.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
+- **2026-11-16 — Decision:** At the user's request to fix this issue, retain the existing `uint8_t` layout and make its existing ceiling explicit instead of widening every buffer descriptor. `buffer_add_user()` will report failure at `UINT8_MAX` without wrapping, and callers must handle failure before retaining another reference. `buffer_destroy()` already guards against decrementing below zero. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Changed `buffer_add_user()` to return `bool_t` and reject null/max-count calls under the same critical-section contract. Updated `fsm_clone_event()` to allocate first, check reference acquisition, and free the clone on acquisition failure.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`. Added checks for successful increments, `UINT8_MAX` rejection without wrap, null input, balanced critical sections, and reference-release order.
+- **2026-11-16 — Test:** An initial standalone `fsm.c` syntax check mixed the buffer test stub headers with `system/types.h` and failed on conflicting macro definitions and existing FSM warnings. A retry using system headers passed as a syntax-only check with existing unused-parameter and implicit-declaration warnings suppressed; no FSM link or runtime test was performed.
+- **2026-11-16 — Local Code Review:** Verified the count remains capped, failure is observable, and FSM clone failure does not leave an uncounted buffer reference or leak its event allocation. Independent review has not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Specify ownership and reference-count limits. Use checked increments/decrements or another explicit ownership policy, make lifecycle failures observable, and test overflow/underflow and destruction order. Establish whether reference-count functions can be used in ISR context.
+Document the `uint8_t` reference-count ceiling (`UINT8_MAX`), make `buffer_add_user()` return an observable failure rather than wrap, and ensure callers such as `fsm_clone_event()` release allocations when reference acquisition fails. Preserve the existing guarded decrement in `buffer_destroy()` and test successful increments, overflow, null input, and reference-release behavior.
 
 **Commits**
 
