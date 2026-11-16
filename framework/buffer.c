@@ -243,28 +243,6 @@ bool_t buffer_add_user( buffer_data_t * buffer_data )
     return TRUE;
 }
 
-const uint8_t * buffer_get_pointer_at( buffer_data_t * buffer_data, uint32_t offset )
-{
-	const uint8_t * ret = NULL;
-	if( buffer_data == NULL ) return NULL;
-
-	DI();
-
-    if( _buffer_is_valid( buffer_data ) )
-    {
-        ret = &buffer_data->buffer[ MIN( offset, buffer_data->pointer_in ) ];
-    }
-
-    EI();
-
-    return ret;
-}
-
-const uint8_t * buffer_get_pointer( buffer_data_t * buffer_data )
-{
-    return buffer_get_pointer_at( buffer_data, 0 );
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 bool_t buffer_try_read( buffer_data_t * buffer_data, uint8_t * out_data )

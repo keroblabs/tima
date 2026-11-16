@@ -541,7 +541,6 @@ static void test_invalid_initialization_leaves_an_inert_buffer(void)
     assert(buffer_get_available_size(&buffer) == 0);
     assert(buffer_get_current_index(&buffer) == 0);
     assert(buffer_get_max_index(&buffer) == 0);
-    assert(buffer_get_pointer(&buffer) == NULL);
     assert(buffer_is_empty(&buffer) == TRUE);
     assert(buffer_is_full(&buffer) == FALSE);
 
@@ -603,8 +602,6 @@ static void test_invalid_sizes_and_null_arguments_are_rejected(void)
     buffer_resize(NULL, 4);
     assert(buffer_add_user(NULL) == FALSE);
     buffer_destroy(NULL);
-    assert(buffer_get_pointer_at(NULL, 0) == NULL);
-    assert(buffer_get_pointer(NULL) == NULL);
     assert(buffer_read(NULL) == 0);
     assert(buffer_write(NULL, 0x74) == FALSE);
     assert(buffer_write_buffer(NULL, storage, 1) == 0);

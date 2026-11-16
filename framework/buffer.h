@@ -26,21 +26,21 @@ typedef struct
 // Backing storage and ownership are fixed by buffer_init() or buffer_create();
 // changing buffer_data->buffer directly is unsupported. Do not reinitialize
 // a heap-created descriptor with buffer_init().
+// No backing-storage pointer getter is provided; use byte/bulk reads instead,
+// since resize or destruction can invalidate a borrowed pointer.
 // Callers of buffer_init() must provide at least size accessible backing bytes.
 // Invalid initialization leaves an inert descriptor; buffer_create() returns NULL.
 // Data operations treat invalid buffers as empty: reads and size/count getters
-// return zero, writes return FALSE, pointer getters return NULL, and invalid
-// buffers are empty and not full. Null descriptors and nonzero bulk operations
-// with null data pointers return empty/failure results or no-op.
+// return zero, writes return FALSE, and invalid buffers are empty and not full.
+// Null descriptors and nonzero bulk operations with null data pointers return
+// empty/failure results or no-op.
 void buffer_init( buffer_data_t * buffer_data, uint8_t * buffer_ptr, uint32_t size );
 
 buffer_data_t * buffer_create( uint32_t size );
 
 // Buffer lifecycle operations may use the heap and are not ISR-safe. Call them
 // from task context. buffer_resize() and final buffer_destroy() require
-// exclusive access to the buffer. Callers must also stop using pointers
-// returned by buffer_get_pointer[_at]() before resizing or destroying the
-// final reference.
+// exclusive access to the buffer.
 // Adds a reference unless the descriptor is null or user_count is UINT8_MAX.
 bool_t buffer_add_user( buffer_data_t * buffer_data );
 void buffer_destroy( buffer_data_t * buffer_data );
@@ -53,9 +53,6 @@ uint32_t buffer_get_current_index( buffer_data_t * buffer_data );
 uint32_t buffer_get_max_index( buffer_data_t * buffer_data );
 
 void buffer_resize( buffer_data_t * buffer_data, uint32_t new_size );
-
-const uint8_t * buffer_get_pointer_at( buffer_data_t * buffer_data, uint32_t offset );
-const uint8_t * buffer_get_pointer( buffer_data_t * buffer_data );
 
 ////////////////////////////////////////////////////////////////////////////////
 

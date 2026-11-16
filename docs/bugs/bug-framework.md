@@ -21,7 +21,7 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0009` | `REVIEW` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `REVIEW` | Copy-from-buffer ignores unread range and circular order |
 | `TIMA-FWK-0011` | `REVIEW` | Mode and offset setters bypass the critical-section contract |
-| `TIMA-FWK-0012` | `OPEN` | Returned storage pointers have no stable lifetime guarantee |
+| `TIMA-FWK-0012` | `REVIEW` | Returned storage pointers have no stable lifetime guarantee |
 | `TIMA-FWK-0013` | `REVIEW` | Reference counter can overflow and misrepresent ownership |
 | `TIMA-FWK-0014` | `CLOSED` | Zero sizes and invalid backing storage are not rejected |
 | `TIMA-FWK-0015` | `CLOSED` | fill_size metadata is left uninitialized and unused |
@@ -492,21 +492,28 @@ Pending.
 ### TIMA-FWK-0012
 
 **ID:** `TIMA-FWK-0012`  
-**Status:** `OPEN`  
+**Status:** `REVIEW`  
 **Title:** Returned storage pointers have no stable lifetime guarantee
 
 **Description**  
-`buffer_get_pointer()` and `buffer_get_pointer_at()` return borrowed pointers whose storage may be replaced or freed immediately after the function releases its critical section.
+The former `buffer_get_pointer()` and `buffer_get_pointer_at()` APIs returned borrowed storage pointers whose lifetime could not be guaranteed after the functions released their critical section. These pointer-returning APIs have been removed rather than exposing storage that resize or destruction can invalidate.
 
 **Details**  
-**At discovery, confirmed by static review:** `buffer_get_pointer_at()` calculates a pointer inside `DI()` / `EI()` and returns it after `EI()`. The former `buffer_set_buffer()` API could rebind storage; `buffer_resize()` and final destruction can also replace or release it. The setter was removed under TIMA-FWK-0007, but pointers can still be invalidated by resize or destruction. In circular mode, the offset is clamped against `pointer_in` rather than checked against logical unread data, so it is not a reliable logical data-view API. **Actual use-after-free requires concurrent use during resize/final destruction or unsupported direct mutation of public storage fields; it has not been reproduced.**
+**At discovery, confirmed by static review:** `buffer_get_pointer_at()` calculated a pointer inside `DI()` / `EI()` and returned it after `EI()`. `buffer_resize()` and final destruction can replace or release the backing allocation; the former `buffer_set_buffer()` path was removed under TIMA-FWK-0007. The offset was clamped against `pointer_in` rather than checked against logical unread data. A stale pointer required concurrent use during resize/final destruction or unsupported direct mutation of public storage fields and was not reproduced.
+
+**Decision and current behavior:** Remove both pointer getter APIs instead of attempting to promise a storage lifetime the interface cannot enforce. Source search across maintained `.c` and `.h` files found no production call sites. The repository has older generated `.dis`/`.lst` build snapshots that still contain the former symbol names; those are not live source callers and were not regenerated for this change. This is an intentional public API removal. Callers should use the supported byte/bulk read operations for data access and must not directly access or mutate the public `buffer_data_t.buffer` field; ownership and storage are fixed by initialization/creation.
 
 **Notes**
 - **2026-11-15 — Discovery:** Static review of `framework/buffer.c` and `framework/buffer.h` on `phase-1-improvements` (Tima 4.2-derived baseline). No runtime tests, fixes, or code reviews of implementation commits have been performed. Finding recorded for triage; proposed changes are not approved.
 - **2026-11-16 — Related Change:** `buffer_set_buffer()` was removed under TIMA-FWK-0007 at the user's direction because its ownership and capacity semantics were unsafe. The supported rebind path is gone; pointer lifetime across resize/final destruction and offset semantics remain open.
+- **2026-11-16 — Decision:** At the user's direction, remove both `buffer_get_pointer()` and `buffer_get_pointer_at()` rather than documenting an unenforceable lifetime guarantee or adding a replacement raw-pointer API. Search of maintained C sources/headers found no production callers to migrate. Older generated `.dis`/`.lst` snapshots retain symbol names but are not source call sites; they were not regenerated. The ticket and header explicitly record this intentional public API break and direct users to supported read APIs instead of accessing the backing field. Status moved to `IN_PROGRESS`.
+- **2026-11-16 — Implementation:** Removed both declarations and definitions and deleted obsolete null-pointer-getter assertions. Updated the general API comments and this ticket to explain the removal, its rationale, the absence of production callers, and the required migration away from direct storage access.
+- **2026-11-16 — Test:** `tests/framework/run_buffer_tests.sh` passed with `cc -std=c99 -Wall -Wextra -Werror`; all maintained framework tests compile without the removed API.
+- **2026-11-16 — Local Code Review:** Confirmed the source and public header no longer expose either pointer getter and the repository has no production call sites. Independent review and target-board testing have not been performed.
+- **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 
 **Proposed Change**  
-Specify whether returned pointers refer to stable externally owned storage, require caller-managed lifetime protection, or should be replaced by safe access/copy operations. Clarify offset meaning in circular versus linear mode; test invalid offsets and reconfiguration scenarios. Coordinate with TIMA-FWK-0005 and TIMA-FWK-0007.
+Remove `buffer_get_pointer()` and `buffer_get_pointer_at()` from the public header and implementation. They cannot guarantee storage lifetime across resize or destruction, and no production repository caller uses them. Treat the removal as an intentional source-breaking API change; callers should use byte/bulk read operations and not access the backing field directly. No replacement raw-pointer API is proposed.
 
 **Commits**
 
