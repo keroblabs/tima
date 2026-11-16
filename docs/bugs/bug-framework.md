@@ -15,8 +15,8 @@ The summary is the current index; full issue records below are authoritative. Up
 | `TIMA-FWK-0003` | `CLOSED` | Read-only mode does not prevent writes |
 | `TIMA-FWK-0004` | `CLOSED` | Reported available capacity disagrees with writable capacity |
 | `TIMA-FWK-0005` | `CLOSED` | Resize can invalidate cursors and truncate the stored size |
-| `TIMA-FWK-0006` | `REVIEW` | Allocation and deallocation occur while interrupts are disabled |
-| `TIMA-FWK-0007` | `REVIEW` | Replacing storage breaks heap ownership and buffer invariants |
+| `TIMA-FWK-0006` | `CLOSED` | Allocation and deallocation occur while interrupts are disabled |
+| `TIMA-FWK-0007` | `CLOSED` | Replacing storage breaks heap ownership and buffer invariants |
 | `TIMA-FWK-0008` | `OPEN` | Single-byte read cannot distinguish empty from a zero byte |
 | `TIMA-FWK-0009` | `OPEN` | Bulk read checks emptiness outside its protected operation |
 | `TIMA-FWK-0010` | `OPEN` | Copy-from-buffer ignores unread range and circular order |
@@ -262,7 +262,7 @@ Use `uint32_t` consistently for buffer sizes, capacities, cursors, offsets, bulk
 ### TIMA-FWK-0006
 
 **ID:** `TIMA-FWK-0006`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Allocation and deallocation occur while interrupts are disabled
 
 **Description**  
@@ -282,6 +282,9 @@ Buffer lifecycle operations call the heap allocator inside critical sections, in
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** ChatGPT reviewed the implementation diff and current `buffer.c`/`buffer.h`, including the two-phase resize metadata snapshot/commit, FIFO-preserving copy, allocation-failure path, deferred frees, and balanced interrupt masking. The test source was inspected: allocator hooks assert no heap operations while interrupts are disabled, and wrapped grow/shrink tests check data and critical-section balance. Exclusive task-context access remains a documented precondition. The recorded native test pass was not independently rerun; no on-target timing or ISR-concurrency tests were performed. Implementation commit `9444cf9` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted review; `RESOLVED` → `CLOSED` because the approved implementation is already integrated on the designated `phase-1-improvements` working branch.
+
 **Proposed Change**  
 Define which buffer APIs are callable from interrupt context. Keep allocation, deallocation, and resize copying outside interrupt-disabled regions. Buffer lifecycle APIs are task-context-only, and resize requires exclusive access so its source storage and cursor snapshot remain stable while copying. Use short critical sections to snapshot and commit metadata, detach owned storage before release, and free old or unused allocations after leaving the critical section. Broader allocator reentrancy and ISR-safety remain a separate board/heap review; do not treat masking interrupts as a general solution for dynamic allocation.
 
@@ -289,17 +292,17 @@ Define which buffer APIs are callable from interrupt context. Keep allocation, d
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) | `UNREVIEWED` | Move heap work and resize copying outside interrupt-disabled sections. |
+| `phase-1-improvements` | [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) | `APPROVED` | Move heap work and resize copying outside interrupt-disabled sections. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Implementation commit [`9444cf9`](https://github.com/keroblabs/tima/commit/9444cf915acf906ddafd58861629cc81ef5157f2) moves `buffer_resize()` allocation, FIFO copying, and storage release outside interrupt-disabled regions; `buffer_destroy()` detaches owned storage under protection and frees it after interrupts are enabled. Short critical sections retain metadata snapshot and commit. Independent static review accepts the change and has inspected the regression-test assertions for balanced `DI()`/`EI()`, allocation/free outside the critical section, and wrapped grow/shrink data preservation. The implementation record reports passing native tests, which were not independently rerun, and no on-target timing/ISR verification. Resize and final destruction require exclusive task-context access, as documented; general allocator reentrancy and ISR safety are not certified. Accepted commit is on `phase-1-improvements`.
 
 ---
 
 ### TIMA-FWK-0007
 
 **ID:** `TIMA-FWK-0007`  
-**Status:** `REVIEW`  
+**Status:** `CLOSED`  
 **Title:** Replacing storage breaks heap ownership and buffer invariants
 
 **Description**  
@@ -319,6 +322,9 @@ The public `buffer_set_buffer()` API allowed replacement of the backing pointer 
 - **2026-11-16 — Status Change:** Moved from `IN_PROGRESS` to `REVIEW` after recording implementation and native test evidence. Resolution remains pending independent review and acceptance.
 - **2026-11-16 — Commit:** Created implementation commit [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) on `phase-1-improvements`. Its review status is `UNREVIEWED`; independent review has not occurred.
 
+- **2026-11-16 — Independent Code Review:** ChatGPT reviewed commit `92d7108`, the current public header and buffer implementation, and the maintained native test source. `buffer_set_buffer()` is absent from the implementation and public declarations, its obsolete test invocations were removed, and ownership/storage constraints are documented for `buffer_init()` and `buffer_create()`. The change intentionally breaks the unsupported API; external users must migrate. The recorded native test pass was not independently rerun; no on-target build was performed. Implementation commit `92d7108` is `APPROVED`.
+- **2026-11-16 — Status Change:** `REVIEW` → `RESOLVED` following accepted review; `RESOLVED` → `CLOSED` because the approved implementation is already integrated on the designated `phase-1-improvements` working branch.
+
 **Proposed Change**  
 Remove `buffer_set_buffer()` from the public header and implementation. Storage is fixed by `buffer_init()` for caller-owned buffers or `buffer_create()` for heap-owned buffers; do not directly replace the public struct's backing pointer or reinitialize a heap-created descriptor. This intentionally removes the unsupported API rather than introducing a new ownership-transfer/capacity contract.
 
@@ -326,10 +332,10 @@ Remove `buffer_set_buffer()` from the public header and implementation. Storage 
 
 | Branch | Commit (short hash) | Review Status | Description |
 | --- | --- | --- | --- |
-| `phase-1-improvements` | [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) | `UNREVIEWED` | Remove the public storage-rebinding API and document fixed ownership. |
+| `phase-1-improvements` | [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) | `APPROVED` | Remove the public storage-rebinding API and document fixed ownership. |
 
 **Resolution Description**  
-Pending.
+**Approved and closed.** Implementation commit [`92d7108`](https://github.com/keroblabs/tima/commit/92d71084f7f1fa973fa2f1154643b8beee7d64d6) removes `buffer_set_buffer()` from `framework/buffer.c` and `framework/buffer.h`, removes obsolete test calls, and documents that backing storage and ownership are fixed by `buffer_init()` or `buffer_create()`. Independent static review confirms the public rebind path was eliminated and the revised ownership documentation is consistent with the supported constructors. The implementation record reports no production repository callers and passing native tests, which were not independently rerun. The API removal is intentionally source-breaking for external users; no target-board build was performed. Borrowed pointer lifetime across resize and destruction remains addressed separately under TIMA-FWK-0012. Accepted commit is on `phase-1-improvements`.
 
 ---
 
