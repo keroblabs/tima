@@ -3,7 +3,8 @@
 Scope: Reusable framework components and their APIs; this volume begins with findings from `framework/pipe.c` and `framework/pipe.h`.  
 ID prefix: `TIMA-FWK`  
 Methodology: [bug-tracking-methodology.md](bug-tracking-methodology.md)  
-Previous volume: [bug-framework.md](bug-framework.md)
+Previous volume: [bug-framework.md](bug-framework.md)  
+Next volume: [bug-framework-03.md](bug-framework-03.md)
 
 The summary is the current index; the full issue records below are authoritative. Update both when a title or status changes. Keep dated, append-only Notes and per-commit review history. This file holds at most 16 tickets (`TIMA-FWK-0017`–`TIMA-FWK-0032`). All findings are proposed for triage; an `OPEN` ticket does not authorize implementation.
 
@@ -26,6 +27,7 @@ The summary is the current index; the full issue records below are authoritative
 | `TIMA-FWK-0029` | `OPEN` | Repeated pipe initialization corrupts the global registry |
 | `TIMA-FWK-0030` | `OPEN` | pipe_locate() dereferences a null lookup name |
 | `TIMA-FWK-0031` | `OPEN` | pipe_read_buffer() lacks destination validation |
+| `TIMA-FWK-0032` | `OPEN` | Pool initialization can construct elements beyond backing storage |
 
 ## Issues
 
@@ -438,6 +440,34 @@ The streaming read API may call `memcpy()` through a NULL destination when a non
 
 **Proposed Change**  
 Reject a NULL destination for positive-length reads without consuming queued data, document destination capacity responsibilities and zero-length no-op behavior, and test these boundary cases with the existing read/clear/ownership semantics.
+
+**Commits**
+
+| Branch | Commit (short hash) | Review Status | Description |
+| --- | --- | --- | --- |
+
+**Resolution Description**  
+Pending.
+
+---
+
+### TIMA-FWK-0032
+
+**ID:** `TIMA-FWK-0032`  
+**Status:** `OPEN`  
+**Title:** Pool initialization can construct elements beyond backing storage
+
+**Description**  
+`pool_create()` does not validate the pool descriptor, arena pointer, requested element size or complete element stride before constructing linked-list nodes. A truncated arena can therefore be written beyond its bounds.
+
+**Details**  
+**Confirmed by static review of `framework/pool.c:3–27`:** `while (temp_index < buffer_size)` accepts a node whenever its starting offset is within the arena, even if the header or payload does not fit. It writes `element->p_next` immediately and increments `temp_index` by `element_size + sizeof(pool_element_t)` without checking for overflow or a complete remaining stride. A null pool descriptor or null arena with nonzero size is dereferenced. Exact failure conditions depend on arena size and architecture; no execution was attempted. Correct capacity handling is a prerequisite for the fixed-capacity pipe descriptor pool.
+
+**Notes**
+- **2026-11-16 — Discovery:** Independent static review of `framework/pool.c` and `framework/pool.h` on `phase-1-improvements` following the decision to stabilize the reusable pool before the linked-list pipe redesign. Evidence and remaining uncertainties are stated in Details. No source changes, runtime reproduction, target-board testing, or approved implementation are claimed. Status recorded as `OPEN` for engineering triage.
+
+**Proposed Change**  
+Define and validate pool creation inputs and a complete per-element stride, including overflow checks. Initialize only full nodes and expose a clear success/failure result and usable element capacity. Reject zero-capacity and malformed configurations according to an agreed contract. Test empty/null, exact-fit, one-byte-short, oversized, and extreme-size cases, including guard bytes around the arena.
 
 **Commits**
 
